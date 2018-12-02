@@ -8,3 +8,11 @@ def index(request):
   space_objects = SpaceObject.objects.all()
   return render(request, 'spaceobjects/index.html',
       {'space_objects': space_objects})
+
+def detail(request, name):
+  try: 
+    space_object = SpaceObject.objects.get(name__iexact=name)
+  except SpaceObject.DoesNotExist:
+    return index(request)
+  return render(request, 'spaceobjects/detail.html',
+      {'space_object': space_object})

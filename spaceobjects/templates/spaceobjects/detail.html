@@ -1,0 +1,20 @@
+{% extends 'layout.html' %}
+{% load static %}
+
+{% block scripts %}
+<script src="{% static "js/main.js" %}"></script>
+{% endblock %}
+
+{% block content %}
+<h1>SpaceDB</h1>
+<div class="intro">
+  <p>
+    Welcome to see this single object!
+  </p>
+</div>
+<div>
+  <div class="item-container col-sm-4">
+    <h2>{{space_object.name}}</h2>
+  </div>
+</div>
+{% endblock %}
