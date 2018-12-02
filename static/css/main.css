@@ -1,0 +1,15 @@
+.intro {
+  border: 1px solid #eee;
+  padding: 2em;
+  margin-bottom: 2em;
+}
+
+.item-container {
+  border: 1px solid #eee;
+  padding: 2em;
+}
+
+.item-container img {
+  width: 100%;
+  height: auto;
+}
