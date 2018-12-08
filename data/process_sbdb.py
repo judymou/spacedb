@@ -28,12 +28,9 @@ def processData(reader):
       logger.info(count)
       break
     space_object = SpaceObject.objects.create()
+    space_object.fullname = row['full_name']
     space_object.name = row['name']
-#space_object.a = row['a']
-#      space_object.e = row['e']
-#      space_object.i = row['i']
     space_object.save()
-
 
 if __name__ == '__main__':
   logger.info('Processing sbdb data')

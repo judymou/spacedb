@@ -15,6 +15,10 @@
 <div>
   <div class="item-container col-sm-4">
     <h2>{{space_object.name}}</h2>
+    <h2>{{space_object.fullname}}</h2>
+    {% for close_approach in space_object.closeapproach_set.all %}
+      <h2>{{close_approach.dist_min}}</h2>
+    {% endfor %}
   </div>
 </div>
 {% endblock %}
