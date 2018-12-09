@@ -27,9 +27,17 @@ def processData(reader):
     if count % 10000 == 0:
       logger.info(count)
       break
-    space_object = SpaceObject.objects.create()
-    space_object.fullname = row['full_name']
-    space_object.name = row['name']
+    space_object = SpaceObject.objects.create(
+        fullname = row['full_name'],
+        name = row['name'],
+        a = float(row['a']),
+        e = float(row['e']),
+        i = float(row['i']),
+        om = float(row['om']),
+        w = float(row['w']),
+        ma = float(row['ma']),
+        epoch = float(row['epoch']),
+        )
     space_object.save()
 
 if __name__ == '__main__':
