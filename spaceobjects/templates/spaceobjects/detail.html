@@ -25,28 +25,30 @@ window.EPHEMERIS = {
 {% endblock %}
 
 {% block content %}
-<h1>SpaceDB</h1>
+<strong>SpaceDB</strong>
+<h1 id="name">{{space_object.name}}</h1>
+<h2>{{space_object.fullname}}</h2>
 <div class="intro">
   <p>
     Welcome to see this single object!
   </p>
 </div>
 <div>
+  <div class="item-container col-sm-8">
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam auctor nunc non diam vestibulum vulputate. Aenean sagittis iaculis ante. Donec mollis nec nibh vitae faucibus. Nam quis iaculis sapien, sed ultricies turpis. In ac tortor placerat, dictum libero id, dapibus augue. Mauris nulla est, mollis nec ante vel, dignissim facilisis erat. Integer non nisl ac arcu ultrices imperdiet eget sed est. Morbi sed pretium leo, id aliquam diam. Maecenas fermentum leo id tincidunt congue.
+  </div>
   <div class="item-container col-sm-4">
-    <h2 id="name">{{space_object.name}}</h2>
-    <h2>{{space_object.fullname}}</h2>
-    <h2>{{space_object.a}}</h2>
-    <h2>{{space_object.e}}</h2>
-    <h2>{{space_object.i}}</h2>
-    <h2>{{space_object.om}}</h2>
-    <h2>{{space_object.w}}</h2>
-    <h2>{{space_object.ma}}</h2>
-    <h2>{{space_object.epoch}}</h2>
+    <h5>Semi-major axis: {{space_object.a}}</h5>
+    <h5>Eccentricity: {{space_object.e}}</h5>
+    <h5>Inclination: {{space_object.i}}</h5>
+    <h5>Longitude of Ascending Node: {{space_object.om}}</h5>
+    <h5>Argument of Periapsis: {{space_object.w}}</h5>
+    <h5>Mean Anomaly: {{space_object.ma}}</h5>
+    <h5>Epoch: {{space_object.epoch}}</h5>
     {% for close_approach in space_object.closeapproach_set.all %}
-      <h2>{{close_approach.dist_min}}</h2>
+      <h5>{{close_approach.dist_min}}</h5>
     {% endfor %}
   </div>
-  <div id="vis-container">
-  </div>
+  <div id="vis-container"></div>
 </div>
 {% endblock %}
