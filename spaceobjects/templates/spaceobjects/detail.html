@@ -26,29 +26,51 @@ window.EPHEMERIS = {
 
 {% block content %}
 <strong>SpaceDB</strong>
-<h1 id="name">{{space_object.name}}</h1>
-<h2>{{space_object.fullname}}</h2>
-<div class="intro">
-  <p>
-    Welcome to see this single object!
-  </p>
-</div>
+<header class="site-header">
+  <h1 class="mainheading">{{space_object.name}}</h1>
+  <h2 class="subheading">{{space_object.fullname}}</h2>
+</header>
 <div>
   <div class="item-container col-sm-8">
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam auctor nunc non diam vestibulum vulputate. Aenean sagittis iaculis ante. Donec mollis nec nibh vitae faucibus. Nam quis iaculis sapien, sed ultricies turpis. In ac tortor placerat, dictum libero id, dapibus augue. Mauris nulla est, mollis nec ante vel, dignissim facilisis erat. Integer non nisl ac arcu ultrices imperdiet eget sed est. Morbi sed pretium leo, id aliquam diam. Maecenas fermentum leo id tincidunt congue.
+    <div class="item-container__inner">
+      <h3>Summary</h3>
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam auctor nunc non diam vestibulum vulputate. Aenean sagittis iaculis ante. Donec mollis nec nibh vitae faucibus. Nam quis iaculis sapien, sed ultricies turpis. In ac tortor placerat, dictum libero id, dapibus augue. Mauris nulla est, mollis nec ante vel, dignissim facilisis erat. Integer non nisl ac arcu ultrices imperdiet eget sed est. Morbi sed pretium leo, id aliquam diam. Maecenas fermentum leo id tincidunt congue.
+      <h3>Close Approaches</h3>
+      {% for close_approach in space_object.closeapproach_set.all %}
+        <h5>{{close_approach.dist_min}}</h5>
+      {% endfor %}
+      <h3>Images and Observations</h3>
+      ...
+    </div>
   </div>
   <div class="item-container col-sm-4">
-    <h5>Semi-major axis: {{space_object.a}}</h5>
-    <h5>Eccentricity: {{space_object.e}}</h5>
-    <h5>Inclination: {{space_object.i}}</h5>
-    <h5>Longitude of Ascending Node: {{space_object.om}}</h5>
-    <h5>Argument of Periapsis: {{space_object.w}}</h5>
-    <h5>Mean Anomaly: {{space_object.ma}}</h5>
-    <h5>Epoch: {{space_object.epoch}}</h5>
-    {% for close_approach in space_object.closeapproach_set.all %}
-      <h5>{{close_approach.dist_min}}</h5>
-    {% endfor %}
+    <div class="item-container__inner">
+      <h3>Key Facts</h3>
+      <ul class="keyfacts">
+        <li>Orbits between Earth and Mars</li>
+        <li>Classified as a Potential Hazardous Object (PHA)</li>
+        <li>Will come within 50,000 miles of Earth in 2027</li>
+        <li>Comparable in size to Los Angeles (80 in circumference)</li>
+      </ul>
+    </div>
   </div>
-  <div id="vis-container"></div>
+  <div class="item-container col-sm-4">
+    <div class="item-container__inner">
+      <h3>Orbital Elements</h3>
+      <h5>Semi-major axis: {{space_object.a}}</h5>
+      <h5>Eccentricity: {{space_object.e}}</h5>
+      <h5>Inclination: {{space_object.i}}</h5>
+      <h5>Longitude of Ascending Node: {{space_object.om}}</h5>
+      <h5>Argument of Periapsis: {{space_object.w}}</h5>
+      <h5>Mean Anomaly: {{space_object.ma}}</h5>
+      <h5>Epoch: {{space_object.epoch}}</h5>
+    </div>
+  </div>
+  <div class="item-container col-sm-12">
+    <div class="item-container__inner">
+      <h3>Orbital Simulation</h3>
+      <div id="vis-container"></div>
+    </div>
+  </div>
 </div>
 {% endblock %}
