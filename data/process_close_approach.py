@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.realpath(parent_dir))
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'spacedb.settings')
 django.setup()
 
-from spaceobjects.models import SpaceObject, CloseApproach 
+from spaceobjects.models import SpaceObject, CloseApproach
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -28,7 +28,7 @@ def processData(fields, data):
       logger.info(count)
       break
     ca_raw = dict(zip(fields, row))
-  
+
     try:
       space_object = SpaceObject.objects.get(fullname=ca_raw['fullname'])
       ca = CloseApproach.objects.create(space_object=space_object,
@@ -41,7 +41,10 @@ def processData(fields, data):
 
 if __name__ == '__main__':
   logger.info('Processing close approach data')
-  with open('data/rawdata/close_approach.json') as f:
+
+  dir_path = os.path.dirname(os.path.realpath(__file__))
+  data_path = os.path.realpath(os.path.join(dir_path, 'rawdata/close_approach.json'))
+  with open(data_path) as f:
     close_approach_file = json.load(f)
     processData(close_approach_file["fields"],
         close_approach_file["data"])

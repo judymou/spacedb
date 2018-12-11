@@ -15,7 +15,7 @@ sys.path.insert(0, os.path.realpath(parent_dir))
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'spacedb.settings')
 django.setup()
 
-from spaceobjects.models import SpaceObject 
+from spaceobjects.models import SpaceObject
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -42,6 +42,9 @@ def processData(reader):
 
 if __name__ == '__main__':
   logger.info('Processing sbdb data')
-  with open('data/rawdata/sbdb.csv') as f:
+
+  dir_path = os.path.dirname(os.path.realpath(__file__))
+  data_path = os.path.realpath(os.path.join(dir_path, 'rawdata/sbdb.csv'))
+  with open(data_path) as f:
     reader = csv.DictReader(f, delimiter=',')
     processData(reader)
