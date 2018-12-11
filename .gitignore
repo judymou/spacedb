@@ -1,5 +1,5 @@
 venv
-db.sqlite
+db.sqlite3
 
 ### Vim ###
 [._]*.s[a-w][a-z]
