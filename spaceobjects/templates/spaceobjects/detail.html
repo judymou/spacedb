@@ -41,6 +41,10 @@ window.EPHEMERIS = {
       {% endfor %}
       <h3>Images and Observations</h3>
       ...
+      <h3>References</h3>
+      <ul>
+        <li><a href="https://ssd.jpl.nasa.gov/sbdb.cgi?sstr={{space_object.pdes}}">JPL Small Body Database</a></li>
+      </ul>
     </div>
   </div>
   <div class="item-container col-sm-4">
@@ -57,13 +61,15 @@ window.EPHEMERIS = {
   <div class="item-container col-sm-4">
     <div class="item-container__inner">
       <h3>Orbital Elements</h3>
-      <h5>Semi-major axis: {{space_object.a}}</h5>
-      <h5>Eccentricity: {{space_object.e}}</h5>
-      <h5>Inclination: {{space_object.i}}</h5>
-      <h5>Longitude of Ascending Node: {{space_object.om}}</h5>
-      <h5>Argument of Periapsis: {{space_object.w}}</h5>
-      <h5>Mean Anomaly: {{space_object.ma}}</h5>
-      <h5>Epoch: {{space_object.epoch}}</h5>
+      <ul class="keyfacts">
+        <li>Epoch: {{space_object.epoch}} JD</li>
+        <li>Semi-major axis: {{space_object.a | floatformat:5}}</li>
+        <li>Eccentricity: {{space_object.e | floatformat:5}}</li>
+        <li>Inclination: {{space_object.i | floatformat:5}}</li>
+        <li>Longitude of Ascending Node: {{space_object.om | floatformat:5}}</li>
+        <li>Argument of Periapsis: {{space_object.w | floatformat:5}}</li>
+        <li>Mean Anomaly: {{space_object.ma | floatformat:5}}</li>
+      </ul>
     </div>
   </div>
   <div class="item-container col-sm-12">

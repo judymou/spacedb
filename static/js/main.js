@@ -25,4 +25,7 @@ viz.createObject('neptune', Spacekit.SpaceObjectPresets.NEPTUNE);
 
 const spaceobject = viz.createObject('spaceobject', {
   ephem: new Spacekit.Ephem(window.EPHEMERIS, 'deg'),
+  ecliptic: {
+    displayLines: true,
+  },
 });
