@@ -37,6 +37,7 @@ def processData(reader):
         w = float(row['w']),
         ma = float(row['ma']),
         epoch = float(row['epoch']),
+        sbdb_entry = row,
         )
     space_object.save()
 
