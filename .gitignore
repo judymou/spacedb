@@ -1,5 +1,6 @@
 venv
 db.sqlite3
+data/rawdata
 
 ### Vim ###
 [._]*.s[a-w][a-z]
