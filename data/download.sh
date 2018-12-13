@@ -2,6 +2,7 @@
 
 pushd $(dirname $0) &>/dev/null
 
+mkdir -p rawdata
 cd rawdata
 
 echo 'Downloading SBDB...'
