@@ -12,13 +12,13 @@
 <script src="http://localhost:8001/build/spacekit.js"></script>
 <script>
 window.EPHEMERIS = {
-  a: {{space_object.a}},
-  e: {{space_object.e}},
-  i: {{space_object.i}},
-  om: {{space_object.om}},
-  w: {{space_object.w}},
-  ma: {{space_object.ma}},
-  epoch: {{space_object.epoch}}
+  a: {{object.a}},
+  e: {{object.e}},
+  i: {{object.i}},
+  om: {{object.om}},
+  w: {{object.w}},
+  ma: {{object.ma}},
+  epoch: {{object.epoch}}
 }
 </script>
 <script src="{% static "js/main.js" %}"></script>
@@ -27,8 +27,8 @@ window.EPHEMERIS = {
 {% block content %}
 <strong>SpaceDB</strong>
 <header class="site-header">
-  <h1 class="mainheading">{{space_object.name}}</h1>
-  <h2 class="subheading">{{space_object.fullname}}</h2>
+  <h1 class="mainheading">{{object.name}}</h1>
+  <h2 class="subheading">{{object.fullname}}</h2>
 </header>
 <div>
   <div class="item-container col-sm-8">
@@ -36,14 +36,14 @@ window.EPHEMERIS = {
       <h3>Summary</h3>
       Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam auctor nunc non diam vestibulum vulputate. Aenean sagittis iaculis ante. Donec mollis nec nibh vitae faucibus. Nam quis iaculis sapien, sed ultricies turpis. In ac tortor placerat, dictum libero id, dapibus augue. Mauris nulla est, mollis nec ante vel, dignissim facilisis erat. Integer non nisl ac arcu ultrices imperdiet eget sed est. Morbi sed pretium leo, id aliquam diam. Maecenas fermentum leo id tincidunt congue.
       <h3>Close Approaches</h3>
-      {% for close_approach in space_object.closeapproach_set.all %}
+      {% for close_approach in object.closeapproach_set.all %}
         <h5>{{close_approach.dist_min}}</h5>
       {% endfor %}
       <h3>Images and Observations</h3>
-      ...
+      {{object.name}} was first observed on {{object.sbdb_entry.first_obs}}.
       <h3>References</h3>
       <ul>
-        <li><a href="https://ssd.jpl.nasa.gov/sbdb.cgi?sstr={{space_object.pdes}}">JPL Small Body Database</a></li>
+        <li><a href="https://ssd.jpl.nasa.gov/sbdb.cgi?sstr={{object.sbdb_entry.pdes}}">JPL Small Body Database</a></li>
       </ul>
     </div>
   </div>
@@ -51,10 +51,19 @@ window.EPHEMERIS = {
     <div class="item-container__inner">
       <h3>Key Facts</h3>
       <ul class="keyfacts">
-        <li>Orbits between Earth and Mars</li>
-        <li>Classified as a Potential Hazardous Object (PHA)</li>
+        <li>{{object.name}} is classified as a <strong>{{object.get_orbit_class}}</strong></li>
+        {% if object.is_neo %}
+        <li>Classified as a Near Earth Object (NEO)</li>
+        {% else %}
+        <li>Not a Near Earth Object (NEO)</li>
+        {% endif %}
+        {% if object.is_pha %}
+        <li>Classified as a Potentially Hazardous Object (PHA)</li>
+        {% else %}
+        <li>Not a Potentially Hazardous Object (PHA)</li>
+        {% endif %}
         <li>Will come within 50,000 miles of Earth in 2027</li>
-        <li>Comparable in size to Los Angeles (80 in circumference)</li>
+        <li>Comparable in size to {{object.get_diameter_comparison}} ({{object.sbdb_entry.diameter}}km diameter)</li>
       </ul>
     </div>
   </div>
@@ -62,13 +71,13 @@ window.EPHEMERIS = {
     <div class="item-container__inner">
       <h3>Orbital Elements</h3>
       <ul class="keyfacts">
-        <li>Epoch: {{space_object.epoch}} JD</li>
-        <li>Semi-major axis: {{space_object.a | floatformat:5}}</li>
-        <li>Eccentricity: {{space_object.e | floatformat:5}}</li>
-        <li>Inclination: {{space_object.i | floatformat:5}}</li>
-        <li>Longitude of Ascending Node: {{space_object.om | floatformat:5}}</li>
-        <li>Argument of Periapsis: {{space_object.w | floatformat:5}}</li>
-        <li>Mean Anomaly: {{space_object.ma | floatformat:5}}</li>
+        <li>Epoch: {{object.epoch}} JD</li>
+        <li>Semi-major axis: {{object.a | floatformat:5}}</li>
+        <li>Eccentricity: {{object.e | floatformat:5}}</li>
+        <li>Inclination: {{object.i | floatformat:5}}</li>
+        <li>Longitude of Ascending Node: {{object.om | floatformat:5}}</li>
+        <li>Argument of Periapsis: {{object.w | floatformat:5}}</li>
+        <li>Mean Anomaly: {{object.ma | floatformat:5}}</li>
       </ul>
     </div>
   </div>

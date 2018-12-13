@@ -10,9 +10,9 @@ def index(request):
       {'space_objects': space_objects})
 
 def detail(request, name):
-  try: 
+  try:
     space_object = SpaceObject.objects.get(name__iexact=name)
   except SpaceObject.DoesNotExist:
     return index(request)
   return render(request, 'spaceobjects/detail.html',
-      {'space_object': space_object})
+      {'object': space_object})
