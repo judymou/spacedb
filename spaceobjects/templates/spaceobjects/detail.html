@@ -34,8 +34,37 @@ window.EPHEMERIS = {
   <div class="item-container col-sm-8">
     <div class="item-container__inner">
       <h3>Summary</h3>
-      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam auctor nunc non diam vestibulum vulputate. Aenean sagittis iaculis ante. Donec mollis nec nibh vitae faucibus. Nam quis iaculis sapien, sed ultricies turpis. In ac tortor placerat, dictum libero id, dapibus augue. Mauris nulla est, mollis nec ante vel, dignissim facilisis erat. Integer non nisl ac arcu ultrices imperdiet eget sed est. Morbi sed pretium leo, id aliquam diam. Maecenas fermentum leo id tincidunt congue.
+      <p>
+      {{object.name}} is a large asteroid that orbits between Mars and Jupiter in the outside of the main asteroid belt.  It was discovered in 1989 and
+      {% if object.is_pha and object.is_neo %}
+        is classified as a "Potentially Hazardous Object" due to its predicted close pass(es) with Earth.
+      {% elif not object.is_pha and object.is_neo %}
+        is classified as a "Near Earth Object" due to its proximity to Earth, but is not considered potentially hazardous because simulations have indicated very low likelihood for collision.
+      {% elif not object.is_pha and not object.is_neo %}
+        is not considered potentially hazardous because its orbit does not bring it close to Earth.
+      {% endif %}
+      </p>
+
+      <p>
+      {{object.name}}'s orbit brings it around the sun every {{object.sbdb_entry.per|floatformat:0}} days.  Its orbit brings it as close as 0.1 AU to the sun.  At its furthest, its orbit extends 0.8 AU from the sun.
+      This asteroid is about 50 kilometers in diameter, making it larger than the average asteroid, comparable in size to the city of Boston.
+      </p>
+
+      <p>
+      The rotation of {{object.name}} has been observed. It completes a rotation every {{object.sbdb_entry.rot_per|floatformat:2}} days.
+      </p>
+
+      <p>
+      {{object.name}}'s spectral type {{object.sbdb_entry.spec_T}} (<a href="http://adsabs.harvard.edu/abs/1989aste.conf..298T">Tholen</a>) / {{object.sbdb_entry.spec_B}} (<a href="http://smass.mit.edu/smass.html">SMASSII</a>) indicates that it contains iron, water, and small amounts of platinum.
+      </p>
+
       <h3>Close Approaches</h3>
+      <p>
+      {{object.name}}'s orbit is {{object.sbdb_entry.moid}} AU from Earth's orbit at its closest point.
+      </p>
+      <p>
+        {{object.name}} has 3 close approaches predicted in the coming decades.  The soonest close approach will be on May 3rd, 2029 and the object will pass within 250,000 km of Earth.
+      </p>
       {% for close_approach in object.closeapproach_set.all %}
         <h5>{{close_approach.dist_min}}</h5>
       {% endfor %}
@@ -63,7 +92,7 @@ window.EPHEMERIS = {
         <li>Not a Potentially Hazardous Object (PHA)</li>
         {% endif %}
         <li>Will come within 50,000 miles of Earth in 2027</li>
-        <li>Comparable in size to {{object.get_diameter_comparison}} ({{object.sbdb_entry.diameter}}km diameter)</li>
+        <li>Comparable in size to {{object.get_diameter_comparison}} ({{object.sbdb_entry.diameter | floatformat:0}} km diameter)</li>
       </ul>
     </div>
   </div>

@@ -68,9 +68,13 @@ class SpaceObject(models.Model):
       if not diameter_str:
           return None
 
-      diameter = float(diameter_str)
+      # Convert diameter to miles... sorry but that's the unit of my other data.
+      diameter = float(diameter_str) * 0.621371
 
       # http://www.decisionsciencenews.com/2015/02/20/put-size-countries-perspective-comparing-us-states/
+      # https://en.wikipedia.org/wiki/List_of_United_States_cities_by_area
+      if diameter < 134:
+          return 'Philadelphia'
       if diameter < 153:
           return 'Denver'
       if diameter < 302:

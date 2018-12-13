@@ -1,5 +1,4 @@
 (function() {
-  return;
   // Create the visualization and put it in our div.
   const viz = new Spacekit.Container(document.getElementById('vis-container'), {
     assetPath: 'http://localhost:8001/src/assets',
