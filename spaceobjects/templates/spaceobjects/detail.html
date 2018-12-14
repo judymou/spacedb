@@ -1,4 +1,5 @@
 {% extends 'layout.html' %}
+{% load humanize %}
 {% load static %}
 
 {% block scripts %}
@@ -33,7 +34,7 @@ window.EPHEMERIS = {
 <div>
   <div class="item-container col-sm-8">
     <div class="item-container__inner">
-      <h3>Summary</h3>
+      <h3>Overview</h3>
       <p>
       {{object.name}} is a large asteroid that orbits between Mars and Jupiter in the outside of the main asteroid belt.  It was discovered in 1989 and
       {% if object.is_pha and object.is_neo %}
@@ -41,13 +42,13 @@ window.EPHEMERIS = {
       {% elif not object.is_pha and object.is_neo %}
         is classified as a "Near Earth Object" due to its proximity to Earth, but is not considered potentially hazardous because simulations have indicated very low likelihood for collision.
       {% elif not object.is_pha and not object.is_neo %}
-        is not considered potentially hazardous because its orbit does not bring it close to Earth.
+        is not considered potentially hazardous, as its orbit does not bring it close to Earth.
       {% endif %}
       </p>
 
       <p>
-      {{object.name}}'s orbit brings it around the sun every {{object.sbdb_entry.per|floatformat:0}} days.  Its orbit brings it as close as 0.1 AU to the sun.  At its furthest, its orbit extends 0.8 AU from the sun.
-      This asteroid is about 50 kilometers in diameter, making it larger than the average asteroid, comparable in size to the city of Boston.
+      {{object.name}}'s orbit brings it around the sun every {{object.sbdb_entry.per|floatformat:0|intcomma}} days.  Its orbit brings it as close as 0.1 AU to the sun and extends 0.8 AU from the sun.
+      {{object.name}} is about 50 kilometers in diameter, making it larger than the average asteroid, comparable in size to the city of Boston.
       </p>
 
       <p>
@@ -70,6 +71,15 @@ window.EPHEMERIS = {
       {% endfor %}
       <h3>Images and Observations</h3>
       {{object.name}} was first observed on {{object.sbdb_entry.first_obs}}.
+      <h3>Similar Objects</h3>
+      similar orbits, similar close passes
+      <ul>
+      {% for similar in object.get_similar_orbits %}
+        <li>
+          <a href="/asteroid/{{similar.slug}}">{{similar.fullname}}</a>
+        </li>
+      {% endfor %}
+      </ul>
       <h3>References</h3>
       <ul>
         <li><a href="https://ssd.jpl.nasa.gov/sbdb.cgi?sstr={{object.sbdb_entry.pdes}}">JPL Small Body Database</a></li>

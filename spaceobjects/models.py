@@ -33,8 +33,9 @@ ORBIT_CLASS_MAPPING = {
 }
 
 class SpaceObject(models.Model):
-  fullname = models.CharField(max_length=500)
-  name = models.CharField(max_length=500)
+  fullname = models.CharField(max_length=200)
+  name = models.CharField(max_length=200)
+  slug = models.CharField(max_length=200)
 
   # Basic orbital elements
   a = models.FloatField()
@@ -109,9 +110,9 @@ class SpaceObject(models.Model):
           return 'Indiana'
       return 'big!!'
 
-
-class CloseApproach(models.Model):
-  space_object = models.ForeignKey(SpaceObject)
-  dist_min = models.FloatField()
+  def get_similar_orbits(self, n=3):
+      a_range = [self.a - 0.01, self.a + 0.01]
+      similar = SpaceObject.objects.filter(a__range=a_range).exclude(pk=self.pk)
+      return similar[:n]
 
 admin.site.register(SpaceObject)
