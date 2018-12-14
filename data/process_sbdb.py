@@ -7,6 +7,7 @@ import os
 import sys
 
 from django.db import transaction
+from django.utils.text import slugify
 
 current_dir = os.path.dirname(__file__)
 parent_dir = os.path.join(current_dir, '../')
@@ -27,9 +28,11 @@ def processData(reader):
     if count % 10000 == 0:
       logger.info(count)
       break
+    fullname = row['full_name'].strip()
     space_object = SpaceObject.objects.create(
-        fullname = row['full_name'],
-        name = row['name'],
+        fullname = fullname,
+        name = row['name'].strip() if row['name'] else fullname,
+        slug = slugify(fullname),
         a = float(row['a']),
         e = float(row['e']),
         i = float(row['i']),
