@@ -115,4 +115,11 @@ class SpaceObject(models.Model):
       similar = SpaceObject.objects.filter(a__range=a_range).exclude(pk=self.pk)
       return similar[:n]
 
+  def to_search_result(self):
+      return {
+        'fullname': self.fullname,
+        'name': self.name,
+        'slug': self.slug,
+      }
+
 admin.site.register(SpaceObject)
