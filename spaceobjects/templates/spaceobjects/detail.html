@@ -35,23 +35,23 @@ window.EPHEMERIS = {
     <div class="item-container__inner">
       <h3>Overview</h3>
       <p>
-      {{object.name}} is a large asteroid that orbits between Mars and Jupiter in the outside of the main asteroid belt.  It was discovered in 1989 and
+      {{object.name}} is a large asteroid that orbits between Mars and Jupiter in the outer reaches of the main asteroid belt.  NASA JPL has
       {% if object.is_pha and object.is_neo %}
-        is classified as a "Potentially Hazardous Object" due to its predicted close pass(es) with Earth.
+        classified {{object.name}} as a "Potentially Hazardous Object" due to its predicted close pass(es) with Earth.
       {% elif not object.is_pha and object.is_neo %}
-        is classified as a "Near Earth Object" due to its proximity to Earth, but is not considered potentially hazardous because simulations have indicated very low likelihood for collision.
+        classified {{object.name}} as a "Near Earth Object" due to its proximity to Earth, but is not considered potentially hazardous because simulations have indicated very low likelihood for collision.
       {% elif not object.is_pha and not object.is_neo %}
-        is not considered potentially hazardous, as its orbit does not bring it close to Earth.
+        does not classify {{object.name}} as potentially hazardous because its orbit does not bring it close to Earth.
       {% endif %}
       </p>
 
       <p>
-      {{object.name}}'s orbit brings it around the sun every {{object.sbdb_entry.per|floatformat:0|intcomma}} days.  Its orbit brings it as close as 0.1 AU to the sun and extends 0.8 AU from the sun.
+      {{object.name}} was discovered in 1989.  Its orbit brings it around the sun every {{object.sbdb_entry.per|floatformat:0|intcomma}} days.  Its orbit brings it as close as 0.1 AU to the sun and extends 0.8 AU from the sun.
       {{object.name}} is about 50 kilometers in diameter, making it larger than the average asteroid, comparable in size to the city of Boston.
       </p>
 
       <p>
-      The rotation of {{object.name}} has been observed. It completes a rotation every {{object.sbdb_entry.rot_per|floatformat:2}} days.
+      The rotation of {{object.name}} has been observed. It completes a rotation on its axis every {{object.sbdb_entry.rot_per|floatformat:2}} days.
       </p>
 
       <p>
@@ -61,17 +61,30 @@ window.EPHEMERIS = {
       <h3>Close Approaches</h3>
       <p>
       {{object.name}}'s orbit is {{object.sbdb_entry.moid}} AU from Earth's orbit at its closest point.
+      {% if object.sbdb_entry.moid > 0.001 %}
+        This means there is a wide berth between this asteroid and Earth at all times.
+      {% endif %}
       </p>
       <p>
-        {{object.name}} has 3 close approaches predicted in the coming decades.  The soonest close approach will be on May 3rd, 2029 and the object will pass within 250,000 km of Earth.
+      {% if object.closeapproach_set.all|length < 1 %}
+        Orbital simulations conducted by NASA JPL's CNEOS do not show any close approaches to Earth.
+      {% else %}
+        <p>
+          {{object.name}} has 3 close approaches predicted in the coming decades.  The soonest close approach will be on May 3rd, 2029 and the object will pass within 250,000 km of Earth.
+        </p>
+        <ul>
+        {% for close_approach in object.closeapproach_set.all %}
+          <li>{{close_approach.dist_min}} km from Earth</li>
+        {% endfor %}
+        </ul>
+      {% endif %}
       </p>
-      {% for close_approach in object.closeapproach_set.all %}
-        <h5>{{close_approach.dist_min}}</h5>
-      {% endfor %}
       <h3>Images and Observations</h3>
       {{object.name}} was first observed on {{object.sbdb_entry.first_obs}}.
+      <h3>Accessibility and Exploration</h3>
+      This object is not considered accessible by the <a href="https://cneos.jpl.nasa.gov/nhats/details.html#?des=2000%20SG344&dv=6&dur=360&stay=8&launch=2015-2040">NHATS study</a>.
       <h3>Similar Objects</h3>
-      similar orbits, similar close passes
+      These asteroids have orbits that share similar characteristic to the orbit of {{object.name}}:
       <ul>
       {% for similar in object.get_similar_orbits %}
         <li>
