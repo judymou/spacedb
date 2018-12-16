@@ -15,14 +15,16 @@ current_dir = os.path.dirname(__file__)
 parent_dir = os.path.join(current_dir, '../')
 sys.path.insert(0, os.path.realpath(parent_dir))
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'spacedb.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'spacedb.settings_pipeline')
 django.setup()
 
 from spaceobjects.models import SpaceObject
+from data.util import get_normalized_full_name
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+@transaction.atomic
 def processData(reader):
     newobjects = []
     failures_other = failures_ma = 0
@@ -31,13 +33,17 @@ def processData(reader):
         if count % 10000 == 0:
             logger.info(count)
             #break
+        '''
         if count % 50000 == 0:
+            print 'Inserting...'
             insert_all(newobjects, delete=(not inserted_once))
             inserted_once = True
             newobjects = []
+        '''
         if not row['ma']:
             failures_ma += 1
-        fullname = row['full_name'].strip()
+            continue
+        fullname = get_normalized_full_name(row['full_name'])
         try:
             space_object = SpaceObject(
                 fullname = fullname,
@@ -57,15 +63,16 @@ def processData(reader):
             #                (count, row.get('full_name', '?'), json.dumps(row))
             failures_other += 1
             continue
-        newobjects.append(space_object)
-    print '%d blank mean anomalies' % failures_ma
-    print '%d other failures' % failures_other
 
-@transaction.atomic
-def insert_all(newobjects, delete=False):
-    if delete:
-        SpaceObject.objects.all().delete()
-    SpaceObject.objects.bulk_create(newobjects)
+        newobjects.append(space_object)
+
+    logger.warning('%d blank mean anomalies' % failures_ma)
+    logger.warning('%d other failures' % failures_other)
+
+    logger.info('Inserting...')
+    SpaceObject.objects.all().delete()
+    SpaceObject.objects.bulk_create(newobjects, batch_size=499)
+    logger.info('Done.')
 
 if __name__ == '__main__':
     logger.info('Processing sbdb data')
