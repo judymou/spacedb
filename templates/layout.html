@@ -7,9 +7,13 @@
 </head>
 <body>
   <div class="container">
-    <strong><a href="/" class="nav-link">SpaceDB</a></strong>
+    <div class="topnav">
+      <strong><a href="/" class="nav-link">SpaceDB</a></strong>
+    </div>
     {% block content %}{% endblock %}
   </div>
+  <script src="/static/dist/js/bundle.js"></script>
+
   {% block scripts %}{% endblock %}
 </body>
 </html>
