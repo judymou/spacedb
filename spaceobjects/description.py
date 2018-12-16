@@ -133,6 +133,28 @@ def get_diameter_comparison(roid):
 
     # http://www.decisionsciencenews.com/2015/02/20/put-size-countries-perspective-comparing-us-states/
     # https://en.wikipedia.org/wiki/List_of_United_States_cities_by_area
+    if diameter_sq < 0.110:
+        return 'a football field'
+    if diameter_sq < 0.0728434:
+        return 'the U.S. White House'
+    if diameter_sq < 0.234718:
+        return 'the U.S. Capitol'
+    if diameter_sq < 1.280:
+        return 'the Golden Gate Bridge'
+    if diameter_sq < 2.35932:
+        return 'the U.S. Pentagon'
+    if diameter_sq < 8.848:
+        return 'Mount Everest'
+    if diameter_sq < 21:
+        return 'the island of Manhattan'
+    if diameter_sq < 97:
+        return 'the San Francisco Bay'
+    if diameter_sq < 124:
+        return 'the city of Boston'
+    if diameter_sq < 214:
+        return 'the city of Cleveland, Ohio'
+    if diameter_sq < 239:
+        return 'the city of Baltimore'
     if diameter_sq < 370:
         return 'the city of Philadelphia'
     if diameter_sq < 400:

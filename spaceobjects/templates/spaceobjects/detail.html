@@ -28,11 +28,13 @@ window.EPHEMERIS = {
 {% block content %}
 <header class="site-header">
   <h1 class="mainheading">{{object.name}}</h1>
-  {% if object.fullname == object.name %}
-    <h2 class="subheading">{{object.get_size_adjective|capfirst}} {{object.get_orbit_class|lower}}</h2>
-  {% else %}
-    <h2 class="subheading">{{object.fullname}}</h2>
-  {% endif %}
+  <h2 class="subheading">
+    {% if object.fullname == object.name %}
+      {{object.get_size_adjective|capfirst}} {{object.get_orbit_class|lower}}
+    {% else %}
+      {{object.fullname}}
+    {% endif %}
+  </h2>
 </header>
 <div>
   <div class="item-container col-sm-8">
@@ -54,7 +56,7 @@ window.EPHEMERIS = {
       {% if object.has_size_info %}
         {{object.name}} is about {{object.sbdb_entry.diameter | floatformat:0}} kilometers in diameter, making it {{object.get_size_rough_comparison}}, comparable in size to {{object.get_diameter_comparison}}.
       {% elif object.has_size_info_estimate %}
-        Based on its brightness and the way it reflects light, {{object.name}} is probably between {{object.get_diameter_estimate_low | floatformat:0}} to {{object.get_diameter_estimate_high | floatformat:0}} kilometers in diameter, making it {{object.get_size_rough_comparison}}, very roughly comparable in size to {{object.get_diameter_comparison}}.
+        Based on its brightness and the way it reflects light, {{object.name}} is probably between {{object.get_diameter_estimate_low | floatformat:1}} to {{object.get_diameter_estimate_high | floatformat:1}} kilometers in diameter, making it {{object.get_size_rough_comparison}}, very roughly comparable in size to {{object.get_diameter_comparison}}.
       {% endif %}
       </p>
 
