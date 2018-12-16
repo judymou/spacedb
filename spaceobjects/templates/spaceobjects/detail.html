@@ -35,7 +35,7 @@ window.EPHEMERIS = {
     <div class="item-container__inner">
       <h3>Overview</h3>
       <p>
-      {{object.name}} is a large asteroid that orbits between Mars and Jupiter in the outer reaches of the main asteroid belt.  NASA JPL has
+      {{object.name}} is a {{object.get_size_adjective}} object {{object.get_orbit_desc}}.  NASA JPL has
       {% if object.is_pha and object.is_neo %}
         classified {{object.name}} as a "Potentially Hazardous Object" due to its predicted close pass(es) with Earth.
       {% elif not object.is_pha and object.is_neo %}
@@ -46,13 +46,17 @@ window.EPHEMERIS = {
       </p>
 
       <p>
-      {{object.name}} was discovered in 1989.  Its orbit brings it around the sun every {{object.sbdb_entry.per|floatformat:0|intcomma}} days.  Its orbit brings it as close as 0.1 AU to the sun and extends 0.8 AU from the sun.
-      {{object.name}} is about 50 kilometers in diameter, making it larger than the average asteroid, comparable in size to the city of Boston.
+      {{object.name}} was discovered in {{object.get_discovery_date|date:"Y"}}.  It orbits the sun every {{object.sbdb_entry.per|floatformat:0|intcomma}} days, coming as close as 0.1 AU and reaching as far as 0.8 AU from the sun.
+      {% if object.has_size_info %}
+        {{object.name}} is about {{object.sbdb_entry.diameter | floatformat:0}} kilometers in diameter, making it {{object.get_size_rough_comparison}}, comparable in size to {{object.get_diameter_comparison}}.
+      {% endif %}
       </p>
 
-      <p>
-      The rotation of {{object.name}} has been observed. It completes a rotation on its axis every {{object.sbdb_entry.rot_per|floatformat:2}} days.
-      </p>
+      {% if object.sbdb_entry.rot_per %}
+        <p>
+        The rotation of {{object.name}} has been observed. It completes a rotation on its axis every {{object.sbdb_entry.rot_per|floatformat:2}} days.
+        </p>
+      {% endif %}
 
       <p>
       {{object.name}}'s spectral type {{object.sbdb_entry.spec_T}} (<a href="http://adsabs.harvard.edu/abs/1989aste.conf..298T">Tholen</a>) / {{object.sbdb_entry.spec_B}} (<a href="http://smass.mit.edu/smass.html">SMASSII</a>) indicates that it contains iron, water, and small amounts of platinum.
@@ -80,7 +84,7 @@ window.EPHEMERIS = {
       {% endif %}
       </p>
       <h3>Images and Observations</h3>
-      {{object.name}} was first observed on {{object.sbdb_entry.first_obs}}.
+      {{object.name}} was first observed on {{object.get_discovery_date | date}}.
       <h3>Accessibility and Exploration</h3>
       This object is not considered accessible by the <a href="https://cneos.jpl.nasa.gov/nhats/details.html#?des=2000%20SG344&dv=6&dur=360&stay=8&launch=2015-2040">NHATS study</a>.
       <h3>Similar Objects</h3>
@@ -115,7 +119,9 @@ window.EPHEMERIS = {
         <li>Not a Potentially Hazardous Object (PHA)</li>
         {% endif %}
         <li>Will come within 50,000 miles of Earth in 2027</li>
-        <li>Comparable in size to {{object.get_diameter_comparison}} ({{object.sbdb_entry.diameter | floatformat:0}} km diameter)</li>
+        {% if object.has_size_info %}
+          <li>Comparable in size to {{object.get_diameter_comparison}} ({{object.sbdb_entry.diameter | floatformat:0}} km diameter)</li>
+        {% endif %}
       </ul>
     </div>
   </div>
@@ -137,6 +143,7 @@ window.EPHEMERIS = {
     <div class="item-container__inner">
       <h3>Search</h3>
       <div class="react-search"></div>
+      or view a <a href="/asteroid/random">random</a> asteroid
     </div>
   </div>
   <div class="item-container col-sm-12">

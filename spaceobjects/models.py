@@ -1,36 +1,13 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+from datetime import datetime
+
 from django.db import models
 from django.contrib import admin
 from jsonfield import JSONField
 
-# https://pdssbn.astro.umd.edu/data_other/objclass.shtml
-ORBIT_CLASS_MAPPING = {
-    'COM': 'Comet',
-    'CTc': 'Chiron-type Comet',
-    'ETc': 'Encke-type Comet',
-    'HTC': 'Halley-type Comet',
-    'HYP': 'Hyperbolic Comet',
-    'JFc': 'Jupiter-family Comet',
-    'JFC': 'Jupiter-family Comet',
-    'PAR': 'Parabolic Comet',
-
-    'AMO': 'Amor-class Asteroid',
-    'APO': 'Apollo-class Asteroid',
-    'AST': 'Asteroid',
-    'ATE': 'Aten-class Asteroid',
-    'CEN': 'Centaur-class Asteroid',
-    'HYA': 'Hyperbolic Asteroid',
-    'IEO': 'Interior-Earth Asteroid',
-    'IMB': 'Inner Main-belt Asteroid',
-    'MBA': 'Main-belt Asteroid',
-    'MCA': 'Mars-crossing Asteroid',
-    'OMB': 'Outer Main-belt Asteroid',
-    'PAA': 'Parabolic Asteroid',
-    'TJN': 'Jupiter Trojan',
-    'TNO': 'Trans-Neptunian Object',
-}
+from .description import get_orbit_class, get_orbit_desc
 
 class SpaceObject(models.Model):
   fullname = models.CharField(max_length=200)
@@ -49,8 +26,14 @@ class SpaceObject(models.Model):
   # sbdb blob
   sbdb_entry = JSONField()
 
+  def get_absolute_url(self):
+      return '/asteroid/%s' % self.slug
+
   def get_orbit_class(self):
-      return ORBIT_CLASS_MAPPING.get(self.sbdb_entry['class'])
+      return get_orbit_class(self)
+
+  def get_orbit_desc(self):
+      return get_orbit_desc(self)
 
   def is_neo(self):
       entry = self.sbdb_entry.get('neo', False)
@@ -64,51 +47,114 @@ class SpaceObject(models.Model):
           return False
       return entry
 
-  def get_diameter_comparison(self):
-      diameter_str = self.sbdb_entry.get('diameter', None)
+  def get_discovery_date(self):
+      firstobs = self.sbdb_entry.get('first_obs')
+      return datetime.strptime(firstobs, '%Y-%m-%d')
+
+  def get_size_adjective(self):
+      diameter_str = self.sbdb_entry.get('diameter')
       if not diameter_str:
           return None
 
-      # Convert diameter to miles... sorry but that's the unit of my other data.
-      diameter = float(diameter_str) * 0.621371
+      diameter = float(diameter_str)
+      if diameter < 1:
+          return 'very small'
+      if diameter < 10:
+          return 'small'
+      if diameter < 100:
+          return 'relatively small'
+      if diameter < 200:
+          return 'average-sized'
+      if diameter < 300:
+          return 'large'
+      if diameter < 600:
+          return 'very large'
+      return 'dwarf planet'
+
+  def has_size_info(self):
+      diam = self.sbdb_entry.get('diameter')
+      return diam != '' and diam is not None
+
+  def get_size_rough_comparison(self):
+      diameter_str = self.sbdb_entry.get('diameter')
+      if not diameter_str:
+          return None
+
+      diameter = float(diameter_str)
+      if diameter > 900:
+          return 'the largest asteroid/dwarf planet'
+      if diameter > 300:
+          return 'one of the largest asteroids'
+      if diameter > 1:
+          return 'larger than most asteroids'
+      return 'a small to average asteroid'
+
+  def get_diameter_comparison(self):
+      diameter_str = self.sbdb_entry.get('diameter')
+      if not diameter_str:
+          return None
+
+      diameter = float(diameter_str) ** 2
 
       # http://www.decisionsciencenews.com/2015/02/20/put-size-countries-perspective-comparing-us-states/
       # https://en.wikipedia.org/wiki/List_of_United_States_cities_by_area
-      if diameter < 134:
-          return 'Philadelphia'
-      if diameter < 153:
-          return 'Denver'
-      if diameter < 302:
-          return 'New York'
-      if diameter < 340:
-          return 'Dallas'
-      if diameter < 361:
-          return 'Indianapolis'
-      if diameter < 600:
-          return 'Houston'
+      if diameter < 370:
+          return 'the city of Philadelphia'
+      if diameter < 400:
+          return 'the city of Denver'
+      if diameter < 953:
+          return 'the city of Indianapolis'
+      if diameter < 999:
+          return 'the city of Dallas'
+      if diameter < 1213:
+          return 'the city of New York'
+      if diameter < 1302:
+          return 'the city of Los Angeles'
+      if diameter < 1625:
+          return 'the city of Houston'
       if diameter < 5000:
-          return 'Rhode Island'
+          return 'the U.S. state of Rhode Island'
       if diameter < 14000:
-          return 'Delaware'
+          return 'the U.S. state of Delaware'
       if diameter < 22000:
-          return 'Connecticut'
+          return 'the U.S. state of Connecticut'
       if diameter < 24000:
-          return 'New Jersey'
+          return 'the U.S. state of New Jersey'
       if diameter < 27000:
-          return 'Vermont'
+          return 'the U.S. state of Vermont'
       if diameter < 32000:
-          return 'Massachusetts'
+          return 'the U.S. state of Massachusetts'
       if diameter < 62000:
-          return 'Maryland'
+          return 'the U.S. state of Maryland'
       if diameter < 82000:
-          return 'West Virginia'
+          return 'the U.S. state of West Virginia'
       if diameter < 91000:
-          return 'South Carolina'
+          return 'the U.S. state of South Carolina'
       if diameter < 94000:
-          return 'Maine'
+          return 'Portugal'
       if diameter < 104000:
-          return 'Indiana'
-      return 'big!!'
+          return 'South Korea'
+      if diameter < 109000:
+          return 'Iceland'
+      if diameter < 119000:
+          return 'the U.S. state of Virginia'
+      if diameter < 125000:
+          return 'the U.S. state of Pennsylvania'
+      if diameter < 134000:
+          return 'the U.S. state of Mississippi'
+      if diameter < 170000:
+          return 'the U.S. state of Iowa'
+      if diameter < 200000:
+          return 'the U.S. state of South Dakota'
+      if diameter < 300000:
+          return 'the U.K.'
+      if diameter < 400000:
+          return 'Japan'
+      if diameter < 500000:
+          return 'France'
+      if diameter < 700000:
+          return 'the U.S. state of Texas'
+      return 'the U.S. state of Alaska'
 
   def get_similar_orbits(self, n=3):
       a_range = [self.a - 0.01, self.a + 0.01]

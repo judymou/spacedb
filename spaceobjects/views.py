@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 import json
 
 from django.http import JsonResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from .models import SpaceObject
 
 def index(request):
@@ -24,3 +24,7 @@ def search(request):
     search_str = request.GET.get('q')
     matches = SpaceObject.objects.filter(fullname__icontains=search_str)
     return JsonResponse({'results': [roid.to_search_result() for roid in matches[:10]]})
+
+def random(request):
+    obj = SpaceObject.objects.order_by('?').first()
+    return redirect(obj)
