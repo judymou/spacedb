@@ -8,7 +8,8 @@ from django.db import models
 from django.contrib import admin
 from jsonfield import JSONField
 
-from .description import get_orbit_class, get_orbit_desc, get_diameter_comparison
+from .description import get_orbit_class, get_orbit_desc, \
+        get_diameter_comparison, get_composition
 
 class SpaceObject(models.Model):
     fullname = models.CharField(max_length=200)
@@ -40,6 +41,9 @@ class SpaceObject(models.Model):
 
     def get_orbit_desc(self):
         return get_orbit_desc(self)
+
+    def get_composition(self):
+        return get_composition(self)
 
     def is_neo(self):
         entry = self.sbdb_entry.get('neo', False)

@@ -58,9 +58,24 @@ window.EPHEMERIS = {
         </p>
       {% endif %}
 
-      <p>
-      {{object.name}}'s spectral type {{object.sbdb_entry.spec_T}} (<a href="http://adsabs.harvard.edu/abs/1989aste.conf..298T">Tholen</a>) / {{object.sbdb_entry.spec_B}} (<a href="http://smass.mit.edu/smass.html">SMASSII</a>) indicates that it contains iron, water, and small amounts of platinum.
-      </p>
+      {% if object.get_composition %}
+        <p>
+        {{object.name}}'s spectral type {{object.sbdb_entry.spec_T}} (<a href="http://adsabs.harvard.edu/abs/1989aste.conf..298T">Tholen</a>) / {{object.sbdb_entry.spec_B}} (<a href="http://smass.mit.edu/smass.html">SMASSII</a>) indicates that it is likely to contain
+        {% if object.get_composition|length == 1 %}
+          {{object.get_composition.0}}.
+        {% elif object.get_composition|length == 2 %}
+          {{object.get_composition.0}} and {{object.get_composition.1}}.
+        {% else %}
+          {% for material in object.get_composition %}
+            {% if forloop.last %}
+              and {{material}}.
+            {% else %}
+              {{material}},
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+        </p>
+      {% endif %}
 
       <h3>Close Approaches</h3>
       <p>
@@ -71,6 +86,11 @@ window.EPHEMERIS = {
         This means that it has the potential to get fairly close to Earth.
       {% endif %}
       </p>
+      {% if object.sbdb_entry.moid_jup < 0.5 %}
+        <p>
+          The orbit of {{object.name}} brings it close to Jupiter's orbit.
+        </p>
+      {% endif %}
       <p>
       {% if object.closeapproach_set.all|length < 1 %}
         Orbital simulations conducted by NASA JPL's CNEOS do not show any close approaches to Earth.
