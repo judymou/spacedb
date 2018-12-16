@@ -1,6 +1,7 @@
 venv
 db.sqlite3
 data/rawdata
+node_modules
 
 ### Vim ###
 [._]*.s[a-w][a-z]

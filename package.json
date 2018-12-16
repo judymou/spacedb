@@ -1,0 +1,34 @@
+{
+  "name": "spacedb",
+  "version": "0.0.1",
+  "main": "client/index.js",
+  "repository": "git@github.com:judymou/spacedb.git",
+  "author": "Ian and Judy",
+  "license": "N/A",
+  "scripts": {
+    "build": "webpack",
+    "build:watch": "webpack --watch",
+    "lint": "eslint ./client",
+    "lint:fix": "eslint --fix ./client"
+  },
+  "dependencies": {
+    "react": "^16.6.3",
+    "react-dom": "^16.6.3",
+    "react-proptypes": "^1.0.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.2.2",
+    "@babel/plugin-proposal-export-default-from": "^7.2.0",
+    "@babel/preset-env": "^7.2.0",
+    "@babel/preset-react": "^7.0.0",
+    "babel-loader": "^8.0.4",
+    "eslint": "^5.10.0",
+    "eslint-config-airbnb": "^17.1.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-react": "^7.11.1",
+    "react-select": "^2.1.2",
+    "webpack": "^4.27.1",
+    "webpack-cli": "^3.1.2"
+  }
+}
