@@ -52,6 +52,12 @@ class SpaceObject(models.Model):
             return False
         return entry
 
+    def get_moid(self):
+        entry = self.sbdb_entry.get('moid')
+        if not entry:
+            return None
+        return float(entry)
+
     def get_discovery_date(self):
         firstobs = self.sbdb_entry.get('first_obs')
         return datetime.strptime(firstobs, '%Y-%m-%d')
@@ -111,6 +117,10 @@ class SpaceObject(models.Model):
 
 class CloseApproach(models.Model):
     space_object = models.ForeignKey(SpaceObject)
+    dist = models.FloatField()
     dist_min = models.FloatField()
+    v_rel = models.FloatField()
+    time_jd = models.FloatField()
+    h_mag = models.FloatField()
 
 admin.site.register(SpaceObject)
