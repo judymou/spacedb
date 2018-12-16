@@ -137,7 +137,7 @@ window.EPHEMERIS = {
     <div class="item-container__inner">
       <h3>Key Facts</h3>
       <ul class="keyfacts">
-        <li>{{object.name}} is classified as a <strong>{{object.get_orbit_class}}</strong></li>
+        <li>Classified as a {{object.get_orbit_class}}</li>
         {% if object.is_neo %}
         <li>Classified as a Near Earth Object (NEO)</li>
         {% else %}
@@ -173,11 +173,20 @@ window.EPHEMERIS = {
   </div>
   <div class="item-container item-container__rightside col-sm-4">
     <div class="item-container__inner">
-      <h3>Physical Elements</h3>
+      <h3>Physical Characteristics</h3>
       <ul class="keyfacts">
+        {% if object.sbdb_entry.diameter %}
+          <li>Diameter: {{object.sbdb_entry.diameter}} km</li>
+        {% endif %}
         <li>Magnitude: {{object.sbdb_entry.H}}</li>
         {% if object.sbdb_entry.albedo %}
           <li>Albedo: {{object.sbdb_entry.albedo}}</li>
+        {% endif %}
+        {% if object.sbdb_entry.spec_T %}
+          <li>Spectral type (Tholen): {{object.sbdb_entry.spec_T}}</li>
+        {% endif %}
+        {% if object.sbdb_entry.spec_B %}
+          <li>Spectral type (SMASS): {{object.sbdb_entry.spec_B}}</li>
         {% endif %}
       </ul>
     </div>
