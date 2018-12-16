@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 from datetime import datetime
 
+from astropy.time import Time
 from django.db import models
 from django.contrib import admin
 from jsonfield import JSONField
@@ -62,6 +63,10 @@ class SpaceObject(models.Model):
         firstobs = self.sbdb_entry.get('first_obs')
         return datetime.strptime(firstobs, '%Y-%m-%d')
 
+    def get_lastobs_date(self):
+        lastobs = self.sbdb_entry.get('last_obs')
+        return datetime.strptime(lastobs, '%Y-%m-%d')
+
     def get_size_adjective(self):
         diameter_str = self.sbdb_entry.get('diameter')
         if not diameter_str:
@@ -117,10 +122,16 @@ class SpaceObject(models.Model):
 
 class CloseApproach(models.Model):
     space_object = models.ForeignKey(SpaceObject)
-    dist = models.FloatField()
-    dist_min = models.FloatField()
+
     v_rel = models.FloatField()
     time_jd = models.FloatField()
     h_mag = models.FloatField()
+
+    # Distances in AU
+    dist = models.FloatField()
+    dist_min = models.FloatField()
+
+    def get_datetime(self):
+        return Time(self.time_jd, format='jd').to_datetime()
 
 admin.site.register(SpaceObject)

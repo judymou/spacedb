@@ -66,9 +66,9 @@ window.EPHEMERIS = {
       <p>
       {{object.name}}'s orbit is {{object.get_moid | floatformat:5}} AU from Earth's orbit at its closest point.
       {% if object.get_moid > 0.01 %}
-        This means there is a wide berth between this asteroid and Earth at all times.
+        This means that there is a wide berth between this asteroid and Earth at all times.
       {% else %}
-        This means it has the potential to get fairly close to Earth.
+        This means that it has the potential to get fairly close to Earth.
       {% endif %}
       </p>
       <p>
@@ -79,14 +79,14 @@ window.EPHEMERIS = {
           {{object.name}} has 3 close approaches predicted in the coming decades.  The soonest close approach will be on May 3rd, 2029 and the object will pass within 250,000 km of Earth.
         </p>
         <ul>
-        {% for close_approach in object.closeapproach_set.all %}
-          <li>{{close_approach.dist_min}} km from Earth</li>
+        {% for close_approach in object.closeapproach_set.all|dictsort:"time_jd" %}
+          <li>On {{close_approach.get_datetime | date}}, {{object.name}} will pass {{close_approach.dist|floatformat:5}} AU from Earth, traveling at {{close_approach.v_rel|floatformat:3}} kilometers per second.</li>
         {% endfor %}
         </ul>
       {% endif %}
       </p>
       <h3>Images and Observations</h3>
-      {{object.name}} was first observed on {{object.get_discovery_date | date}}.
+      {{object.name}} was first observed on {{object.get_discovery_date | date}}.  It was last officially observed on {{object.get_lastobs_date | date}}.  NASA JPL records {{object.sbdb_entry.n_obs_used|intcomma}} observations used to determine its orbit.
       <h3>Accessibility and Exploration</h3>
       This object is not considered accessible by the <a href="https://cneos.jpl.nasa.gov/nhats/details.html#?des=2000%20SG344&dv=6&dur=360&stay=8&launch=2015-2040">NHATS study</a>.
       <h3>Similar Objects</h3>
@@ -145,7 +145,7 @@ window.EPHEMERIS = {
     <div class="item-container__inner">
       <h3>Search</h3>
       <div class="react-search"></div>
-      or view a <a href="/asteroid/random">random</a> asteroid
+      &nbsp;&nbsp; or view a <a href="/asteroid/random">random</a> asteroid
     </div>
   </div>
   <div class="item-container col-sm-12">
