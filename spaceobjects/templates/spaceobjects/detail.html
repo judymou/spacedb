@@ -64,9 +64,11 @@ window.EPHEMERIS = {
 
       <h3>Close Approaches</h3>
       <p>
-      {{object.name}}'s orbit is {{object.sbdb_entry.moid}} AU from Earth's orbit at its closest point.
-      {% if object.sbdb_entry.moid > 0.001 %}
+      {{object.name}}'s orbit is {{object.get_moid | floatformat:5}} AU from Earth's orbit at its closest point.
+      {% if object.get_moid > 0.01 %}
         This means there is a wide berth between this asteroid and Earth at all times.
+      {% else %}
+        This means it has the potential to get fairly close to Earth.
       {% endif %}
       </p>
       <p>
