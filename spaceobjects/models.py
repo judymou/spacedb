@@ -64,7 +64,13 @@ class SpaceObject(models.Model):
             return None
         return float(entry)
 
-    def get_diameter_estimate(self):
+    def get_diameter_estimate_low(self):
+        return self.get_diameter_estimate(method='LOW')
+
+    def get_diameter_estimate_high(self):
+        return self.get_diameter_estimate(method='HIGH')
+
+    def get_diameter_estimate(self, method='MID'):
         '''Diameter estimate in km, using either SBDB-supplied estimate
         or estimate based on magnitude/albedo'''
         diameter_str = self.sbdb_entry.get('diameter')
@@ -73,12 +79,15 @@ class SpaceObject(models.Model):
         try:
             mag = float(self.sbdb_entry.get('H'))
             # Assume default albedo of .2
-            # TODO(ian): Display assumption on frontend
             albedo_str = self.sbdb_entry.get('albedo')
             if albedo_str:
                 albedo = float(albedo_str)
-            else:
+            elif method == 'MID':
                 albedo = 0.15
+            elif method == 'HIGH':
+                albedo = 0.05
+            else:
+                albedo = 0.25
             # Estimate diameter in km
             # http://www.physics.sfasu.edu/astro/asteroids/sizemagnitude.html
             return 1329 / math.sqrt(albedo) * math.pow(10, -0.2 * mag)
@@ -116,6 +125,9 @@ class SpaceObject(models.Model):
     def has_size_info(self):
         diam = self.sbdb_entry.get('diameter')
         return diam != '' and diam is not None
+
+    def has_size_info_estimate(self):
+        return self.get_diameter_estimate() is not None
 
     def get_size_rough_comparison(self):
         diameter = self.get_diameter_estimate()

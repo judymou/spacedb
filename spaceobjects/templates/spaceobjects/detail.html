@@ -53,6 +53,8 @@ window.EPHEMERIS = {
       {{object.name}} was discovered in {{object.get_discovery_date|date:"Y"}}.  It orbits the sun every {{object.sbdb_entry.per|floatformat:0|intcomma}} days, coming as close as 0.1 AU and reaching as far as 0.8 AU from the sun.
       {% if object.has_size_info %}
         {{object.name}} is about {{object.sbdb_entry.diameter | floatformat:0}} kilometers in diameter, making it {{object.get_size_rough_comparison}}, comparable in size to {{object.get_diameter_comparison}}.
+      {% elif object.has_size_info_estimate %}
+        Based on its brightness and the way it reflects light, {{object.name}} is probably between {{object.get_diameter_estimate_low | floatformat:0}} to {{object.get_diameter_estimate_high | floatformat:0}} kilometers in diameter, making it {{object.get_size_rough_comparison}}, very roughly comparable in size to {{object.get_diameter_comparison}}.
       {% endif %}
       </p>
 
@@ -146,6 +148,8 @@ window.EPHEMERIS = {
         {% endif %}
         {% if object.has_size_info %}
           <li>Comparable in size to {{object.get_diameter_comparison}} ({{object.sbdb_entry.diameter | floatformat:0}} km diameter)</li>
+        {% elif object.has_size_info_estimate %}
+            <li>Comparable in size to {{object.get_diameter_comparison}}</li>
         {% endif %}
         <li>Will come within 50,000 miles of Earth in 2027</li>
       </ul>
