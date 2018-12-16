@@ -118,10 +118,10 @@ window.EPHEMERIS = {
         {% else %}
         <li>Not a Potentially Hazardous Object (PHA)</li>
         {% endif %}
-        <li>Will come within 50,000 miles of Earth in 2027</li>
         {% if object.has_size_info %}
           <li>Comparable in size to {{object.get_diameter_comparison}} ({{object.sbdb_entry.diameter | floatformat:0}} km diameter)</li>
         {% endif %}
+        <li>Will come within 50,000 miles of Earth in 2027</li>
       </ul>
     </div>
   </div>

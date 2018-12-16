@@ -123,3 +123,70 @@ def get_orbit_class(roid):
 
 def get_orbit_desc(roid):
   return ORBIT_CLASS_MAPPING.get(roid.sbdb_entry['class'])['desc_orbit']
+
+def get_diameter_comparison(roid):
+  diameter_str = roid.sbdb_entry.get('diameter')
+  if not diameter_str:
+      return None
+
+  diameter = float(diameter_str) ** 2
+
+  # http://www.decisionsciencenews.com/2015/02/20/put-size-countries-perspective-comparing-us-states/
+  # https://en.wikipedia.org/wiki/List_of_United_States_cities_by_area
+  if diameter < 370:
+      return 'the city of Philadelphia'
+  if diameter < 400:
+      return 'the city of Denver'
+  if diameter < 953:
+      return 'the city of Indianapolis'
+  if diameter < 999:
+      return 'the city of Dallas'
+  if diameter < 1213:
+      return 'the city of New York'
+  if diameter < 1302:
+      return 'the city of Los Angeles'
+  if diameter < 1625:
+      return 'the city of Houston'
+  if diameter < 5000:
+      return 'the U.S. state of Rhode Island'
+  if diameter < 14000:
+      return 'the U.S. state of Delaware'
+  if diameter < 22000:
+      return 'the U.S. state of Connecticut'
+  if diameter < 24000:
+      return 'the U.S. state of New Jersey'
+  if diameter < 27000:
+      return 'the U.S. state of Vermont'
+  if diameter < 32000:
+      return 'the U.S. state of Massachusetts'
+  if diameter < 62000:
+      return 'the U.S. state of Maryland'
+  if diameter < 82000:
+      return 'the U.S. state of West Virginia'
+  if diameter < 91000:
+      return 'the U.S. state of South Carolina'
+  if diameter < 94000:
+      return 'Portugal'
+  if diameter < 104000:
+      return 'South Korea'
+  if diameter < 109000:
+      return 'Iceland'
+  if diameter < 119000:
+      return 'the U.S. state of Virginia'
+  if diameter < 125000:
+      return 'the U.S. state of Pennsylvania'
+  if diameter < 134000:
+      return 'the U.S. state of Mississippi'
+  if diameter < 170000:
+      return 'the U.S. state of Iowa'
+  if diameter < 200000:
+      return 'the U.S. state of South Dakota'
+  if diameter < 300000:
+      return 'the U.K.'
+  if diameter < 400000:
+      return 'Japan'
+  if diameter < 500000:
+      return 'France'
+  if diameter < 700000:
+      return 'the U.S. state of Texas'
+  return 'the U.S. state of Alaska'
