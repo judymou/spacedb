@@ -28,7 +28,11 @@ window.EPHEMERIS = {
 {% block content %}
 <header class="site-header">
   <h1 class="mainheading">{{object.name}}</h1>
-  <h2 class="subheading">{{object.fullname}}</h2>
+  {% if object.fullname == object.name %}
+    <h2 class="subheading">{{object.get_size_adjective|capfirst}} {{object.get_orbit_class|lower}}</h2>
+  {% else %}
+    <h2 class="subheading">{{object.fullname}}</h2>
+  {% endif %}
 </header>
 <div>
   <div class="item-container col-sm-8">
@@ -158,6 +162,17 @@ window.EPHEMERIS = {
         <li>Longitude of Ascending Node: {{object.om | floatformat:5}}</li>
         <li>Argument of Periapsis: {{object.w | floatformat:5}}</li>
         <li>Mean Anomaly: {{object.ma | floatformat:5}}</li>
+      </ul>
+    </div>
+  </div>
+  <div class="item-container item-container__rightside col-sm-4">
+    <div class="item-container__inner">
+      <h3>Physical Elements</h3>
+      <ul class="keyfacts">
+        <li>Magnitude: {{object.sbdb_entry.H}}</li>
+        {% if object.sbdb_entry.albedo %}
+          <li>Albedo: {{object.sbdb_entry.albedo}}</li>
+        {% endif %}
       </ul>
     </div>
   </div>

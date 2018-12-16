@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import math
 from datetime import datetime
 
 from astropy.time import Time
@@ -63,6 +64,28 @@ class SpaceObject(models.Model):
             return None
         return float(entry)
 
+    def get_diameter_estimate(self):
+        '''Diameter estimate in km, using either SBDB-supplied estimate
+        or estimate based on magnitude/albedo'''
+        diameter_str = self.sbdb_entry.get('diameter')
+        if diameter_str:
+            return float(diameter_str)
+        try:
+            mag = float(self.sbdb_entry.get('H'))
+            # Assume default albedo of .2
+            # TODO(ian): Display assumption on frontend
+            albedo_str = self.sbdb_entry.get('albedo')
+            if albedo_str:
+                albedo = float(albedo_str)
+            else:
+                albedo = 0.15
+            # Estimate diameter in km
+            # http://www.physics.sfasu.edu/astro/asteroids/sizemagnitude.html
+            return 1329 / math.sqrt(albedo) * math.pow(10, -0.2 * mag)
+        except ValueError:
+            pass
+        return None
+
     def get_discovery_date(self):
         firstobs = self.sbdb_entry.get('first_obs')
         return datetime.strptime(firstobs, '%Y-%m-%d')
@@ -72,11 +95,10 @@ class SpaceObject(models.Model):
         return datetime.strptime(lastobs, '%Y-%m-%d')
 
     def get_size_adjective(self):
-        diameter_str = self.sbdb_entry.get('diameter')
-        if not diameter_str:
+        diameter = self.get_diameter_estimate()
+        if not diameter:
             return None
 
-        diameter = float(diameter_str)
         if diameter < 1:
             return 'very small'
         if diameter < 10:
@@ -96,11 +118,9 @@ class SpaceObject(models.Model):
         return diam != '' and diam is not None
 
     def get_size_rough_comparison(self):
-        diameter_str = self.sbdb_entry.get('diameter')
-        if not diameter_str:
+        diameter = self.get_diameter_estimate()
+        if not diameter:
             return None
-
-        diameter = float(diameter_str)
         if diameter > 900:
             return 'the largest asteroid/dwarf planet'
         if diameter > 300:
