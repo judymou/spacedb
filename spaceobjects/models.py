@@ -166,6 +166,9 @@ class CloseApproach(models.Model):
     dist = models.FloatField()
     dist_min = models.FloatField()
 
+    def get_dist_km(self):
+        return self.dist * 1.496e8
+
 class SentryEvent(models.Model):
     space_object = models.ForeignKey(SpaceObject)
 

@@ -54,7 +54,7 @@ window.EPHEMERIS = {
       <p>
       {{object.name}} was discovered in {{object.get_discovery_date|date:"Y"}}.  It orbits the sun every {{object.sbdb_entry.per|floatformat:0|intcomma}} days, coming as close as 0.1 AU and reaching as far as 0.8 AU from the sun.
       {% if object.has_size_info %}
-        {{object.name}} is about {{object.sbdb_entry.diameter | floatformat:0}} kilometers in diameter, making it {{object.get_size_rough_comparison}}, comparable in size to {{object.get_diameter_comparison}}.
+        {{object.name}} is about {{object.sbdb_entry.diameter | floatformat:1}} kilometers in diameter, making it {{object.get_size_rough_comparison}}, comparable in size to {{object.get_diameter_comparison}}.
       {% elif object.has_size_info_estimate %}
         Based on its brightness and the way it reflects light, {{object.name}} is <a href="https://cneos.jpl.nasa.gov/tools/ast_size_est.html">probably</a> between {{object.get_diameter_estimate_low | floatformat:1}} to {{object.get_diameter_estimate_high | floatformat:1}} kilometers in diameter, making it {{object.get_size_rough_comparison}}, very roughly comparable in size to {{object.get_diameter_comparison}}.
       {% endif %}
@@ -108,7 +108,7 @@ window.EPHEMERIS = {
         </p>
         <ul>
         {% for close_approach in object.closeapproach_set.all|dictsort:"date" %}
-          <li>On {{close_approach.date | date}}, {{object.name}} will pass {{close_approach.dist|floatformat:5}} AU from Earth, traveling at {{close_approach.v_rel|floatformat:3}} kilometers per second.</li>
+          <li>On {{close_approach.date | date}}, {{object.name}} will pass {{close_approach.get_dist_km|floatformat:0|intcomma}} kilometers from Earth, traveling at {{close_approach.v_rel|floatformat:3}} kilometers per second.</li>
         {% endfor %}
         </ul>
       {% endif %}
@@ -161,11 +161,15 @@ window.EPHEMERIS = {
         <li>Not a Potentially Hazardous Object (PHA)</li>
         {% endif %}
         {% if object.has_size_info %}
-          <li>Comparable in size to {{object.get_diameter_comparison}} ({{object.sbdb_entry.diameter | floatformat:0}} km diameter)</li>
+          <li>Comparable in size to {{object.get_diameter_comparison}} ({{object.sbdb_entry.diameter | floatformat:2}} km diameter)</li>
         {% elif object.has_size_info_estimate %}
             <li>Comparable in size to {{object.get_diameter_comparison}}</li>
         {% endif %}
-        <li>Will come within 50,000 miles of Earth in 2027</li>
+        {% if object.closeapproach_set.all|length %}
+          {% with approach=object.closeapproach_set.all.0 %}
+            <li>Will pass within {{approach.get_dist_km|floatformat:0|intcomma}} km of Earth in {{approach.date|date:"Y"}}</li>
+          {% endwith %}
+        {% endif %}
       </ul>
     </div>
   </div>
