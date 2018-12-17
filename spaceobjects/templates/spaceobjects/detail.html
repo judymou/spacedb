@@ -56,7 +56,7 @@ window.EPHEMERIS = {
       {% if object.has_size_info %}
         {{object.name}} is about {{object.sbdb_entry.diameter | floatformat:0}} kilometers in diameter, making it {{object.get_size_rough_comparison}}, comparable in size to {{object.get_diameter_comparison}}.
       {% elif object.has_size_info_estimate %}
-        Based on its brightness and the way it reflects light, {{object.name}} is probably between {{object.get_diameter_estimate_low | floatformat:1}} to {{object.get_diameter_estimate_high | floatformat:1}} kilometers in diameter, making it {{object.get_size_rough_comparison}}, very roughly comparable in size to {{object.get_diameter_comparison}}.
+        Based on its brightness and the way it reflects light, {{object.name}} is <a href="https://cneos.jpl.nasa.gov/tools/ast_size_est.html">probably</a> between {{object.get_diameter_estimate_low | floatformat:1}} to {{object.get_diameter_estimate_high | floatformat:1}} kilometers in diameter, making it {{object.get_size_rough_comparison}}, very roughly comparable in size to {{object.get_diameter_comparison}}.
       {% endif %}
       </p>
 
@@ -114,7 +114,7 @@ window.EPHEMERIS = {
       {% endif %}
       </p>
       <h3>Images and Observations</h3>
-      {{object.name}} was first observed on {{object.get_discovery_date | date}}.  It was last officially observed on {{object.get_lastobs_date | date}}.  NASA JPL records {{object.sbdb_entry.n_obs_used|intcomma}} observations used to determine its orbit.
+      {{object.name}} was first observed on {{object.get_discovery_date | date}}.  It was last officially observed on {{object.get_lastobs_date | date}}.  The IAU Minor Planet Center records {{object.sbdb_entry.n_obs_used|intcomma}} observations used to determine its orbit.
       <h3>Accessibility and Exploration</h3>
       This object is not considered accessible by the <a href="https://cneos.jpl.nasa.gov/nhats/details.html#?des=2000%20SG344&dv=6&dur=360&stay=8&launch=2015-2040">NHATS study</a>.
       <h3>Similar Objects</h3>
