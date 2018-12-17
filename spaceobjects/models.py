@@ -170,4 +170,23 @@ class CloseApproach(models.Model):
     def get_datetime(self):
         return Time(self.time_jd, format='jd').to_datetime()
 
+class SentryEvent(models.Model):
+    space_object = models.ForeignKey(SpaceObject)
+
+    date = models.DateField()
+    energy_mt = models.FloatField()
+    dist_km = models.FloatField()
+    dist_err  = models.FloatField()  # 1-sigma semi-width of the uncertainty region
+    palermo_scale = models.FloatField()
+    torino_scale = models.FloatField()
+    prob = models.FloatField()
+
+    def get_prob_percentage(self):
+        return self.prob * 100.0
+
+    def get_energy_with_units(self):
+        if self.energy_mt > 1:
+            return '%s megatons' % (self.energy_mt)
+        return '%s kilotons' % (self.energy_mt * 1000)
+
 admin.site.register(SpaceObject)

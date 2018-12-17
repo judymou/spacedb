@@ -10,6 +10,11 @@ curl 'https://ssd.jpl.nasa.gov/sbdb_query.cgi' -o sbdb.csv -H 'Origin: https://s
 gzip sbdb.csv
 
 echo 'Downloading close approaches...'
-curl 'https://ssd-api.jpl.nasa.gov/cad.api?dist-max=10LD&date-min=2019-01-01&date-max=2100-01-01&sort=dist&fullname=true' -o close_approach.json
+../download_close_approaches.sh
+
+echo 'Downloading sentry...'
+../download_sentry.sh
+
+echo 'Done.'
 
 popd &>/dev/null
