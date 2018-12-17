@@ -64,7 +64,7 @@ def process(events):
     logger.info('%d records inserted' % len(newobjects))
 
 if __name__ == '__main__':
-    logger.info('Processing close approach data')
+    logger.info('Processing sentry data')
 
     dir_path = os.path.dirname(os.path.realpath(__file__))
     data_path = os.path.realpath(os.path.join(dir_path, 'rawdata/sentry.json'))

@@ -40,8 +40,8 @@ def processData(fields, data):
             ca = CloseApproach(
                     space_object=space_object,
                     date=date,
-                    dist=float(ca_raw['dist']),
-                    dist_min=float(ca_raw['dist_min']),
+                    dist_au=float(ca_raw['dist']),
+                    dist_min_au=float(ca_raw['dist_min']),
                     v_rel=float(ca_raw['v_rel']),
                     h_mag=float(ca_raw['h']),
                     )
