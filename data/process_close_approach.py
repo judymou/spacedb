@@ -6,6 +6,7 @@ import json
 import logging
 import os
 import sys
+from datetime import datetime
 
 from django.db import transaction
 
@@ -31,15 +32,18 @@ def processData(fields, data):
         ca_raw = dict(zip(fields, row))
         fullname = get_normalized_full_name(ca_raw['fullname'])
 
+        date_str = ca_raw['cd']
+        date = datetime.strptime(date_str, '%Y-%b-%d %H:%M')
+
         try:
             space_object = SpaceObject.objects.get(fullname=fullname)
             ca = CloseApproach(
                     space_object=space_object,
-                    dist = float(ca_raw['dist']),
-                    dist_min = float(ca_raw['dist_min']),
-                    v_rel = float(ca_raw['v_rel']),
-                    time_jd = float(ca_raw['jd']),
-                    h_mag = float(ca_raw['h']),
+                    date=date,
+                    dist=float(ca_raw['dist']),
+                    dist_min=float(ca_raw['dist_min']),
+                    v_rel=float(ca_raw['v_rel']),
+                    h_mag=float(ca_raw['h']),
                     )
             newobjects.append(ca)
         except SpaceObject.DoesNotExist:

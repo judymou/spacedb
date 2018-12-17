@@ -4,7 +4,6 @@ from __future__ import unicode_literals
 import math
 from datetime import datetime
 
-from astropy.time import Time
 from django.db import models
 from django.contrib import admin
 from jsonfield import JSONField
@@ -159,16 +158,13 @@ class SpaceObject(models.Model):
 class CloseApproach(models.Model):
     space_object = models.ForeignKey(SpaceObject)
 
+    date = models.DateField()
     v_rel = models.FloatField()
-    time_jd = models.FloatField()
     h_mag = models.FloatField()
 
     # Distances in AU
     dist = models.FloatField()
     dist_min = models.FloatField()
-
-    def get_datetime(self):
-        return Time(self.time_jd, format='jd').to_datetime()
 
 class SentryEvent(models.Model):
     space_object = models.ForeignKey(SpaceObject)

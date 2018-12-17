@@ -104,17 +104,17 @@ window.EPHEMERIS = {
         Orbital simulations conducted by NASA JPL's CNEOS do not show any close approaches to Earth.
       {% else %}
         <p>
-          {{object.name}} has {{object.closeapproach_set.all|length}}  close approaches predicted in the coming decades.  The soonest close approach will be on May 3rd, 2029 and the object will pass within 250,000 km of Earth.
+          {{object.name}} has {{object.closeapproach_set.all|length}} close approaches predicted in the coming decades:
         </p>
         <ul>
-        {% for close_approach in object.closeapproach_set.all|dictsort:"time_jd" %}
-          <li>On {{close_approach.get_datetime | date}}, {{object.name}} will pass {{close_approach.dist|floatformat:5}} AU from Earth, traveling at {{close_approach.v_rel|floatformat:3}} kilometers per second.</li>
+        {% for close_approach in object.closeapproach_set.all|dictsort:"date" %}
+          <li>On {{close_approach.date | date}}, {{object.name}} will pass {{close_approach.dist|floatformat:5}} AU from Earth, traveling at {{close_approach.v_rel|floatformat:3}} kilometers per second.</li>
         {% endfor %}
         </ul>
       {% endif %}
       {% if object.sentryevent_set.all|length > 0 %}
         <p>
-          <a href="https://cneos.jpl.nasa.gov/sentry/details.html#?des={{object.sbdb_entry.pdes}}">NASA Sentry</a> has assessed impact risk for the following close approaches:
+          <a href="https://cneos.jpl.nasa.gov/sentry/details.html#?des={{object.sbdb_entry.pdes}}">NASA Sentry</a> has assessed impact risk for the following very close approach scenarios:
           <ul>
           {% for event in object.sentryevent_set.all|slice:":5"|dictsort:"date" %}
             <li>
