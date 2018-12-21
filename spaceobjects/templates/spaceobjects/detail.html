@@ -42,6 +42,13 @@ window.VIZ_OPTS = {
     {% else %}
       {{object.fullname}}
     {% endif %}
+    {% if object.is_neo %}
+      &nbsp;
+      <span class="label label-info">Near-Earth</span>
+    {% endif %}
+    {% if object.is_pha %}
+      <span class="label label-warning">Potentially Hazardous</span>
+    {% endif %}
   </h2>
 </header>
 {% endblock %}
