@@ -59,42 +59,75 @@ window.VIZ_OPTS = {};
   <div>
     We got all sorts of asteroids.  Main-belt asteroids, Mars-crossing, near Earth objects, potentially hazardous objects, and more!
   </div>
-  <div class="item-container col-sm-4">
+  <div class="col-sm-4">
     <h3>Largest</h3>
-    <ol>
-    {% for space_object in space_objects %}
-      <li><a href="/asteroid/{{space_object.slug}}">{{space_object.fullname}}</a></li>
-    {% endfor %}
-    </ol>
+    <p>
+      These objects are among the largest and earliest discovered asteroids in our solar system.
+    </p>
+    <p>
+      <ol>
+      {% for space_object in space_objects %}
+        <li><a href="/asteroid/{{space_object.slug}}">{{space_object.fullname}}</a></li>
+      {% endfor %}
+      </ol>
+    </p>
   </div>
-  <div class="item-container col-sm-4">
+  <div class="col-sm-4">
     <h3>Targets of Exploration</h3>
-    <ol>
-      <li><a href="/asteroid/101955-bennu-1999-rq36">Bennu (1999 RQ36)</a> - visited by OSIRIS-Rex</li>
-      <li><a href="/asteroid/162173-ryugu-1999-ju3">Ryugu (1999 JU3)</a> - visited by Hayabusa 2</li>
-      <li><a href="/asteroid/2867-steins-1969-vc">Steins (1969 VC)</a> - visited by Dawn</li>
-      <li><a href="/asteroid/2867-steins-1969-vc">Steins (1969 VC)</a> - visited by Rosetta</li>
-      <li><a href="/asteroid/21-lutetia">21 Lutetia</a> - visited by Rosetta</li>
-    </ol>
+    <p>
+      These objects have been visited by spacecraft.
+    </p>
+    <p>
+      <ol>
+        <li><a href="/asteroid/101955-bennu-1999-rq36">Bennu (1999 RQ36)</a> - visited by OSIRIS-Rex</li>
+        <li><a href="/asteroid/162173-ryugu-1999-ju3">Ryugu (1999 JU3)</a> - visited by Hayabusa 2</li>
+        <li><a href="/asteroid/2867-steins-1969-vc">Steins (1969 VC)</a> - visited by Dawn</li>
+        <li><a href="/asteroid/2867-steins-1969-vc">Steins (1969 VC)</a> - visited by Rosetta</li>
+        <li><a href="/asteroid/21-lutetia">21 Lutetia</a> - visited by Rosetta</li>
+      </ol>
+    </p>
   </div>
-  <div class="item-container col-sm-4">
+  <div class="col-sm-4">
     <h3>Upcoming Approaches</h3>
-    <ol>
-    {% for space_object in close_approaches %}
-      <li><a href="/asteroid/{{space_object.slug}}">{{space_object.name}}</a></li>
-    {% endfor %}
-    </ol>
+    <p>
+      These objects have upcoming fly-bys of Earth.
+    </p>
+    <p>
+      <ol>
+      {% for space_object in close_approaches %}
+        <li><a href="/asteroid/{{space_object.slug}}">{{space_object.name}}</a></li>
+      {% endfor %}
+      </ol>
+    </p>
   </div>
-<!--
-  <div class="item-container col-sm-4">
+</div>
+<div class="row">
+  <div class="col-sm-4">
+    <h3>Potential for Exploration</h3>
+    <p>
+      It is relatively inexpensive to send a spacecraft to these objects in terms of propulsive cost.
+    </p>
+    <p>
+      <ol>
+      {% for nhats in nhats_objects %}
+        <li><a href="/asteroid/{{nhats.space_object.slug}}">{{nhats.space_object.name}}</a></li>
+      {% endfor %}
+      </ol>
+    </p>
+  </div>
+  <div class="col-sm-4">
     <h3>Potential Impactors</h3>
-    <ol>
-    {% for space_object in potential_impactors %}
-      <li><a href="/asteroid/{{space_object.slug}}">{{space_object.name}}</a></li>
-    {% endfor %}
-    </ol>
+    <p>
+      These objects are actively monitored because they have the potential to impact Earth.
+    </p>
+    <p>
+      <ol>
+      {% for space_object in potential_impactors %}
+        <li><a href="/asteroid/{{space_object.slug}}">{{space_object.name}}</a></li>
+      {% endfor %}
+      </ol>
+    </p>
   </div>
--->
 </div>
 <div class="item-container col-sm-12">
   <div class="item-container__inner">

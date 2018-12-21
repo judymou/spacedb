@@ -75,6 +75,18 @@ class SpaceObject(models.Model):
         diameter_str = self.sbdb_entry.get('diameter')
         if diameter_str:
             return float(diameter_str)
+
+        # NHATS also has a diameter estimate
+        nhats_set = self.nhatsobject_set.all()
+        if len(nhats_set):
+            nhats = nhats_set[0]
+            if method == 'MID':
+                return (nhats.min_diameter + nhats.max_diameter) / 2.0 / 100.
+            elif method == 'HIGH':
+                return nhats.max_diameter / 100.
+            else:
+                return nhats.min_diameter / 100.
+
         try:
             mag = float(self.sbdb_entry.get('H'))
             # Assume default albedo of .2
@@ -188,4 +200,22 @@ class SentryEvent(models.Model):
             return '%s megatons' % (self.energy_mt)
         return '%s kilotons' % (self.energy_mt * 1000)
 
+class NhatsObject(models.Model):
+    space_object = models.ForeignKey(SpaceObject)
+
+    num_trajectories = models.IntegerField()
+
+    min_dv = models.FloatField()
+    min_dv_duration = models.FloatField()
+
+    # Diameter in meters
+    min_diameter = models.FloatField()
+    max_diameter = models.FloatField()
+
+    def __str__(self):
+        return self.space_object.fullname
+
 admin.site.register(SpaceObject)
+admin.site.register(CloseApproach)
+admin.site.register(SentryEvent)
+admin.site.register(NhatsObject)

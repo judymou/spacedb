@@ -5,7 +5,7 @@ import json
 
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
-from spaceobjects.models import SpaceObject, SentryEvent, CloseApproach
+from spaceobjects.models import SpaceObject, SentryEvent, CloseApproach, NhatsObject
 
 def index(request):
     space_objects = SpaceObject.objects.all()[:5]
@@ -30,12 +30,12 @@ def index(request):
         if len(close_approaches) >= 5:
             break
 
-
     return render(request, 'spaceobjects/index.html',
           {
               'space_objects': space_objects,
               'potential_impactors': potential_impactors,
               'close_approaches': close_approaches,
+              'nhats_objects': NhatsObject.objects.all()[:5],
               'hide_top_nav': True,
           })
 

@@ -133,6 +133,8 @@ def get_diameter_comparison(roid):
 
     # http://www.decisionsciencenews.com/2015/02/20/put-size-countries-perspective-comparing-us-states/
     # https://en.wikipedia.org/wiki/List_of_United_States_cities_by_area
+    if diameter_sq < 0.04:
+        return 'a school bus'
     if diameter_sq < 0.110:
         return 'a football field'
     if diameter_sq < 0.0728434:
