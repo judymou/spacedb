@@ -35,7 +35,7 @@ window.VIZ_OPTS = {
   <h1 class="mainheading">{{object.name}}</h1>
   <h2 class="subheading">
     {% if object.fullname == object.name %}
-      {{object.get_size_adjective|capfirst}} {{object.get_orbit_class|lower}}
+      {{object.get_size_adjective|capfirst}} {{object.get_orbit_class}}
     {% else %}
       {{object.fullname}}
     {% endif %}
