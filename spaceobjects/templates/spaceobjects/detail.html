@@ -30,8 +30,11 @@ window.VIZ_OPTS = {
 <script src="{% static "js/main.js" %}"></script>
 {% endblock %}
 
-{% block content %}
+{% block header %}
 <header class="site-header">
+  <div class="topnav">
+    <strong><a href="/" class="nav-link">SpaceDB</a></strong>
+  </div>
   <h1 class="mainheading">{{object.name}}</h1>
   <h2 class="subheading">
     {% if object.fullname == object.name %}
@@ -41,6 +44,9 @@ window.VIZ_OPTS = {
     {% endif %}
   </h2>
 </header>
+{% endblock %}
+
+{% block content %}
 <div>
   <div class="item-container col-sm-8">
     <div class="item-container__inner">

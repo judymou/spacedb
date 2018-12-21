@@ -29,10 +29,13 @@ window.VIZ_OPTS = {};
 <script src="{% static "js/main.js" %}"></script>
 {% endblock %}
 
-{% block content %}
+{% block header %}
 <header class="site-header">
   <h1 class="mainheading">SpaceDB</h1>
 </header>
+{% endblock %}
+
+{% block content %}
 <div class="row">
   <div class="item-container col-sm-8">
     <div class="item-container__inner">
@@ -47,12 +50,15 @@ window.VIZ_OPTS = {};
   <div class="item-container item-container__rightside col-sm-4">
     <div class="item-container__inner">
       <div class="react-search"></div>
-      &nbsp;&nbsp; or view a <a href="/asteroid/random">random</a> asteroid
+      &nbsp;&nbsp; or view a <a href="/asteroid/random">random</a> object
     </div>
   </div>
 </div>
 <div class="row">
   <h2>Asteroids</h2>
+  <div>
+    We got all sorts of asteroids.  Main-belt asteroids, Mars-crossing, near Earth objects, potentially hazardous objects, and more!
+  </div>
   <div class="item-container col-sm-4">
     <h3>Largest</h3>
     <ol>
