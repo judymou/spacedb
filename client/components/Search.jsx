@@ -37,7 +37,7 @@ class Search extends React.Component {
         cacheOptions
         loadOptions={loadOptions}
         onChange={this.handleChange.bind(this)}
-        placeholder="Find another asteroid or comet..."
+        placeholder="Search for an asteroid or comet..."
         className="topnav__react-search__control"
       />
     );

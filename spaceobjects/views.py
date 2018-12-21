@@ -5,13 +5,37 @@ import json
 
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
-from .models import SpaceObject
+from spaceobjects.models import SpaceObject, SentryEvent, CloseApproach
 
 def index(request):
     space_objects = SpaceObject.objects.all()[:5]
+
+    potential_impactors = []
+    seen_impactors = set()
+    for event in SentryEvent.objects.order_by('date'):
+        if event.space_object.fullname in seen_impactors:
+            continue
+        potential_impactors.append(event.space_object)
+        seen_impactors.add(event.space_object.fullname)
+        if len(potential_impactors) >= 5:
+            break
+
+    close_approaches = []
+    seen_approaches = set()
+    for event in CloseApproach.objects.order_by('date'):
+        if event.space_object.fullname in seen_approaches:
+            continue
+        close_approaches.append(event.space_object)
+        seen_approaches.add(event.space_object.fullname)
+        if len(close_approaches) >= 5:
+            break
+
+
     return render(request, 'spaceobjects/index.html',
           {
               'space_objects': space_objects,
+              'potential_impactors': potential_impactors,
+              'close_approaches': close_approaches,
               'hide_top_nav': True,
           })
 

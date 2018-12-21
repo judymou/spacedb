@@ -33,23 +33,25 @@ window.VIZ_OPTS = {};
 <header class="site-header">
   <h1 class="mainheading">SpaceDB</h1>
 </header>
-<div>
-  <div class="item-container col-sm-4">
+<div class="row">
+  <div class="item-container col-sm-8">
     <div class="item-container__inner">
       <p>
         Welcome to SpaceDB. The purpose of this site is to catalog and showcase every object in space.  We've started with asteroids and comets but stay tuned for more.
+      </p>
+      <p>
+        SpaceDB compiles data from the NASA/JPL Small Body Database, the IAU Minor Planet Center, and the NASA/JPL Center for Near Earth Object Studies.
       </p>
     </div>
   </div>
   <div class="item-container item-container__rightside col-sm-4">
     <div class="item-container__inner">
-      <h3>Search</h3>
       <div class="react-search"></div>
       &nbsp;&nbsp; or view a <a href="/asteroid/random">random</a> asteroid
     </div>
   </div>
 </div>
-<div>
+<div class="row">
   <h2>Asteroids</h2>
   <div class="item-container col-sm-4">
     <h3>Largest</h3>
@@ -61,10 +63,30 @@ window.VIZ_OPTS = {};
   </div>
   <div class="item-container col-sm-4">
     <h3>Targets of Exploration</h3>
+    <ol>
+    {% for space_object in space_objects %}
+      <li><a href="/asteroid/{{space_object.slug}}">{{space_object.name}}</a></li>
+    {% endfor %}
+    </ol>
   </div>
   <div class="item-container col-sm-4">
-    <h3>Potential Impactors</h3>
+    <h3>Upcoming Approaches</h3>
+    <ol>
+    {% for space_object in close_approaches %}
+      <li><a href="/asteroid/{{space_object.slug}}">{{space_object.name}}</a></li>
+    {% endfor %}
+    </ol>
   </div>
+<!--
+  <div class="item-container col-sm-4">
+    <h3>Potential Impactors</h3>
+    <ol>
+    {% for space_object in potential_impactors %}
+      <li><a href="/asteroid/{{space_object.slug}}">{{space_object.name}}</a></li>
+    {% endfor %}
+    </ol>
+  </div>
+-->
 </div>
 <div class="item-container col-sm-12">
   <div class="item-container__inner">
