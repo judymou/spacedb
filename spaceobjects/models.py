@@ -45,6 +45,12 @@ class SpaceObject(models.Model):
     def get_composition(self):
         return get_composition(self)
 
+    def get_perihelion(self):
+        return self.a * (1 - self.e)
+
+    def get_aphelion(self):
+        return self.a * (1 + self.e)
+
     def is_neo(self):
         entry = self.sbdb_entry.get('neo', False)
         if entry == 'N':

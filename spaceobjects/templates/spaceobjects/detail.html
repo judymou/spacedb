@@ -70,7 +70,7 @@ window.VIZ_OPTS = {
       </p>
 
       <p>
-      {{object.name}} was discovered in {{object.get_discovery_date|date:"Y"}}.  It orbits the sun every {{object.sbdb_entry.per|floatformat:0|intcomma}} days, coming as close as 0.1 AU and reaching as far as 0.8 AU from the sun.
+      {{object.name}} was discovered in {{object.get_discovery_date|date:"Y"}}.  It orbits the sun every {{object.sbdb_entry.per|floatformat:0|intcomma}} days, coming as close as {{object.get_perihelion|floatformat:2}} AU and reaching as far as {{object.get_aphelion|floatformat:2}} AU from the sun.
       {% if object.has_size_info %}
         {{object.name}} is about {{object.sbdb_entry.diameter | floatformat:1}} kilometers in diameter, making it {{object.get_size_rough_comparison}}, comparable in size to {{object.get_diameter_comparison}}.
       {% elif object.has_size_info_estimate %}
@@ -156,7 +156,7 @@ window.VIZ_OPTS = {
           </p>
         {% endwith %}
       {% else %}
-        This object is not considered accessible by the <a href="https://cneos.jpl.nasa.gov/nhats/">NHATS study</a>.
+        This object is not considered readily accessible by the <a href="https://cneos.jpl.nasa.gov/nhats/">NHATS study</a>.
       {% endif %}
       <h3>Similar Objects</h3>
       These asteroids have orbits that share similar characteristic to the orbit of {{object.name}}:
