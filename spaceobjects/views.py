@@ -8,9 +8,12 @@ from django.shortcuts import render, redirect
 from .models import SpaceObject
 
 def index(request):
-    space_objects = SpaceObject.objects.all()[:30]
+    space_objects = SpaceObject.objects.all()[:5]
     return render(request, 'spaceobjects/index.html',
-          {'space_objects': space_objects})
+          {
+              'space_objects': space_objects,
+              'hide_top_nav': True,
+          })
 
 def detail(request, slug):
     try:

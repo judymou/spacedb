@@ -1,4 +1,5 @@
 (function() {
+  return;
   // Create the visualization and put it in our div.
   const viz = new Spacekit.Container(document.getElementById('vis-container'), {
     assetPath: 'http://localhost:8001/src/assets',
@@ -21,13 +22,9 @@
   viz.createObject('uranus', Spacekit.SpaceObjectPresets.URANUS);
   viz.createObject('neptune', Spacekit.SpaceObjectPresets.NEPTUNE);
 
-  // Add spacex's tesla roadster
-  // Data from https://ssd.jpl.nasa.gov/horizons_batch.cgi?batch=1&COMMAND=-143205&CENTER=%27500@10%27&MAKE_EPHEM=YES&TABLE_TYPE=ELEMENTS&START_TIME=2018-05-01&STOP_TIME=%272018-05-01+00:00:01%27&OUT_UNITS=AU-D&REF_PLANE=ECLIPTIC&REF_SYSTEM=J2000&TP_TYPE=ABSOLUTE&ELEM_LABELS=YES&CSV_FORMAT=NO&OBJ_DATA=YES
-
-  const spaceobject = viz.createObject('spaceobject', {
-    ephem: new Spacekit.Ephem(window.EPHEMERIS, 'deg'),
-    ecliptic: {
-      displayLines: true,
-    },
+  window.EPHEMERIS.forEach(function(ephem) {
+    const spaceobject = viz.createObject('spaceobject', Object.assign(window.VIZ_OPTS, {
+      ephem: new Spacekit.Ephem(ephem, 'deg'),
+    }));
   });
 })();

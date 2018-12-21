@@ -2,20 +2,74 @@
 {% load static %}
 
 {% block scripts %}
+<!--
+<script src="{% static "js/lib/three.r98.min.js" %}"></script>
+<script src="{% static "js/lib/TrackballControls.js" %}"></script>
+<script src="{% static "js/lib/spacekit.js" %}"></script>
+-->
+<script src="http://localhost:8001/src/lib/three.r98.min.js"></script>
+<script src="http://localhost:8001/src/lib/TrackballControls.js"></script>
+<script src="http://localhost:8001/build/spacekit.js"></script>
+<script>
+window.EPHEMERIS = [
+{% for object in space_objects %}
+{
+  a: {{object.a}},
+  e: {{object.e}},
+  i: {{object.i}},
+  om: {{object.om}},
+  w: {{object.w}},
+  ma: {{object.ma}},
+  epoch: {{object.epoch}}
+},
+{% endfor %}
+];
+window.VIZ_OPTS = {};
+</script>
 <script src="{% static "js/main.js" %}"></script>
 {% endblock %}
 
 {% block content %}
-<div class="intro">
-  <p>
-    Welcome to the universe!
-  </p>
+<header class="site-header">
+  <h1 class="mainheading">SpaceDB</h1>
+</header>
+<div>
+  <div class="item-container col-sm-4">
+    <div class="item-container__inner">
+      <p>
+        Welcome to SpaceDB. The purpose of this site is to catalog and showcase every object in space.  We've started with asteroids and comets but stay tuned for more.
+      </p>
+    </div>
+  </div>
+  <div class="item-container item-container__rightside col-sm-4">
+    <div class="item-container__inner">
+      <h3>Search</h3>
+      <div class="react-search"></div>
+      &nbsp;&nbsp; or view a <a href="/asteroid/random">random</a> asteroid
+    </div>
+  </div>
 </div>
 <div>
-  {% for space_object in space_objects %}
-    <div class="item-container col-sm-4">
-      <h2><a href="/asteroid/{{space_object.slug}}">{{space_object.name}}</a></h2>
-    </div>
-  {% endfor %}
+  <h2>Asteroids</h2>
+  <div class="item-container col-sm-4">
+    <h3>Largest</h3>
+    <ol>
+    {% for space_object in space_objects %}
+      <li><a href="/asteroid/{{space_object.slug}}">{{space_object.name}}</a></li>
+    {% endfor %}
+    </ol>
+  </div>
+  <div class="item-container col-sm-4">
+    <h3>Targets of Exploration</h3>
+  </div>
+  <div class="item-container col-sm-4">
+    <h3>Potential Impactors</h3>
+  </div>
+</div>
+<div class="item-container col-sm-12">
+  <div class="item-container__inner">
+    <h3>Orbital Simulation</h3>
+    <div id="vis-container"></div>
+  </div>
 </div>
 {% endblock %}

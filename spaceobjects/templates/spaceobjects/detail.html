@@ -12,7 +12,7 @@
 <script src="http://localhost:8001/src/lib/TrackballControls.js"></script>
 <script src="http://localhost:8001/build/spacekit.js"></script>
 <script>
-window.EPHEMERIS = {
+window.EPHEMERIS = [{
   a: {{object.a}},
   e: {{object.e}},
   i: {{object.i}},
@@ -20,7 +20,12 @@ window.EPHEMERIS = {
   w: {{object.w}},
   ma: {{object.ma}},
   epoch: {{object.epoch}}
-}
+}];
+window.VIZ_OPTS = {
+  ecliptic: {
+    displayLines: true,
+  },
+};
 </script>
 <script src="{% static "js/main.js" %}"></script>
 {% endblock %}
@@ -134,7 +139,7 @@ window.EPHEMERIS = {
       <ul>
       {% for similar in object.get_similar_orbits %}
         <li>
-          <a href="/asteroid/{{similar.slug}}">{{similar.fullname}}</a>
+          <a rel="nofollow" href="/asteroid/{{similar.slug}}">{{similar.fullname}}</a>
         </li>
       {% endfor %}
       </ul>
