@@ -10,6 +10,8 @@
 <script src="{% static "js/lib/TrackballControls.js" %}"></script>
 <script src="{% static "js/lib/spacekit.js" %}"></script>
 -->
+<script src="{% static "js/orbitDiagram.js" %}"></script>
+<script src="{% static "js/lib/d3.v2.js" %}"></script>
 <script src="http://localhost:8001/src/lib/three.r98.min.js"></script>
 <script src="http://localhost:8001/src/lib/TrackballControls.js"></script>
 <script src="http://localhost:8001/build/spacekit.js"></script>
@@ -28,6 +30,14 @@ window.VIZ_OPTS = {
     displayLines: true,
   },
 };
+
+var diagram = new OrbitDiagram('.orbit-diagram', {
+  // object's semimajor axis should be 50px
+  pixels_per_au: 50 / {{object.a}},
+});
+diagram.prepareRender();
+diagram.renderPlanets();
+diagram.plotOrbit({{object.a}}, {{object.e}}, {{object.w}});
 </script>
 <script src="{% static "js/main.js" %}"></script>
 {% endblock %}
@@ -52,6 +62,7 @@ window.VIZ_OPTS = {
       <span class="label label-warning">Potentially Hazardous</span>
     {% endif %}
   </h2>
+  <div class="orbit-diagram"></div>
 </header>
 {% endblock %}
 
@@ -248,7 +259,7 @@ window.VIZ_OPTS = {
   <div class="item-container col-sm-12">
     <div class="item-container__inner">
       <h3>Orbital Simulation</h3>
-      <div id="vis-container"></div>
+      <div class="vis-container vis-container__detail"></div>
     </div>
   </div>
 </div>

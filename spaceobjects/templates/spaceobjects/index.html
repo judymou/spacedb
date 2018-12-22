@@ -40,14 +40,12 @@ window.VIZ_OPTS = {};
 {% block content %}
 <div class="row">
   <div class="item-container col-sm-8">
-    <div class="item-container__inner">
-      <p>
-        Welcome to SpaceDB. The purpose of this site is to catalog and showcase every object in space.  We've started with asteroids and comets but stay tuned for more.
-      </p>
-      <p>
-        SpaceDB compiles data from the NASA/JPL Small Body Database, the IAU Minor Planet Center, and the NASA/JPL Center for Near Earth Object Studies.
-      </p>
-    </div>
+    <p>
+      Welcome to SpaceDB. The purpose of this site is to catalog and showcase every object in space.  We've started with asteroids and comets but stay tuned for more.
+    </p>
+    <p>
+      SpaceDB compiles data from the NASA/JPL Small Body Database, the IAU Minor Planet Center, and the NASA/JPL Center for Near Earth Object Studies.
+    </p>
   </div>
   <div class="item-container item-container__rightside col-sm-4">
     <div class="item-container__inner">
@@ -61,7 +59,7 @@ window.VIZ_OPTS = {};
   <div>
     We got all sorts of asteroids.  Main-belt asteroids, Mars-crossing, near Earth objects, potentially hazardous objects, and more!
   </div>
-  <div class="col-sm-4">
+  <div class="col-sm-4 vis-selector">
     <h3>Largest</h3>
     <p>
       These objects are among the largest and earliest discovered asteroids in our solar system.
@@ -74,7 +72,7 @@ window.VIZ_OPTS = {};
       </ol>
     </p>
   </div>
-  <div class="col-sm-4">
+  <div class="col-sm-4 vis-selector">
     <h3>Targets of Exploration</h3>
     <p>
       These objects have been visited by spacecraft.
@@ -89,7 +87,7 @@ window.VIZ_OPTS = {};
       </ol>
     </p>
   </div>
-  <div class="col-sm-4">
+  <div class="col-sm-4 vis-selector">
     <h3>Upcoming Approaches</h3>
     <p>
       These objects have upcoming fly-bys of Earth.
@@ -104,7 +102,10 @@ window.VIZ_OPTS = {};
   </div>
 </div>
 <div class="row">
-  <div class="col-sm-4">
+  <div class="vis-container vis-container__home"></div>
+</div>
+<div class="row">
+  <div class="col-sm-4 vis-selector">
     <h3>Potential for Exploration</h3>
     <p>
       It is relatively inexpensive to send a spacecraft to these objects in terms of propulsive cost.
@@ -117,7 +118,7 @@ window.VIZ_OPTS = {};
       </ol>
     </p>
   </div>
-  <div class="col-sm-4">
+  <div class="col-sm-4 vis-selector">
     <h3>Potential Impactors</h3>
     <p>
       These objects are actively monitored because they have the potential to impact Earth.
@@ -129,12 +130,6 @@ window.VIZ_OPTS = {};
       {% endfor %}
       </ol>
     </p>
-  </div>
-</div>
-<div class="item-container col-sm-12">
-  <div class="item-container__inner">
-    <h3>Orbital Simulation</h3>
-    <div id="vis-container"></div>
   </div>
 </div>
 {% endblock %}

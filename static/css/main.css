@@ -14,6 +14,14 @@ body {
   background-size: cover;
 }
 
+.orbit-diagram {
+  position: absolute;
+  right: 2em;
+  top: 0;
+  width: 250px;
+  height: 100%;
+}
+
 h1.mainheading {
   font-weight: bold;
 }
@@ -52,7 +60,26 @@ ul.keyfacts li {
   height: auto;
 }
 
-#vis-container {
+.vis-container {
+  background-color: #000;
+}
+
+.vis-container__home {
+  width: 100%;
+  height: 300px;
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+.vis-container__detail {
   width: 100%;
   height: 500px;
+}
+
+.vis-selector {
+  cursor: pointer;
+}
+
+.vis-selector:hover {
+  box-shadow: 1px 1px 1px rgba(0, 0, 0, 1);
 }
