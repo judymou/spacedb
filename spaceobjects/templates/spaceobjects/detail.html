@@ -37,7 +37,7 @@ var diagram = new OrbitDiagram('.orbit-diagram', {
 });
 diagram.prepareRender();
 diagram.renderPlanets(true /* useSmartLabels */, {{object.a}});
-diagram.plotOrbit({{object.a}}, {{object.e}}, {{object.w}}, '#fff', '{{object.name}}');
+diagram.plotOrbit({{object.a}}, {{object.e}}, {{object.w}}, '#fff', '{{object.get_shorthand}}');
 </script>
 <script src="{% static "js/main.js" %}"></script>
 {% endblock %}
@@ -99,35 +99,35 @@ diagram.plotOrbit({{object.a}}, {{object.e}}, {{object.w}}, '#fff', '{{object.na
       <p>
       {{object.name}} is a {{object.get_size_adjective}} {{object.get_object_type}} {{object.get_orbit_desc}}.  NASA JPL has
       {% if object.is_pha and object.is_neo %}
-        classified {{object.name}} as a "Potentially Hazardous Object" due to its predicted close pass(es) with Earth.
+        classified {{object.get_shorthand}} as a "Potentially Hazardous Object" due to its predicted close pass(es) with Earth.
       {% elif not object.is_pha and object.is_neo %}
-        classified {{object.name}} as a "Near Earth Object" due to its orbit's proximity to Earth, but it is not considered potentially hazardous because computer simulations have not indicated any imminent likelihood of collision.
+        classified {{object.get_shorthand}} as a "Near Earth Object" due to its orbit's proximity to Earth, but it is not considered potentially hazardous because computer simulations have not indicated any imminent likelihood of collision.
       {% elif not object.is_pha and not object.is_neo %}
-        does not classify {{object.name}} as potentially hazardous because its orbit does not bring it close to Earth.
+        does not classify {{object.get_shorthand}} as potentially hazardous because its orbit does not bring it close to Earth.
       {% endif %}
       </p>
 
       <p>
-      {{object.name}} was discovered in the year {{object.get_discovery_date|date:"Y"}}.  It orbits the sun every {{object.sbdb_entry.per|floatformat:0|intcomma}} days, coming as close as {{object.get_perihelion|floatformat:2}} AU and reaching as far as {{object.get_aphelion|floatformat:2}} AU from the sun.
+      {{object.get_shorthand}} was discovered in the year {{object.get_discovery_date|date:"Y"}}.  It orbits the sun every {{object.sbdb_entry.per|floatformat:0|intcomma}} days, coming as close as {{object.get_perihelion|floatformat:2}} AU and reaching as far as {{object.get_aphelion|floatformat:2}} AU from the sun.
       {% if object.e > .7 %}
         Its orbit is highly elliptical.
       {% endif %}
       {% if object.has_size_info %}
-        {{object.name}} is about {{object.sbdb_entry.diameter | floatformat:1}} kilometers in diameter, making it {{object.get_size_rough_comparison}}, comparable in size to {{object.get_diameter_comparison}}.
+        {{object.get_shorthand}} is about {{object.sbdb_entry.diameter | floatformat:1}} kilometers in diameter, making it {{object.get_size_rough_comparison}}, comparable in size to {{object.get_diameter_comparison}}.
       {% elif object.has_size_info_estimate %}
-        Based on its brightness and the way it reflects light, {{object.name}} is <a href="https://cneos.jpl.nasa.gov/tools/ast_size_est.html">probably</a> between {{object.get_diameter_estimate_low | floatformat:2}} to {{object.get_diameter_estimate_high | floatformat:2}} kilometers in diameter, making it {{object.get_size_rough_comparison}}, very roughly comparable in size to {{object.get_diameter_comparison}}.
+        Based on its brightness and the way it reflects light, {{object.get_shorthand}} is <a href="https://cneos.jpl.nasa.gov/tools/ast_size_est.html">probably</a> between {{object.get_diameter_estimate_low | floatformat:2}} to {{object.get_diameter_estimate_high | floatformat:2}} kilometers in diameter, making it {{object.get_size_rough_comparison}}, very roughly comparable in size to {{object.get_diameter_comparison}}.
       {% endif %}
       </p>
 
       {% if object.sbdb_entry.rot_per %}
         <p>
-        The rotation of {{object.name}} has been observed. It completes a rotation on its axis every {{object.sbdb_entry.rot_per|floatformat:2}} days.
+        The rotation of {{object.get_shorthand}} has been observed. It completes a rotation on its axis every {{object.sbdb_entry.rot_per|floatformat:2}} days.
         </p>
       {% endif %}
 
       {% if object.get_composition %}
         <p>
-        {{object.name}}'s spectral type {{object.sbdb_entry.spec_T}} (<a href="http://adsabs.harvard.edu/abs/1989aste.conf..298T">Tholen</a>) / {{object.sbdb_entry.spec_B}} (<a href="http://smass.mit.edu/smass.html">SMASSII</a>) indicates that it is likely to contain
+        {{object.get_shorthand}}'s spectral type {{object.sbdb_entry.spec_T}} (<a href="http://adsabs.harvard.edu/abs/1989aste.conf..298T">Tholen</a>) / {{object.sbdb_entry.spec_B}} (<a href="http://smass.mit.edu/smass.html">SMASSII</a>) indicates that it is likely to contain
         {% if object.get_composition|length == 1 %}
           {{object.get_composition.0}}.
         {% elif object.get_composition|length == 2 %}
@@ -146,7 +146,7 @@ diagram.plotOrbit({{object.a}}, {{object.e}}, {{object.w}}, '#fff', '{{object.na
 
       <h3>Close Approaches</h3>
       <p>
-      {{object.name}}'s orbit is {{object.get_moid | floatformat:5}} AU from Earth's orbit at its closest point.
+      {{object.get_shorthand}}'s orbit is {{object.get_moid | floatformat:5}} AU from Earth's orbit at its closest point.
       {% if object.get_moid > 0.01 %}
         This means that there is a wide berth between this asteroid and Earth at all times.
       {% else %}
@@ -155,7 +155,7 @@ diagram.plotOrbit({{object.a}}, {{object.e}}, {{object.w}}, '#fff', '{{object.na
       </p>
       {% if object.sbdb_entry.moid_jup < 0.5 %}
         <p>
-          The orbit of {{object.name}} brings it close to Jupiter's orbit.
+          The orbit of {{object.get_shorthand}} brings it close to Jupiter's orbit.
         </p>
       {% endif %}
       <p>
@@ -163,11 +163,11 @@ diagram.plotOrbit({{object.a}}, {{object.e}}, {{object.w}}, '#fff', '{{object.na
         Orbital simulations conducted by NASA JPL's CNEOS do not show any close approaches to Earth.
       {% else %}
         <p>
-          {{object.name}} has {{object.closeapproach_set.all|length}} close approaches predicted in the coming decades:
+          {{object.get_shorthand}} has {{object.closeapproach_set.all|length}} close approaches predicted in the coming decades:
         </p>
         <ul>
         {% for close_approach in object.closeapproach_set.all|dictsort:"date" %}
-          <li>On {{close_approach.date | date}}, {{object.name}} will pass {{close_approach.get_dist_km|floatformat:0|intcomma}} kilometers from Earth, traveling at {{close_approach.v_rel|floatformat:3}} kilometers per second.</li>
+          <li>On {{close_approach.date | date}}, {{object.get_shorthand}} will pass {{close_approach.get_dist_km|floatformat:0|intcomma}} kilometers from Earth, traveling at {{close_approach.v_rel|floatformat:3}} kilometers per second.</li>
         {% endfor %}
         </ul>
       {% endif %}
@@ -177,7 +177,7 @@ diagram.plotOrbit({{object.a}}, {{object.e}}, {{object.w}}, '#fff', '{{object.na
           <ul>
           {% for event in sentry_events|slice:":5" %}
             <li>
-              On {{event.date|date}}, {{object.name}} is predicted to pass Earth at a distance of about {{event.dist_km|floatformat:2|intcomma}} (±{{event.dist_err|floatformat:2|intcomma}}) kilometers.  Its probability of impact is {{event.get_prob_percentage|floatformat:5}}%.  Its impact would release {{event.get_energy_with_units}} of energy.
+              On {{event.date|date}}, {{object.get_shorthand}} is predicted to pass Earth at a distance of about {{event.dist_km|floatformat:2|intcomma}} (±{{event.dist_err|floatformat:2|intcomma}}) kilometers.  Its probability of impact is {{event.get_prob_percentage|floatformat:5}}%.  Its impact would release {{event.get_energy_with_units}} of energy.
             </li>
           {% endfor %}
           </ul>
@@ -185,15 +185,15 @@ diagram.plotOrbit({{object.a}}, {{object.e}}, {{object.w}}, '#fff', '{{object.na
       {% endif %}
       </p>
       <h3>Images and Observations</h3>
-      {{object.name}} was first observed on {{object.get_discovery_date | date}}.  It was last officially observed on {{object.get_lastobs_date | date}}.  The IAU Minor Planet Center records {{object.sbdb_entry.n_obs_used|intcomma}} observations used to determine its orbit.
+      {{object.get_shorthand}} was first observed on {{object.get_discovery_date | date}}.  It was last officially observed on {{object.get_lastobs_date | date}}.  The IAU Minor Planet Center records {{object.sbdb_entry.n_obs_used|intcomma}} observations used to determine its orbit.
       <h3>Accessibility and Exploration</h3>
       {% if object.nhatsobject_set.all|length %}
         {% with nhats=object.nhatsobject_set.all.0 %}
           <p>
-            {{object.name}} can be reached with a journey of {{nhats.min_dv_duration|floatformat:0|intcomma}} days. This trajectory would require a <a href="https://en.wikipedia.org/wiki/Delta-v_budget">delta-v</a> of {{nhats.min_dv}} km/s.  To put this into perspective, the delta-v to launch a rocket to Low-Earth Orbit is 9.7 km/s.  There are {{nhats.num_trajectories|intcomma}} potential trajectories and launch windows to this {{object.get_object_type}}.
+            {{object.get_shorthand}} can be reached with a journey of {{nhats.min_dv_duration|floatformat:0|intcomma}} days. This trajectory would require a <a href="https://en.wikipedia.org/wiki/Delta-v_budget">delta-v</a> of {{nhats.min_dv}} km/s.  To put this into perspective, the delta-v to launch a rocket to Low-Earth Orbit is 9.7 km/s.  There are {{nhats.num_trajectories|intcomma}} potential trajectories and launch windows to this {{object.get_object_type}}.
           </p>
           <p>
-            See more at the <a href="https://cneos.jpl.nasa.gov/nhats/details.html#?des={{object.sbdb_entry.pdes}}">NHATS Mission Trajectories</a> table for {{object.name}}.
+            See more at the <a href="https://cneos.jpl.nasa.gov/nhats/details.html#?des={{object.sbdb_entry.pdes}}">NHATS Mission Trajectories</a> table for {{object.get_shorthand}}.
           </p>
         {% endwith %}
       {% else %}
@@ -201,7 +201,7 @@ diagram.plotOrbit({{object.a}}, {{object.e}}, {{object.w}}, '#fff', '{{object.na
       {% endif %}
       {% if object.get_similar_orbits|length %}
       <h3>Similar Objects</h3>
-      These objects have orbits that share similar characteristics to the orbit of {{object.name}}:
+      These objects have orbits that share similar characteristics to the orbit of {{object.get_shorthand}}:
       <ul>
       {% for similar in object.get_similar_orbits %}
         <li>

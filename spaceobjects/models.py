@@ -36,6 +36,14 @@ class SpaceObject(models.Model):
     def get_absolute_url(self):
         return '/asteroid/%s' % self.slug
 
+    def get_shorthand(self):
+        if self.name.find('(') > -1:
+            return self.name[self.name.find('(') + 1 : self.name.find(')')]
+        return self.name
+
+    def has_shorthand(self):
+        return self.get_shorthand() != self.name
+
     def get_object_type(self):
         orbclass = get_orbit_class(self)
         if orbclass.find('Comet') > -1:
