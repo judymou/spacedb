@@ -12,10 +12,10 @@ def index(request):
 
     potential_impactors = []
     seen_impactors = set()
-    for event in SentryEvent.objects.order_by('date'):
+    for event in SentryEvent.objects.order_by('-prob'):
         if event.space_object.fullname in seen_impactors:
             continue
-        potential_impactors.append(event.space_object)
+        potential_impactors.append(event)
         seen_impactors.add(event.space_object.fullname)
         if len(potential_impactors) >= 5:
             break
@@ -25,7 +25,7 @@ def index(request):
     for event in CloseApproach.objects.order_by('date'):
         if event.space_object.fullname in seen_approaches:
             continue
-        close_approaches.append(event.space_object)
+        close_approaches.append(event)
         seen_approaches.add(event.space_object.fullname)
         if len(close_approaches) >= 5:
             break
@@ -44,8 +44,13 @@ def detail(request, slug):
         space_object = SpaceObject.objects.get(slug__iexact=slug)
     except SpaceObject.DoesNotExist:
         return index(request)
-    return render(request, 'spaceobjects/detail.html',
-        {'object': space_object})
+
+    sentry_events = space_object.sentryevent_set.all().order_by('-prob')
+
+    return render(request, 'spaceobjects/detail.html', {
+                'object': space_object,
+                'sentry_events': sentry_events,
+            })
 
 def search(request):
     search_str = request.GET.get('q')

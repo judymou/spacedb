@@ -1,7 +1,7 @@
 {% extends 'layout.html' %}
 {% load static %}
 
-{% block title%}SpaceDB - Comprehensive Asteroid Database{% endblock %}
+{% block title%}SpaceReference.org - Comprehensive Asteroid Database{% endblock %}
 
 {% block scripts %}
 <!--
@@ -33,7 +33,7 @@ window.VIZ_OPTS = {};
 
 {% block header %}
 <header class="site-header">
-  <h1 class="mainheading">SpaceDB</h1>
+  <h1 class="mainheading">Space Reference</h1>
 </header>
 {% endblock %}
 
@@ -41,7 +41,7 @@ window.VIZ_OPTS = {};
 <div class="row">
   <div class="item-container col-sm-8">
     <p>
-      Welcome to SpaceDB. The purpose of this site is to catalog and showcase every object in space.  We've started with asteroids and comets but stay tuned for more.
+      Welcome to SpaceReference.org. The purpose of this site is to catalog and showcase every object in space.  We've started with asteroids and comets but stay tuned for more.
     </p>
     <p>
       SpaceDB compiles data from the NASA/JPL Small Body Database, the IAU Minor Planet Center, and the NASA/JPL Center for Near Earth Object Studies.
@@ -62,12 +62,12 @@ window.VIZ_OPTS = {};
   <div class="col-sm-4 vis-selector">
     <h3>Largest</h3>
     <p>
-      These objects are among the largest and earliest discovered asteroids in our solar system.
+      These are among the largest and earliest discovered asteroids in our solar system.
     </p>
     <p>
       <ol>
       {% for space_object in space_objects %}
-        <li><a href="/asteroid/{{space_object.slug}}">{{space_object.fullname}}</a></li>
+        <li><a href="/asteroid/{{space_object.slug}}">{{space_object.name}}</a></li>
       {% endfor %}
       </ol>
     </p>
@@ -79,11 +79,11 @@ window.VIZ_OPTS = {};
     </p>
     <p>
       <ol>
-        <li><a href="/asteroid/101955-bennu-1999-rq36">Bennu (1999 RQ36)</a> - visited by OSIRIS-Rex</li>
-        <li><a href="/asteroid/162173-ryugu-1999-ju3">Ryugu (1999 JU3)</a> - visited by Hayabusa 2</li>
-        <li><a href="/asteroid/2867-steins-1969-vc">Steins (1969 VC)</a> - visited by Rosetta</li>
-        <li><a href="/asteroid/21-lutetia">21 Lutetia</a> - visited by Rosetta</li>
-        <li><a href="/asteroid/486958-2014-mu69">Ultima Thule (2014 MU69)</a> - planned visit by New Horizons</li>
+        <li><a href="/asteroid/101955-bennu-1999-rq36">Bennu</a> - visited by OSIRIS-Rex</li>
+        <li><a href="/asteroid/162173-ryugu-1999-ju3">Ryugu</a> - visited by Hayabusa 2</li>
+        <li><a href="/asteroid/2867-steins-1969-vc">Steins</a> - visited by Rosetta</li>
+        <li><a href="/asteroid/21-lutetia">Lutetia</a> - visited by Rosetta</li>
+        <li><a href="/asteroid/486958-2014-mu69">Ultima Thule</a> - visited by New Horizons</li>
       </ol>
     </p>
   </div>
@@ -94,8 +94,8 @@ window.VIZ_OPTS = {};
     </p>
     <p>
       <ol>
-      {% for space_object in close_approaches %}
-        <li><a href="/asteroid/{{space_object.slug}}">{{space_object.name}}</a></li>
+      {% for event in close_approaches %}
+        <li><a href="/asteroid/{{event.space_object.slug}}">{{event.space_object.name}}</a> - {{event.date | date}}</li>
       {% endfor %}
       </ol>
     </p>
@@ -108,12 +108,12 @@ window.VIZ_OPTS = {};
   <div class="col-sm-4 vis-selector">
     <h3>Potential for Exploration</h3>
     <p>
-      It is relatively inexpensive to send a spacecraft to these objects in terms of propulsive cost.
+      It is relatively inexpensive to send a spacecraft to these objects in terms of propulsive cost (listed by delta-v).
     </p>
     <p>
       <ol>
       {% for nhats in nhats_objects %}
-        <li><a href="/asteroid/{{nhats.space_object.slug}}">{{nhats.space_object.name}}</a></li>
+        <li><a href="/asteroid/{{nhats.space_object.slug}}">{{nhats.space_object.name}}</a> - {{nhats.min_dv}} km/s</li>
       {% endfor %}
       </ol>
     </p>
@@ -121,12 +121,12 @@ window.VIZ_OPTS = {};
   <div class="col-sm-4 vis-selector">
     <h3>Potential Impactors</h3>
     <p>
-      These objects are actively monitored because they have the potential to impact Earth.
+      These objects are actively monitored because they have the potential to impact Earth (listed by probability of impact).
     </p>
     <p>
       <ol>
-      {% for space_object in potential_impactors %}
-        <li><a href="/asteroid/{{space_object.slug}}">{{space_object.name}}</a></li>
+      {% for event in potential_impactors %}
+        <li><a href="/asteroid/{{event.space_object.slug}}">{{event.space_object.name}}</a> - {{event.get_prob_percentage}}%</li>
       {% endfor %}
       </ol>
     </p>
