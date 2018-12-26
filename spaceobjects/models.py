@@ -36,6 +36,14 @@ class SpaceObject(models.Model):
     def get_absolute_url(self):
         return '/asteroid/%s' % self.slug
 
+    def get_object_type(self):
+        orbclass = get_orbit_class(self)
+        if orbclass.find('Comet') > -1:
+            return 'comet'
+        if self.fullname == '1 Ceres':
+            return 'object'
+        return 'asteroid'
+
     def get_orbit_class(self):
         return get_orbit_class(self)
 

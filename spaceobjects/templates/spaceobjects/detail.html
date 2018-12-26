@@ -72,7 +72,7 @@ diagram.plotOrbit({{object.a}}, {{object.e}}, {{object.w}});
     <div class="item-container__inner">
       <h3>Overview</h3>
       <p>
-      {{object.name}} is a {{object.get_size_adjective}} object {{object.get_orbit_desc}}.  NASA JPL has
+      {{object.name}} is a {{object.get_size_adjective}} {{object.get_object_type}} {{object.get_orbit_desc}}.  NASA JPL has
       {% if object.is_pha and object.is_neo %}
         classified {{object.name}} as a "Potentially Hazardous Object" due to its predicted close pass(es) with Earth.
       {% elif not object.is_pha and object.is_neo %}
@@ -172,7 +172,7 @@ diagram.plotOrbit({{object.a}}, {{object.e}}, {{object.w}});
           </p>
         {% endwith %}
       {% else %}
-        This object is not considered readily accessible by the <a href="https://cneos.jpl.nasa.gov/nhats/">NHATS study</a>.
+        This {{object.get_object_type}} is not considered readily accessible by the <a href="https://cneos.jpl.nasa.gov/nhats/">NHATS study</a>.
       {% endif %}
       {% if object.get_similar_orbits|length %}
       <h3>Similar Objects</h3>
