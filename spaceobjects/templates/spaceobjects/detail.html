@@ -70,6 +70,30 @@ diagram.plotOrbit({{object.a}}, {{object.e}}, {{object.w}}, '#fff', '{{object.na
 <div>
   <div class="item-container col-sm-8">
     <div class="item-container__inner">
+      <h3>Key Facts</h3>
+      <ul class="keyfacts">
+        <li>Classified as a {{object.get_orbit_class}}</li>
+        {% if object.has_size_info %}
+          <li>Comparable in size to {{object.get_diameter_comparison}} ({{object.sbdb_entry.diameter | floatformat:2}} km diameter)</li>
+        {% elif object.has_size_info_estimate %}
+            <li>Comparable in size to {{object.get_diameter_comparison}}</li>
+        {% endif %}
+        {% if object.closeapproach_set.all|length %}
+          {% with approach=object.closeapproach_set.all.0 %}
+            <li>Will pass within {{approach.get_dist_km|floatformat:0|intcomma}} km of Earth in {{approach.date|date:"Y"}}</li>
+          {% endwith %}
+        {% endif %}
+        {% if object.is_neo %}
+        <li>Classified as a Near Earth Object (NEO)</li>
+        {% else %}
+        <li>Not a Near Earth Object (NEO)</li>
+        {% endif %}
+        {% if object.is_pha %}
+        <li>Classified as a Potentially Hazardous Object (PHA)</li>
+        {% else %}
+        <li>Not a Potentially Hazardous Object (PHA)</li>
+        {% endif %}
+      </ul>
       <h3>Overview</h3>
       <p>
       {{object.name}} is a {{object.get_size_adjective}} {{object.get_object_type}} {{object.get_orbit_desc}}.  NASA JPL has
@@ -194,30 +218,9 @@ diagram.plotOrbit({{object.a}}, {{object.e}}, {{object.w}}, '#fff', '{{object.na
   </div>
   <div class="item-container item-container__rightside col-sm-4">
     <div class="item-container__inner">
-      <h3>Key Facts</h3>
-      <ul class="keyfacts">
-        <li>Classified as a {{object.get_orbit_class}}</li>
-        {% if object.is_neo %}
-        <li>Classified as a Near Earth Object (NEO)</li>
-        {% else %}
-        <li>Not a Near Earth Object (NEO)</li>
-        {% endif %}
-        {% if object.is_pha %}
-        <li>Classified as a Potentially Hazardous Object (PHA)</li>
-        {% else %}
-        <li>Not a Potentially Hazardous Object (PHA)</li>
-        {% endif %}
-        {% if object.has_size_info %}
-          <li>Comparable in size to {{object.get_diameter_comparison}} ({{object.sbdb_entry.diameter | floatformat:2}} km diameter)</li>
-        {% elif object.has_size_info_estimate %}
-            <li>Comparable in size to {{object.get_diameter_comparison}}</li>
-        {% endif %}
-        {% if object.closeapproach_set.all|length %}
-          {% with approach=object.closeapproach_set.all.0 %}
-            <li>Will pass within {{approach.get_dist_km|floatformat:0|intcomma}} km of Earth in {{approach.date|date:"Y"}}</li>
-          {% endwith %}
-        {% endif %}
-      </ul>
+      <h3>Search</h3>
+      <div class="react-search"></div>
+      &nbsp;&nbsp; or view a <a href="/asteroid/random">random</a> asteroid
     </div>
   </div>
   <div class="item-container item-container__rightside col-sm-4">
@@ -256,13 +259,6 @@ diagram.plotOrbit({{object.a}}, {{object.e}}, {{object.w}}, '#fff', '{{object.na
           <li>Spectral type (SMASS): {{object.sbdb_entry.spec_B}}</li>
         {% endif %}
       </ul>
-    </div>
-  </div>
-  <div class="item-container item-container__rightside col-sm-4">
-    <div class="item-container__inner">
-      <h3>Search</h3>
-      <div class="react-search"></div>
-      &nbsp;&nbsp; or view a <a href="/asteroid/random">random</a> asteroid
     </div>
   </div>
   <div class="item-container col-sm-12">
