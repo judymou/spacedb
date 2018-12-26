@@ -1,3 +1,15 @@
+
+/*
+  var DEFAULT_ORBITS = {
+    'Earth': {
+      a: 1.00000011,
+      e: 0.01671022,
+      w: 102.93768193,
+      color: 'cyan',
+      label: 'Earth',
+    },
+  };
+ */
 window.OrbitDiagram = (function() {
   'use strict';
 
@@ -24,15 +36,28 @@ window.OrbitDiagram = (function() {
     this.plotSun();
   }
 
-  OrbitDiagram.prototype.renderPlanets = function() {
-    this.plotEarth();
-    this.plotVenus();
-    this.plotMercury();
-    this.plotMars();
-    this.plotJupiter();
-    this.plotSaturn();
-    this.plotUranus();
-    this.plotNeptune();
+  OrbitDiagram.prototype.renderPlanets = function(useSmartLabels, labelThreshold) {
+    var args = [
+      [0.38709893, 0.20563069, 77.45779628, 'purple', 'Mercury'],
+      [0.72333199, 0.00677323, 131.60246718, 'orange', 'Venus'],
+      [1.00000011, 0.01671022, 102.93768193, 'cyan', 'Earth'],
+      [1.52366231, 0.0935, 336.04084, 'red', 'Mars'],
+      [5.20336301, 0.04839266, 14.72847983, 'orange', 'Jupiter'],
+      [9.577177295536776E+00, 5.101889921719987E-02, 3.394422648650336E+02, 'green', 'Saturn'],
+      [1.914496966635462E+01, 4.832662948112808E-02, 9.942704504702185E+01, 'blue', 'Uranus'],
+      [3.009622263428050E+01, 7.362571187193770E-03, 2.586226409499831E+02, 'purple', 'Neptune'],
+    ];
+
+    var usedLabel = false;
+    for (var i=0; i < args.length; i++) {
+      if (useSmartLabels && !usedLabel && args[i][0] > labelThreshold) {
+        // Show the first label with an orbit larger than the threshold.
+        this.plotOrbit.apply(this, args[i]);
+      } else {
+        // Don't show a label.
+        this.plotOrbit.apply(this, args[i].slice(0, args[i].length - 1));
+      }
+    }
   }
 
   OrbitDiagram.prototype.render = function(a, e, w) {
@@ -45,7 +70,7 @@ window.OrbitDiagram = (function() {
     return this.plotOrbit(a, e, w, 'white');
   }
 
-  OrbitDiagram.prototype.plotOrbit = function(a, e, w, color) {
+  OrbitDiagram.prototype.plotOrbit = function(a, e, w, color, labelText) {
     var sqrtme = 1 - e * e;
     var b = a * Math.sqrt(Math.max(0, sqrtme));
     var f = a * e;
@@ -54,15 +79,15 @@ window.OrbitDiagram = (function() {
     var ry = Math.abs(a * this.PIXELS_PER_AU);
     var foci = f * this.PIXELS_PER_AU;
 
-    return this.plotCoords(rx, ry, foci, w, color);
+    return this.plotCoords(rx, ry, foci, w, color, labelText);
   }
 
-  OrbitDiagram.prototype.plotCoords = function(rx, ry, f, rotate_deg, color) {
+  OrbitDiagram.prototype.plotCoords = function(rx, ry, f, rotate_deg, color, labelText) {
     color = color || 'white';
     var cx = this.SUN_X;
     var cy = this.SUN_Y + f;
 
-    return this.orbit_svg.append('svg:ellipse')
+    var ellipse = this.orbit_svg.append('svg:ellipse')
         .style('stroke', color)
         .style('fill', 'none')
         .attr('rx', rx)
@@ -70,6 +95,18 @@ window.OrbitDiagram = (function() {
         .attr('cx', cx)
         .attr('cy', cy)
         .attr('transform', 'rotate(' + rotate_deg + ', ' + this.SUN_X + ', ' + this.SUN_Y + ')')
+
+    if (labelText) {
+      this.orbit_svg.append('text')
+          .attr('x', cx + rx*0.65)
+          .attr('y', cy + ry*0.65)
+          .style('stroke', color)
+          .style('fill', color)
+          .style('font-size', 10)
+          .text(labelText);
+    }
+
+    return ellipse;
   }
 
   OrbitDiagram.prototype.plotSun = function() {
@@ -80,38 +117,6 @@ window.OrbitDiagram = (function() {
         .attr('ry', 2)
         .attr('cx', this.SUN_X)
         .attr('cy', this.SUN_Y);
-  }
-
-  OrbitDiagram.prototype.plotEarth = function() {
-    this.plotOrbit(1.00000011, 0.01671022, 102.93768193, 'cyan');
-  }
-
-  OrbitDiagram.prototype.plotNeptune= function() {
-    this.plotOrbit(3.009622263428050E+01, 7.362571187193770E-03, 2.586226409499831E+02, 'purple');
-  }
-
-  OrbitDiagram.prototype.plotUranus = function() {
-    this.plotOrbit(1.914496966635462E+01, 4.832662948112808E-02, 9.942704504702185E+01, 'blue');
-  }
-
-  OrbitDiagram.prototype.plotSaturn = function() {
-    this.plotOrbit(9.577177295536776E+00, 5.101889921719987E-02, 3.394422648650336E+02, 'green');
-  }
-
-  OrbitDiagram.prototype.plotJupiter = function() {
-    this.plotOrbit(5.20336301, 0.04839266, 14.72847983, 'orange');
-  }
-
-  OrbitDiagram.prototype.plotMars = function() {
-    this.plotOrbit(1.52366231, 0.0935, 336.04084, 'red');
-  }
-
-  OrbitDiagram.prototype.plotVenus = function() {
-    this.plotOrbit(0.72333199, 0.00677323, 131.60246718, 'orange');
-  }
-
-  OrbitDiagram.prototype.plotMercury = function() {
-    this.plotOrbit(0.38709893, 0.20563069, 77.45779628, 'purple');
   }
 
   return OrbitDiagram;

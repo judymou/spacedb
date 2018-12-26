@@ -32,12 +32,12 @@ window.VIZ_OPTS = {
 };
 
 var diagram = new OrbitDiagram('.orbit-diagram', {
-  // object's semimajor axis should be 50px
-  pixels_per_au: 50 / {{object.a}},
+  // object's semimajor axis should be 40px
+  pixels_per_au: 40 / {{object.a}},
 });
 diagram.prepareRender();
-diagram.renderPlanets();
-diagram.plotOrbit({{object.a}}, {{object.e}}, {{object.w}});
+diagram.renderPlanets(true /* useSmartLabels */, {{object.a}});
+diagram.plotOrbit({{object.a}}, {{object.e}}, {{object.w}}, '#fff', '{{object.name}}');
 </script>
 <script src="{% static "js/main.js" %}"></script>
 {% endblock %}
