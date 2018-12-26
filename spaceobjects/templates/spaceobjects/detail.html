@@ -76,14 +76,17 @@ diagram.plotOrbit({{object.a}}, {{object.e}}, {{object.w}});
       {% if object.is_pha and object.is_neo %}
         classified {{object.name}} as a "Potentially Hazardous Object" due to its predicted close pass(es) with Earth.
       {% elif not object.is_pha and object.is_neo %}
-        classified {{object.name}} as a "Near Earth Object" due to its proximity to Earth, but is not considered potentially hazardous because simulations have indicated very low likelihood for collision.
+        classified {{object.name}} as a "Near Earth Object" due to its orbit's proximity to Earth, but it is not considered potentially hazardous because computer simulations have not indicated any likelihood for collision.
       {% elif not object.is_pha and not object.is_neo %}
         does not classify {{object.name}} as potentially hazardous because its orbit does not bring it close to Earth.
       {% endif %}
       </p>
 
       <p>
-      {{object.name}} was discovered in {{object.get_discovery_date|date:"Y"}}.  It orbits the sun every {{object.sbdb_entry.per|floatformat:0|intcomma}} days, coming as close as {{object.get_perihelion|floatformat:2}} AU and reaching as far as {{object.get_aphelion|floatformat:2}} AU from the sun.
+      {{object.name}} was discovered in the year {{object.get_discovery_date|date:"Y"}}.  It orbits the sun every {{object.sbdb_entry.per|floatformat:0|intcomma}} days, coming as close as {{object.get_perihelion|floatformat:2}} AU and reaching as far as {{object.get_aphelion|floatformat:2}} AU from the sun.
+      {% if object.e > .7 %}
+        Its orbit is highly elliptical.
+      {% endif %}
       {% if object.has_size_info %}
         {{object.name}} is about {{object.sbdb_entry.diameter | floatformat:1}} kilometers in diameter, making it {{object.get_size_rough_comparison}}, comparable in size to {{object.get_diameter_comparison}}.
       {% elif object.has_size_info_estimate %}
@@ -122,7 +125,7 @@ diagram.plotOrbit({{object.a}}, {{object.e}}, {{object.w}});
       {% if object.get_moid > 0.01 %}
         This means that there is a wide berth between this asteroid and Earth at all times.
       {% else %}
-        This means that it has the potential to get fairly close to Earth.
+        This means that its orbit is relatively close to Earth's orbit.
       {% endif %}
       </p>
       {% if object.sbdb_entry.moid_jup < 0.5 %}
@@ -171,8 +174,9 @@ diagram.plotOrbit({{object.a}}, {{object.e}}, {{object.w}});
       {% else %}
         This object is not considered readily accessible by the <a href="https://cneos.jpl.nasa.gov/nhats/">NHATS study</a>.
       {% endif %}
+      {% if object.get_similar_orbits|length %}
       <h3>Similar Objects</h3>
-      These asteroids have orbits that share similar characteristics to the orbit of {{object.name}}:
+      These objects have orbits that share similar characteristics to the orbit of {{object.name}}:
       <ul>
       {% for similar in object.get_similar_orbits %}
         <li>
@@ -180,6 +184,7 @@ diagram.plotOrbit({{object.a}}, {{object.e}}, {{object.w}});
         </li>
       {% endfor %}
       </ul>
+      {% endif %}
       <h3>References</h3>
       <ul>
         <li><a rel="nofollow" href="https://ssd.jpl.nasa.gov/sbdb.cgi?sstr={{object.sbdb_entry.pdes}}">JPL Small Body Database</a></li>
