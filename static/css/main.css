@@ -14,6 +14,21 @@ body {
   background-size: cover;
 }
 
+footer {
+  margin-top: 2em;
+  background-color: #000;
+  width: 100%;
+  height: 3em;
+  line-height: 3;
+
+  color: #ccc;
+  text-align: center;
+}
+
+footer a {
+  color: #ccc;
+}
+
 .orbit-diagram {
   position: absolute;
   right: 2em;

@@ -1,15 +1,3 @@
-
-/*
-  var DEFAULT_ORBITS = {
-    'Earth': {
-      a: 1.00000011,
-      e: 0.01671022,
-      w: 102.93768193,
-      color: 'cyan',
-      label: 'Earth',
-    },
-  };
- */
 window.OrbitDiagram = (function() {
   'use strict';
 
@@ -102,6 +90,7 @@ window.OrbitDiagram = (function() {
           .attr('y', cy + ry*0.65)
           .style('stroke', color)
           .style('fill', color)
+          .style('background-color', '#000')
           .style('font-size', 10)
           .text(labelText);
     }

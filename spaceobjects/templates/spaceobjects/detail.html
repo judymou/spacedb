@@ -93,6 +93,7 @@ diagram.plotOrbit({{object.a}}, {{object.e}}, {{object.w}}, '#fff', '{{object.na
         {% else %}
         <li>Not a Potentially Hazardous Object (PHA)</li>
         {% endif %}
+        <li><a href="#orbit-sim">See orbit simulation</a></li>
       </ul>
       <h3>Overview</h3>
       <p>
@@ -189,7 +190,7 @@ diagram.plotOrbit({{object.a}}, {{object.e}}, {{object.w}}, '#fff', '{{object.na
       {% if object.nhatsobject_set.all|length %}
         {% with nhats=object.nhatsobject_set.all.0 %}
           <p>
-            {{object.name}} can be reached with a journey of {{nhats.min_dv_duration|floatformat:0|intcomma}} days. This trajectory would require a <a href="https://en.wikipedia.org/wiki/Delta-v_budget">"delta-v"</a> of {{nhats.min_dv}} km/s.  To put this into perspective, the delta-v to launch a rocket to Low-Earth Orbit is 9.7 km/s.  There are {{nhats.num_trajectories|intcomma}} potential trajectories and launch windows to this object.
+            {{object.name}} can be reached with a journey of {{nhats.min_dv_duration|floatformat:0|intcomma}} days. This trajectory would require a <a href="https://en.wikipedia.org/wiki/Delta-v_budget">delta-v</a> of {{nhats.min_dv}} km/s.  To put this into perspective, the delta-v to launch a rocket to Low-Earth Orbit is 9.7 km/s.  There are {{nhats.num_trajectories|intcomma}} potential trajectories and launch windows to this {{object.get_object_type}}.
           </p>
           <p>
             See more at the <a href="https://cneos.jpl.nasa.gov/nhats/details.html#?des={{object.sbdb_entry.pdes}}">NHATS Mission Trajectories</a> table for {{object.name}}.
@@ -220,7 +221,7 @@ diagram.plotOrbit({{object.a}}, {{object.e}}, {{object.w}}, '#fff', '{{object.na
     <div class="item-container__inner">
       <h3>Search</h3>
       <div class="react-search"></div>
-      &nbsp;&nbsp; or view a <a href="/asteroid/random">random</a> asteroid
+      &nbsp;&nbsp; or view a <a href="/asteroid/random">random</a> object
     </div>
   </div>
   <div class="item-container item-container__rightside col-sm-4">
@@ -264,7 +265,7 @@ diagram.plotOrbit({{object.a}}, {{object.e}}, {{object.w}}, '#fff', '{{object.na
   <div class="item-container col-sm-12">
     <div class="item-container__inner">
       <h3>Orbital Simulation</h3>
-      <div class="vis-container vis-container__detail"></div>
+      <div id="orbit-sim" class="vis-container vis-container__detail"></div>
     </div>
   </div>
 </div>

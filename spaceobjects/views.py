@@ -35,7 +35,7 @@ def index(request):
               'space_objects': space_objects,
               'potential_impactors': potential_impactors,
               'close_approaches': close_approaches,
-              'nhats_objects': NhatsObject.objects.all()[:5],
+              'nhats_objects': NhatsObject.objects.all().order_by('min_dv')[:5],
               'hide_top_nav': True,
           })
 
