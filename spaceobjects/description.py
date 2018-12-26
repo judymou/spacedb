@@ -206,7 +206,7 @@ def get_diameter_comparison(roid):
     if diameter_sq < 200000:
         return 'the U.S. state of South Dakota'
     if diameter_sq < 300000:
-        return 'the U.K.'
+        return 'Great Britain'
     if diameter_sq < 400000:
         return 'Japan'
     if diameter_sq < 500000:
