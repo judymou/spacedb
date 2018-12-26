@@ -239,9 +239,13 @@ diagram.plotOrbit({{object.a}}, {{object.e}}, {{object.w}}, '#fff', '{{object.na
       <h3>Physical Characteristics</h3>
       <ul class="keyfacts">
         {% if object.sbdb_entry.diameter %}
-          <li>Diameter: {{object.sbdb_entry.diameter}} km</li>
+          <li>Diameter: {{object.sbdb_entry.diameter | floatformat:5}} km</li>
+        {% elif object.get_diameter_estimate %}
+          <li>Diameter: ~{{object.get_diameter_estimate | floatformat:2}} km</li>
         {% endif %}
-        <li>Magnitude: {{object.sbdb_entry.H}}</li>
+        {% if object.sbdb_entry.H %}
+          <li>Magnitude: {{object.sbdb_entry.H}}</li>
+        {% endif %}
         {% if object.sbdb_entry.albedo %}
           <li>Albedo: {{object.sbdb_entry.albedo}}</li>
         {% endif %}
