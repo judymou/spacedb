@@ -19,7 +19,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'spacedb.settings_pipeline')
 django.setup()
 
 from spaceobjects.models import SpaceObject
-from data.util import get_normalized_full_name
+from data.util import get_normalized_full_name, queryset_iterator
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -27,7 +27,8 @@ logger = logging.getLogger(__name__)
 @transaction.atomic
 def insert_all(newobjects, delete=False):
     if delete:
-        SpaceObject.objects.all().delete()
+        for obj in queryset_iterator(SpaceObject.objects.all()):
+            obj.delete()
     SpaceObject.objects.bulk_create(newobjects, batch_size=499)
 
 def process(reader):
