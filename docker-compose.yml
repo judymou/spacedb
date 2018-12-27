@@ -10,7 +10,7 @@ services:
 
   app:
     build: .
-    command: gunicorn --access-logfile - --error-logfile - --capture-output --log-level info -b '0.0.0.0:8000' spacedb.wsgi
+    command: gunicorn --access-logfile - --error-logfile - --capture-output --log-level info -b '0.0.0.0:8000' -w 5 spacedb.wsgi
     environment:
       - DJANGO_SETTINGS_MODULE=spacedb.settings_prod
     volumes:
