@@ -13,11 +13,11 @@ RUN apk update && \
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 
-COPY spacedb/ .
-COPY spaceobjects/ .
-COPY static/ .
-COPY templates/ .
-COPY data/ .
+COPY spacedb spacedb
+COPY spaceobjects spaceobjects
+COPY static static
+COPY templates templates
+COPY data data
 COPY manage.py manage.py
 
 EXPOSE 8000
