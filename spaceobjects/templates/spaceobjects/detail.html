@@ -107,7 +107,7 @@ diagram.plotOrbit({{object.a}}, {{object.e}}, {{object.w}}, '#fff', '{{object.ge
       {% endif %}
       </p>
       <p>
-      {{object.get_shorthand}} was discovered in the year {{object.get_discovery_date|date:"Y"}}.  It orbits the sun every {{object.sbdb_entry.per|floatformat:0|intcomma}} days, coming as close as {{object.get_perihelion|floatformat:2}} AU and reaching as far as {{object.get_aphelion|floatformat:2}} AU from the sun.
+      {{object.get_shorthand}} <!--was discovered in the year {{object.get_firstobs_date|date:"Y"}}.  It--> orbits the sun every {{object.sbdb_entry.per|floatformat:0|intcomma}} days, coming as close as {{object.get_perihelion|floatformat:2}} AU and reaching as far as {{object.get_aphelion|floatformat:2}} AU from the sun.
       {% if object.e > .7 %}
         Its orbit is highly elliptical.
       {% endif %}
@@ -184,7 +184,7 @@ diagram.plotOrbit({{object.a}}, {{object.e}}, {{object.w}}, '#fff', '{{object.ge
       {% endif %}
       </p>
       <h3>Images and Observations</h3>
-      {{object.get_shorthand}} was first observed on {{object.get_discovery_date | date}}.  It was last officially observed on {{object.get_lastobs_date | date}}.  The IAU Minor Planet Center records {{object.sbdb_entry.n_obs_used|intcomma}} observations used to determine its orbit.
+      {{object.get_shorthand}}'s orbit is determined by observations dating back to {{object.get_firstobs_date | date}}.  It was last officially observed on {{object.get_lastobs_date | date}}.  The IAU Minor Planet Center records {{object.sbdb_entry.n_obs_used|intcomma}} observations used to determine its orbit.
       <h3>Accessibility and Exploration</h3>
       {% if object.nhatsobject_set.all|length %}
         {% with nhats=object.nhatsobject_set.all.0 %}

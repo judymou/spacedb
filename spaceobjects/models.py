@@ -128,7 +128,7 @@ class SpaceObject(models.Model):
             pass
         return None
 
-    def get_discovery_date(self):
+    def get_firstobs_date(self):
         firstobs = self.sbdb_entry.get('first_obs')
         return datetime.strptime(firstobs, '%Y-%m-%d')
 
