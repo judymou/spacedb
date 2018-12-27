@@ -33,6 +33,7 @@ def index(request):
 
     return render(request, 'spaceobjects/index.html',
           {
+              'object_count': SpaceObject.objects.count(),
               'space_objects': space_objects,
               'potential_impactors': potential_impactors,
               'close_approaches': close_approaches,
@@ -42,7 +43,7 @@ def index(request):
 
 def detail(request, slug):
     try:
-        space_object = SpaceObject.objects.get(slug__iexact=slug)
+        space_object = SpaceObject.objects.get(slug=slug)
     except SpaceObject.DoesNotExist:
         return index(request)
 
