@@ -1,0 +1,45 @@
+version: '3.7'
+
+services:
+  db1:
+    image: postgres:10.1-alpine
+    volumes:
+      - postgres_volume:/var/lib/postgresql/data/
+    networks:
+      - db_network
+
+  app:
+    build: .
+    command: gunicorn --env DJANGO_SETTINGS_MODULE=spacedb.settings_prod spacedb.wsgi
+    volumes:
+      - .:/app
+      - static_volume:/app/static
+    ports:
+      - 8000:8000
+    networks:
+      - nginx_network
+      - db_network
+    depends_on:
+      - db
+
+  nginx:
+    image: nginx:1.13
+    volumes:
+      - ./config/nginx/conf.d:/etc/nginx/conf.d
+      - static_volume:/app/static
+    ports:
+      - 8000:80
+    networks:
+      - nginx_network
+    depends_on:
+      - app
+
+networks:
+  nginx_network:
+    driver: bridge
+  db_network:
+    driver: bridge
+
+volumes:
+  postgres_volume:
+  static_volume:
