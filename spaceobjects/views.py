@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 import json
+from random import randint
 
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
@@ -60,5 +61,7 @@ def search(request):
     return JsonResponse({'results': [roid.to_search_result() for roid in matches[:10]]})
 
 def random(request):
-    obj = SpaceObject.objects.order_by('?').first()
+    count = SpaceObject.objects.all().count()
+    random_index = randint(0, count - 1)
+    obj = SpaceObject.objects.all()[random_index]
     return redirect(obj)
