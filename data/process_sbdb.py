@@ -30,7 +30,7 @@ def insert_all(newobjects, delete=False):
         SpaceObject.objects.all().delete()
     SpaceObject.objects.bulk_create(newobjects, batch_size=499)
 
-def processData(reader):
+def process(reader):
     newobjects = []
     failures_other = failures_ma = 0
     inserted_once = False
@@ -87,4 +87,4 @@ if __name__ == '__main__':
     data_path = os.path.realpath(os.path.join(dir_path, 'rawdata/sbdb.csv.gz'))
     with gzip.open(data_path) as f:
         reader = csv.DictReader(f, delimiter=',')
-        processData(reader)
+        process(reader)
