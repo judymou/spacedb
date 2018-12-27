@@ -47,7 +47,7 @@ def processData(fields, data):
                     )
             newobjects.append(ca)
         except SpaceObject.DoesNotExist:
-            logger.error('Cannot find space object' + fullname)
+            logger.error('Cannot find space object %s' % fullname)
 
     CloseApproach.objects.bulk_create(newobjects)
 

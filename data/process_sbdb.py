@@ -25,6 +25,12 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 @transaction.atomic
+def insert_all(newobjects, delete=False):
+    logger.info('Inserting...')
+    if delete:
+        SpaceObject.objects.all().delete()
+    SpaceObject.objects.bulk_create(newobjects, batch_size=499)
+
 def processData(reader):
     newobjects = []
     failures_other = failures_ma = 0
@@ -32,14 +38,15 @@ def processData(reader):
     for count, row in enumerate(reader, 1):
         if count % 10000 == 0:
             logger.info(count)
-            #break
-        '''
+
         if count % 50000 == 0:
-            print 'Inserting...'
+            # Subdivide insertions - slower, but needed for low memory
+            # environments
+            logger.info('Inserting...')
             insert_all(newobjects, delete=(not inserted_once))
             inserted_once = True
             newobjects = []
-        '''
+
         if not row['ma']:
             failures_ma += 1
             continue
@@ -66,12 +73,12 @@ def processData(reader):
 
         newobjects.append(space_object)
 
+    logger.info('Inserting final records...')
+    insert_all(newobjects, delete=(not inserted_once))
+
     logger.warning('%d blank mean anomalies' % failures_ma)
     logger.warning('%d other failures' % failures_other)
 
-    logger.info('Inserting...')
-    SpaceObject.objects.all().delete()
-    SpaceObject.objects.bulk_create(newobjects, batch_size=499)
     logger.info('Done.')
 
 if __name__ == '__main__':
