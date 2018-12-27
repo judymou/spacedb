@@ -26,7 +26,6 @@ logger = logging.getLogger(__name__)
 
 @transaction.atomic
 def insert_all(newobjects, delete=False):
-    logger.info('Inserting...')
     if delete:
         SpaceObject.objects.all().delete()
     SpaceObject.objects.bulk_create(newobjects, batch_size=499)
@@ -39,7 +38,7 @@ def processData(reader):
         if count % 10000 == 0:
             logger.info(count)
 
-        if count % 50000 == 0:
+        if count % 30000 == 0:
             # Subdivide insertions - slower, but needed for low memory
             # environments
             logger.info('Inserting...')

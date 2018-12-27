@@ -23,7 +23,7 @@ from data.util import get_normalized_full_name
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def processData(fields, data):
+def process(fields, data):
     CloseApproach.objects.all().delete()
     newobjects = []
     for count, row in enumerate(data, 1):
@@ -59,5 +59,5 @@ if __name__ == '__main__':
     data_path = os.path.realpath(os.path.join(dir_path, 'rawdata/close_approach.json'))
     with open(data_path) as f:
         close_approach_file = json.load(f)
-        processData(close_approach_file["fields"],
+        process(close_approach_file["fields"],
                 close_approach_file["data"])
