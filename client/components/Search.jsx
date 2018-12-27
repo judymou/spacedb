@@ -5,6 +5,10 @@ import AsyncSelect from 'react-select/lib/Async';
 
 const loadOptions = (inputValue, callback) => {
   return new Promise(resolve => {
+    if (inputValue.length < 3) {
+      resolve([]);
+      return;
+    }
     fetch(`/api/asteroids?q=${inputValue}`).then(resp => {
       return resp.json()
     }).then(respJson => {
