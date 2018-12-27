@@ -10,9 +10,10 @@ services:
 
   app:
     build: .
-    command: gunicorn --env DJANGO_SETTINGS_MODULE=spacedb.settings_prod --access-logfile - --error-logfile - --capture-output --log-level info -b '0.0.0.0:8000' spacedb.wsgi
+    command: gunicorn --access-logfile - --error-logfile - --capture-output --log-level info -b '0.0.0.0:8000' spacedb.wsgi
+    env:
+      - DJANGO_SETTINGS_MODULE=spacedb.settings_prod
     volumes:
-      - .:/app
       - static_volume:/app/static
       - /var/spacedb/raw:/app/data/rawdata
     ports:
@@ -27,7 +28,7 @@ services:
     image: nginx:1.13
     volumes:
       - ./config/nginx/conf.d:/etc/nginx/conf.d
-      - static_volume:/app/static
+      - static_volume:/var/www/static
     ports:
       - 80:80
     networks:
