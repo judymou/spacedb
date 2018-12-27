@@ -8,6 +8,7 @@ from django.shortcuts import render, redirect
 from spaceobjects.models import SpaceObject, SentryEvent, CloseApproach, NhatsObject
 
 def index(request):
+    # TODO(ian): order by pdes
     space_objects = SpaceObject.objects.all()[:5]
 
     potential_impactors = []
