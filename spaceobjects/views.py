@@ -14,7 +14,7 @@ def index(request):
 
     potential_impactors = []
     seen_impactors = set()
-    for event in SentryEvent.objects.order_by('-prob'):
+    for event in SentryEvent.objects.order_by('-prob')[:25]:
         if event.space_object.fullname in seen_impactors:
             continue
         potential_impactors.append(event)
@@ -24,7 +24,7 @@ def index(request):
 
     close_approaches = []
     seen_approaches = set()
-    for event in CloseApproach.objects.order_by('date'):
+    for event in CloseApproach.objects.order_by('date')[:25]:
         if event.space_object.fullname in seen_approaches:
             continue
         close_approaches.append(event)
