@@ -43,7 +43,8 @@ def process(fields, data):
                     dist_au=float(ca_raw['dist']),
                     dist_min_au=float(ca_raw['dist_min']),
                     v_rel=float(ca_raw['v_rel']),
-                    h_mag=float(ca_raw['h']),
+                    # TODO(ian): Make hmag nullable
+                    h_mag=float(ca_raw['h'] if ca_raw['h'] else -99),
                     )
             newobjects.append(ca)
         except SpaceObject.DoesNotExist:
