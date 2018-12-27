@@ -4,6 +4,12 @@ ENV PYTHONUNBUFFERED 1
 
 WORKDIR /app
 
+# Postgres and python deps
+RUN apk update && \
+    apk add --virtual build-deps gcc python-dev musl-dev && \
+    apk add postgresql-dev curl bash
+
+# Install python deps
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 

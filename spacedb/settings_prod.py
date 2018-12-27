@@ -25,7 +25,7 @@ SECRET_KEY = '!f-34x!n5^0az@59f=$(hjbk$-x!z8dkb&e1#h8=6w)q3j$r%*'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['www.spacereference.org']
+ALLOWED_HOSTS = ['www.spacereference.org', 'localhost']
 
 
 # Application definition
@@ -78,10 +78,10 @@ WSGI_APPLICATION = 'spacedb.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'db1',
+        'NAME': 'postgres',
         'USER': 'postgres',
         'PASSWORD': '',
-        'HOST': 'db1',
+        'HOST': 'db',
         'PORT': '5432',
     }
 }

@@ -3,19 +3,18 @@
 pushd $(dirname $0) &>/dev/null
 
 mkdir -p rawdata
-cd rawdata
 
 echo 'Downloading SBDB...'
-../download_sbdb.sh
+./download_sbdb.sh
 
 echo 'Downloading close approaches...'
-../download_close_approaches.sh
+./download_close_approaches.sh
 
 echo 'Downloading sentry...'
-../download_sentry.sh
+./download_sentry.sh
 
 echo 'Downloading nhats...'
-../download_nhats.sh
+./download_nhats.sh
 
 echo 'Done.'
 

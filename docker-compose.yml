@@ -1,7 +1,7 @@
 version: '3.7'
 
 services:
-  db1:
+  db:
     image: postgres:10.1-alpine
     volumes:
       - postgres_volume:/var/lib/postgresql/data/
@@ -10,7 +10,7 @@ services:
 
   app:
     build: .
-    command: gunicorn --env DJANGO_SETTINGS_MODULE=spacedb.settings_prod spacedb.wsgi
+    command: gunicorn --env DJANGO_SETTINGS_MODULE=spacedb.settings_prod --access-logfile - --error-logfile - --capture-output --log-level info -b '0.0.0.0:8000' spacedb.wsgi
     volumes:
       - .:/app
       - static_volume:/app/static
@@ -28,7 +28,7 @@ services:
       - ./config/nginx/conf.d:/etc/nginx/conf.d
       - static_volume:/app/static
     ports:
-      - 8000:80
+      - 80:80
     networks:
       - nginx_network
     depends_on:
