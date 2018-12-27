@@ -1,8 +1,8 @@
 (function() {
-  return;
   // Create the visualization and put it in our div.
-  const viz = new Spacekit.Container(document.getElementById('vis-container'), {
-    assetPath: 'http://localhost:8001/src/assets',
+  const viz = new Spacekit.Container(document.querySelector('.vis-container'), {
+    //assetPath: 'http://localhost:8001/src/assets',
+    assetPath: '/static/spacekit',
     jed: 2458461.459,
   });
 

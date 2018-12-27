@@ -4,14 +4,14 @@
 {% block title%}SpaceReference.org - Comprehensive Asteroid Database{% endblock %}
 
 {% block scripts %}
-<!--
 <script src="{% static "js/lib/three.r98.min.js" %}"></script>
 <script src="{% static "js/lib/TrackballControls.js" %}"></script>
 <script src="{% static "js/lib/spacekit.js" %}"></script>
--->
+<!--
 <script src="http://localhost:8001/src/lib/three.r98.min.js"></script>
 <script src="http://localhost:8001/src/lib/TrackballControls.js"></script>
 <script src="http://localhost:8001/build/spacekit.js"></script>
+-->
 <script>
 window.EPHEMERIS = [
 {% for object in space_objects %}
