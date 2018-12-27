@@ -14,7 +14,7 @@ services:
     environment:
       - DJANGO_SETTINGS_MODULE=spacedb.settings_prod
     volumes:
-      - static_volume:/app/static
+      - ./static:/app/static
       - /var/spacedb/raw:/app/data/rawdata
     ports:
       - 8000:8000
@@ -28,7 +28,7 @@ services:
     image: nginx:1.13
     volumes:
       - ./config/nginx/conf.d:/etc/nginx/conf.d
-      - static_volume:/var/www/static
+      - ./static:/var/www/static
     ports:
       - 80:80
     networks:
@@ -44,4 +44,3 @@ networks:
 
 volumes:
   postgres_volume:
-  static_volume:
