@@ -30,7 +30,8 @@ class SpaceObject(models.Model):
 
     class Meta:
         indexes = [
-            models.Index(fields=['fullname'])
+            models.Index(fields=['fullname']),
+            models.Index(fields=['slug']),
         ]
 
     def get_absolute_url(self):
