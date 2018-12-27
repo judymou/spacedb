@@ -14,6 +14,7 @@ services:
     volumes:
       - .:/app
       - static_volume:/app/static
+      - /var/spacedb/raw:/app/data/rawdata
     ports:
       - 8000:8000
     networks:
