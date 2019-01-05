@@ -38,6 +38,9 @@ def process(reader):
         if count % 10000 == 0:
             logger.info(count)
 
+        if count > 30000:
+            break
+
         if count % 30000 == 0:
             # Subdivide insertions - slower, but needed for low memory
             # environments
@@ -62,8 +65,8 @@ def process(reader):
                 w = float(row['w']),
                 ma = float(row['ma']),
                 epoch = float(row['epoch']),
-                neo = bool(row['neo']),
-                pha = bool(row['pha']),
+                is_neo = True if row['neo'] == 'Y' else False,
+                is_pha = True if row['pha'] == 'Y' else False,
                 orbit_class = row['class'],
                 diameter = float(row['diameter'].decode('utf-8')) if row['diameter'] else None,
                 spec_B = row['spec_B'],

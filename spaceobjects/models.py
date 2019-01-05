@@ -25,8 +25,8 @@ class SpaceObject(models.Model):
     ma = models.FloatField()
     epoch = models.FloatField()
 
-    neo = models.BooleanField()
-    pha = models.BooleanField()
+    is_neo = models.BooleanField()
+    is_pha = models.BooleanField()
     orbit_class = models.CharField(max_length=200)
     diameter = models.FloatField(null=True, blank=True)
     spec_B = models.CharField(max_length=200)
@@ -75,18 +75,6 @@ class SpaceObject(models.Model):
 
     def get_aphelion(self):
         return self.a * (1 + self.e)
-
-    def is_neo(self):
-        entry = self.sbdb_entry.get('neo', False)
-        if entry == 'N':
-            return False
-        return entry
-
-    def is_pha(self):
-        entry = self.sbdb_entry.get('pha', False)
-        if entry == 'N':
-            return False
-        return entry
 
     def get_moid(self):
         entry = self.sbdb_entry.get('moid')
