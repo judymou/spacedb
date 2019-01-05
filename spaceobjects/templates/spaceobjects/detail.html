@@ -246,17 +246,17 @@ diagram.plotOrbit({{object.a}}, {{object.e}}, {{object.w}}, '#fff', '{{object.ge
         {% elif object.get_diameter_estimate %}
           <li>Diameter: ~{{object.get_diameter_estimate | floatformat:2}} km</li>
         {% endif %}
-        {% if object.sbdb_entry.H %}
+        {% if object.H %}
           <li>Magnitude: {{object.sbdb_entry.H}}</li>
         {% endif %}
         {% if object.sbdb_entry.albedo %}
           <li>Albedo: {{object.sbdb_entry.albedo}}</li>
         {% endif %}
         {% if object.sbdb_entry.spec_T %}
-          <li>Spectral type (Tholen): {{object.sbdb_entry.spec_T}}</li>
+          <li>Spectral type (Tholen): {{object.spec_T}}</li>
         {% endif %}
         {% if object.sbdb_entry.spec_B %}
-          <li>Spectral type (SMASS): {{object.sbdb_entry.spec_B}}</li>
+          <li>Spectral type (SMASS): {{object.spec_B}}</li>
         {% endif %}
       </ul>
     </div>

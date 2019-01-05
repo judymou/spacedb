@@ -119,10 +119,10 @@ ORBIT_CLASS_MAPPING = {
 }
 
 def get_orbit_class(roid):
-    return ORBIT_CLASS_MAPPING.get(roid.sbdb_entry['class'])['desc_short']
+    return ORBIT_CLASS_MAPPING.get(roid.orbit_class)['desc_short']
 
 def get_orbit_desc(roid):
-    return ORBIT_CLASS_MAPPING.get(roid.sbdb_entry['class'])['desc_orbit']
+    return ORBIT_CLASS_MAPPING.get(roid.orbit_class)['desc_orbit']
 
 def get_diameter_comparison(roid):
     diameter = roid.get_diameter_estimate()

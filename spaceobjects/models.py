@@ -28,10 +28,12 @@ class SpaceObject(models.Model):
     is_neo = models.BooleanField()
     is_pha = models.BooleanField()
     orbit_class = models.CharField(max_length=200)
-    diameter = models.FloatField(null=True, blank=True)
     spec_B = models.CharField(max_length=200)
     spec_T = models.CharField(max_length=200)
     H = models.FloatField()
+
+    # For now this is only SBDB diameter. See get_diameter_estimate below.
+    diameter = models.FloatField(null=True, blank=True)
 
     # sbdb blob
     sbdb_entry = JSONField()
@@ -91,7 +93,7 @@ class SpaceObject(models.Model):
     def get_diameter_estimate(self, method='MID'):
         '''Diameter estimate in km, using either SBDB-supplied estimate
         or estimate based on magnitude/albedo'''
-        diameter_str = self.sbdb_entry.get('diameter')
+        diameter_str = self.diameter
         if diameter_str:
             return float(diameter_str)
 
