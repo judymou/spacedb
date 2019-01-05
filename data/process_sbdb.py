@@ -62,6 +62,13 @@ def process(reader):
                 w = float(row['w']),
                 ma = float(row['ma']),
                 epoch = float(row['epoch']),
+                neo = bool(row['neo']),
+                pha = bool(row['pha']),
+                orbit_class = row['class'],
+                diameter = float(row['diameter'].decode('utf-8')) if row['diameter'] else None,
+                spec_B = row['spec_B'],
+                spec_T = row['spec_T'],
+                H = float(row['H']),
                 sbdb_entry = row,
                 )
         except ValueError:

@@ -25,6 +25,14 @@ class SpaceObject(models.Model):
     ma = models.FloatField()
     epoch = models.FloatField()
 
+    neo = models.BooleanField()
+    pha = models.BooleanField()
+    orbit_class = models.CharField(max_length=200)
+    diameter = models.FloatField(null=True, blank=True)
+    spec_B = models.CharField(max_length=200)
+    spec_T = models.CharField(max_length=200)
+    H = models.FloatField()
+
     # sbdb blob
     sbdb_entry = JSONField()
 
