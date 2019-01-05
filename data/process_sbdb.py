@@ -57,7 +57,7 @@ def process(reader):
             space_object = SpaceObject(
                 fullname = fullname,
                 name = row['name'].strip() if row['name'] else fullname,
-                slug = slugify(fullname),
+                slug = slugify(fullname.replace('/',' ')),
                 a = float(row['a']),
                 e = float(row['e']),
                 i = float(row['i']),
