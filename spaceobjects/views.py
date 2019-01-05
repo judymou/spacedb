@@ -55,6 +55,9 @@ def detail(request, slug):
                 'sentry_events': sentry_events,
             })
 
+def orbit_classes(request, category):
+    pass
+
 def search(request):
     search_str = request.GET.get('q')
     matches = SpaceObject.objects.filter(fullname__icontains=search_str)

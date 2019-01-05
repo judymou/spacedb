@@ -8,13 +8,28 @@ from django.db import models
 from django.contrib import admin
 from jsonfield import JSONField
 
-from .description import get_orbit_class, get_orbit_desc, \
-        get_diameter_comparison, get_composition
+from spaceobjects.description import get_diameter_comparison, get_composition
+
+class OrbitClass(models.Model):
+    name = models.CharField(max_length=200)
+    slug = models.CharField(max_length=200, unique=True)
+    abbrev = models.CharField(max_length=10)
+
+    desc = models.CharField(max_length=500)
+    orbit_sentence = models.CharField(max_length=500)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['slug']),
+            models.Index(fields=['abbrev']),
+        ]
 
 class SpaceObject(models.Model):
     fullname = models.CharField(max_length=200)
     name = models.CharField(max_length=200)
     slug = models.CharField(max_length=200)
+
+    orbit_class = models.ForeignKey(OrbitClass)
 
     # Basic orbital elements
     a = models.FloatField()
@@ -27,7 +42,6 @@ class SpaceObject(models.Model):
 
     is_neo = models.BooleanField()
     is_pha = models.BooleanField()
-    orbit_class = models.CharField(max_length=200)
     spec_B = models.CharField(max_length=200)
     spec_T = models.CharField(max_length=200)
     H = models.FloatField()
@@ -56,7 +70,7 @@ class SpaceObject(models.Model):
         return self.get_shorthand() != self.name
 
     def get_object_type(self):
-        orbclass = get_orbit_class(self)
+        orbclass = self.orbit_class.name
         if orbclass.find('Comet') > -1:
             return 'comet'
         if self.fullname == '1 Ceres':
@@ -64,10 +78,10 @@ class SpaceObject(models.Model):
         return 'asteroid'
 
     def get_orbit_class(self):
-        return get_orbit_class(self)
+        return self.orbit_class.name
 
     def get_orbit_desc(self):
-        return get_orbit_desc(self)
+        return self.orbit_class.orbit_sentence
 
     def get_composition(self):
         return get_composition(self)
@@ -240,3 +254,4 @@ admin.site.register(SpaceObject)
 admin.site.register(CloseApproach)
 admin.site.register(SentryEvent)
 admin.site.register(NhatsObject)
+admin.site.register(OrbitClass)

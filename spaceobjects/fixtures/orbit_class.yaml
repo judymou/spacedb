@@ -1,0 +1,189 @@
+# https://pdssbn.astro.umd.edu/data_other/objclass.shtml
+
+- model: spaceobjects.OrbitClass
+  pk: 1
+  fields:
+    abbrev: COM
+    name: Comet
+    slug: comet
+    desc: Comets whose orbits do not match any defined orbit class
+    orbit_sentence: whose orbit does not match any defined comet orbit class
+
+- model: spaceobjects.OrbitClass
+  pk: 2
+  fields:
+    abbrev: CTc
+    name: Chiron-type Comet
+    slug: chiron-type-comet
+    desc: Chiron-type comet, as defined by Levison and Duncan (TJupiter > 3; a > aJupiter)
+    orbit_sentence: whose orbit is approximately between Jupiter and Neptune
+
+- model: spaceobjects.OrbitClass
+  pk: 3
+  fields:
+    abbrev: ETc
+    name: Encke-type Comet
+    slug: encke-type-comet
+    desc: Encke-type comet, as defined by Levison and Duncan (TJupiter > 3; a < aJupiter)
+    orbit_sentence: whose orbit brings it closer to the sun than Jupiter
+
+- model: spaceobjects.OrbitClass
+  pk: 4
+  fields:
+    abbrev: HTC
+    name: Halley-type Comet
+    slug: halley-type-comet
+    desc: Halley-type comet, classical definition (20 y < P < 200 y)
+    orbit_sentence: with an orbit that has medium-length periods and is highly inclined with respect to the ecliptic plane of the solar system
+
+- model: spaceobjects.OrbitClass
+  pk: 5
+  fields:
+    abbrev: HYP
+    name: Hyperbolic Comet
+    slug: hyperbolic-comet
+    desc: Comets on hyperbolic orbits (e > 1.0)
+    orbit_sentence: with a trajectory through the solar system likely originating from the Oort Cloud
+
+- model: spaceobjects.OrbitClass
+  pk: 6
+  fields:
+    abbrev: JFc
+    name: Jupiter-family Comet
+    slug: jupiter-family-comet
+    desc: Jupiter-family comets, as defined by Levison and Duncan (2 < TJupiter < 3)
+    orbit_sentence: whose orbit features a relatively short period, low inclination, and is controlled by Jupiter\'s gravitational effects
+
+- model: spaceobjects.OrbitClass
+  pk: 8
+  fields:
+    abbrev: PAR
+    name: Parabolic Comet
+    slug: parabolic-comet
+    desc: Comets on parabolic orbits (e = 1.0)
+    orbit_sentence: with an extremely long orbital period, likely originating from the Oort Cloud
+
+- model: spaceobjects.OrbitClass
+  pk: 9
+  fields:
+    abbrev: AMO
+    name: Amor-class Asteroid
+    slug: amor-class-asteroid
+    desc: Near-Earth asteroid whose orbits are similar to that of 1221 Amor (a > 1.0 AU; 1.017 AU < q < 1.3 AU)
+    orbit_sentence: whose orbit approaches the orbit of Earth but does not cross it
+
+- model: spaceobjects.OrbitClass
+  pk: 10
+  fields:
+    abbrev: APO
+    name: Apollo-class Asteroid
+    slug: apollo-class-asteroid
+    desc: Near-Earth asteroids whose orbits cross the Earth\'s orbit similar to that of 1862 Apollo (a > 1.0 AU; q < 1.017 AU).
+    orbit_sentence: whose orbit crosses the orbit of Earth
+
+- model: spaceobjects.OrbitClass
+  pk: 11
+  fields:
+    abbrev: AST
+    name: Asteroid
+    slug: asteroid
+    desc: Asteroid orbit not matching any defined orbit class
+    orbit_sentence: whose orbit does not match any defined asteroid orbital class
+
+- model: spaceobjects.OrbitClass
+  pk: 12
+  fields:
+    abbrev: ATE
+    name: Aten-class Asteroid
+    slug: aten-class-asteroid
+    desc: Near-Earth asteroid orbits similar to that of 2062 Aten (a < 1.0 AU; Q > 0.983 AU)
+    orbit_sentence: whose orbit could bring it in close proximity to Earth
+
+- model: spaceobjects.OrbitClass
+  pk: 13
+  fields:
+    abbrev: CEN
+    name: Centaur-class Asteroid
+    slug: centaur-class-asteroid
+    desc: Objects with orbits between Jupiter and Neptune (5.5 AU < a < 30.1 AU)
+    orbit_sentence: with an orbit between Jupiter and Neptune
+
+- model: spaceobjects.OrbitClass
+  pk: 14
+  fields:
+    abbrev: HYA
+    name: Hyperbolic Asteroid
+    slug: hyperbolic-asteroid
+    desc: Asteroids on hyperbolic orbits (e > 1.0)
+    orbit_sentence: with an orbit not bound to the sun
+
+- model: spaceobjects.OrbitClass
+  pk: 15
+  fields:
+    abbrev: IEO
+    name: Interior-Earth Asteroid
+    slug: interior-earth-asteroid
+    desc: Asteroids with orbits contained entirely within the orbit of the Earth (Q < 0.983 AU)
+    orbit_sentence: with an orbit that is entirely confined within Earth\'s orbit
+
+- model: spaceobjects.OrbitClass
+  pk: 16
+  fields:
+    abbrev: IMB
+    name: Inner Main-belt Asteroid
+    slug: inner-main-belt-asteroid
+    desc: Asteroids with orbital elements constrained by (a < 2.0 AU; q > 1.666 AU)
+    orbit_sentence: orbiting between Mars and Jupiter within the inner portion of the asteroid belt
+
+- model: spaceobjects.OrbitClass
+  pk: 17
+  fields:
+    abbrev: MBA
+    name: Main-belt Asteroid
+    slug: main-belt-asteroid
+    desc: Asteroids with orbital elements constrained by (2.0 AU < a < 3.2 AU; q > 1.666 AU)
+    orbit_sentence: orbiting between Mars and Jupiter in the main portion of the asteroid belt
+
+- model: spaceobjects.OrbitClass
+  pk: 18
+  fields:
+    abbrev: MCA
+    name: Mars-crossing Asteroid
+    slug: mars-crossing-asteroid
+    desc: Asteroids that cross the orbit of Mars constrained by (1.3 AU < q < 1.666 AU; a < 3.2 AU)
+    orbit_sentence: with an orbit that crosses the orbit of Mars
+
+- model: spaceobjects.OrbitClass
+  pk: 19
+  fields:
+    abbrev: OMB
+    name: Outer Main-belt Asteroid
+    slug: outer-main-belt-asteroid
+    desc: Asteroids with orbital elements constrained by (3.2 AU < a < 4.6 AU)
+    orbit_sentence: that orbits between Mars and Jupiter in the outer reaches of the main asteroid belt
+
+- model: spaceobjects.OrbitClass
+  pk: 20
+  fields:
+    abbrev: PAA
+    name: Parabolic Asteroid
+    slug: parabolic-asteroid
+    desc: Asteroids on parabolic orbits (e = 1.0)
+    orbit_sentence: with an unusual orbit that brings it far beyond the normal boundaries of asteroids in the solar system
+
+- model: spaceobjects.OrbitClass
+  pk: 21
+  fields:
+    abbrev: TJN
+    name: Jupiter Trojan
+    slug: jupiter-trojan
+    desc: Asteroids traped in Jupiter\'s L4/L5 Lagrange points (4.6 AU < a < 5.5 AU; e < 0.3)
+    orbit_sentence: that shares Jupiter\'s orbit around the sun
+
+- model: spaceobjects.OrbitClass
+  pk: 22
+  fields:
+    abbrev: TNO
+    name: Trans-Neptunian Object
+    slug: trans-neptunian-object
+    desc: Objects with orbits outside Neptune (a > 30.1 AU)

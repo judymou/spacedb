@@ -13,6 +13,7 @@ First time:
 # Python backend
 pip install -r requirements.txt
 ./manage.py migrate
+./manage.py loaddata orbit_class
 
 # Webpack frontend
 yarn install

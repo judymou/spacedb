@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.realpath(parent_dir))
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'spacedb.settings_pipeline')
 django.setup()
 
-from spaceobjects.models import SpaceObject
+from spaceobjects.models import SpaceObject, OrbitClass
 from data.util import get_normalized_full_name, queryset_iterator
 
 logging.basicConfig(level=logging.INFO)
@@ -38,7 +38,7 @@ def process(reader):
         if count % 10000 == 0:
             logger.info(count)
 
-        if count > 30000:
+        if count > 20000:
             break
 
         if count % 30000 == 0:
@@ -67,7 +67,7 @@ def process(reader):
                 epoch = float(row['epoch']),
                 is_neo = True if row['neo'] == 'Y' else False,
                 is_pha = True if row['pha'] == 'Y' else False,
-                orbit_class = row['class'],
+                orbit_class = OrbitClass.objects.get(abbrev=row['class']),
                 diameter = float(row['diameter'].decode('utf-8')) if row['diameter'] else None,
                 spec_B = row['spec_B'],
                 spec_T = row['spec_T'],
