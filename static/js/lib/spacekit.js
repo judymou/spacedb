@@ -1,6 +1,37 @@
 var Spacekit = (function (exports) {
   'use strict';
 
+  var julian = convert;
+  var toDate = convertToDate;
+
+  var toJulianDay_1 = toJulianDay;
+  var toMillisecondsInJulianDay_1 = toMillisecondsInJulianDay;
+  var fromJulianDayAndMilliseconds_1 = fromJulianDayAndMilliseconds;
+
+  var DAY = 86400000;
+  var HALF_DAY = DAY / 2;
+  var UNIX_EPOCH_JULIAN_DATE = 2440587.5;
+  var UNIX_EPOCH_JULIAN_DAY = 2440587;
+
+  function convert(date) {
+    return (toJulianDay(date) + (toMillisecondsInJulianDay(date) / DAY)).toFixed(6);
+  }
+  function convertToDate(julian) {
+    return new Date((Number(julian) - UNIX_EPOCH_JULIAN_DATE) * DAY);
+  }
+  function toJulianDay(date) {
+    return ~~((+date + HALF_DAY) / DAY) + UNIX_EPOCH_JULIAN_DAY;
+  }
+  function toMillisecondsInJulianDay(date) {
+    return (+date + HALF_DAY) % DAY;
+  }
+  function fromJulianDayAndMilliseconds(day, ms) {
+    return (day - UNIX_EPOCH_JULIAN_DATE) * DAY + ms;
+  }julian.toDate = toDate;
+  julian.toJulianDay = toJulianDay_1;
+  julian.toMillisecondsInJulianDay = toMillisecondsInJulianDay_1;
+  julian.fromJulianDayAndMilliseconds = fromJulianDayAndMilliseconds_1;
+
   class Camera {
     // Simple wrapper for Three.js camera
 
@@ -287,7 +318,7 @@ var Spacekit = (function (exports) {
       const eph = this._ephem;
 
       const period = eph.get('period');
-      const numSegments = Math.max(period / 10, 20);
+      const numSegments = Math.max(period / 10, 50);
       const step = period / numSegments;
 
       const pts = [];
@@ -856,6 +887,10 @@ var Spacekit = (function (exports) {
       this._options = options || {};
 
       this._jed = this._options.jed || 0;
+      this._jedDelta = this._options.jedDelta;
+      this._jedPerSecond = this._options.jedPerSecond || 100;
+      this._isPaused = options.startPaused || false;
+      this.onTick = null;
 
       this._scene = null;
       this._renderer = null;
@@ -914,16 +949,19 @@ var Spacekit = (function (exports) {
 
     animate() {
       window.requestAnimationFrame(this.animate.bind(this));
+      if (this._isPaused) {
+        return;
+      }
 
       if (this._stats) {
         this._stats.begin();
       }
 
-      if (this._options.jedDelta) {
-        this._jed += this._options.jedDelta;
+      if (this._jedDelta) {
+        this._jed += this._jedDelta;
       } else {
         // N jed per second
-        this._jed += (this._options.jedPerSecond || 100) / this._fps;
+        this._jed += (this._jedPerSecond) / this._fps;
       }
 
       this.update();
@@ -933,6 +971,10 @@ var Spacekit = (function (exports) {
       const timeDelta = (Date.now() - this._lastRenderedTime) / 1000;
       this._lastRenderedTime = Date.now();
       this._fps = (1 / timeDelta) || 1;
+
+      if (this.onTick) {
+        this.onTick();
+      }
 
       if (this._stats) {
         this._stats.end();
@@ -993,12 +1035,55 @@ var Spacekit = (function (exports) {
       }
     }
 
+    start() {
+      this._lastRenderedTime = Date.now();
+      this._isPaused = false;
+    }
+
+    stop() {
+      this._isPaused = true;
+    }
+
     getJed() {
       return this._jed;
     }
 
     setJed(val) {
       this._jed = val;
+    }
+
+    getDate() {
+      return julian.toDate(this._jed);
+    }
+
+    setDate(date) {
+      this.setJed(julian.toJulianDay(date));
+    }
+
+    setJedDelta(delta) {
+      this._jedDelta = delta;
+    }
+
+    getJedDelta() {
+      if (!this._jedDelta) {
+        return this._jedPerSecond / this._fps;
+      }
+      return this._jedDelta;
+    }
+
+    setJedPerSecond(x) {
+      // Delta overrides jed per second, so unset it.
+      this._jedDelta = undefined;
+
+      this._jedPerSecond = x;
+    }
+
+    getJedPerSecond() {
+      if (this._jedDelta) {
+        // Jed per second can vary
+        return undefined;
+      }
+      return this._jedPerSecond;
     }
 
     getContext() {

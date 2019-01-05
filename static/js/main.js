@@ -4,6 +4,7 @@
     //assetPath: 'http://localhost:8001/src/assets',
     assetPath: '/static/spacekit',
     jed: 2458461.459,
+    jedPerSecond: 0.25,
   });
 
   // Create a skybox using NASA TYCHO artwork.
@@ -27,4 +28,28 @@
       ephem: new Spacekit.Ephem(ephem, 'deg'),
     }));
   });
+
+  // Controls
+  document.querySelectorAll('.vis-controls__slower').forEach(function(elt) {
+    elt.onclick = function() {
+      viz.setJedDelta(viz.getJedDelta() * 0.5);
+    };
+  });
+  document.querySelectorAll('.vis-controls__faster').forEach(function(elt) {
+    elt.onclick = function() {
+      viz.setJedDelta(viz.getJedDelta() * 2.0);
+    };
+  });
+  document.querySelectorAll('.vis-controls__set-date').forEach(function(elt) {
+    elt.onclick = function() {
+      viz.setDate(new Date(prompt('Enter a date in the format YYYY-mm-dd.', '2000-01-01')));
+    };
+  });
+
+  // Status line
+  viz.onTick = function() {
+    document.querySelectorAll('.vis-status').forEach(function(elt) {
+      elt.innerHTML = viz.getDate().toLocaleString() + '';
+    });
+  };
 })();

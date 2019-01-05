@@ -264,7 +264,15 @@ diagram.plotOrbit({{object.a}}, {{object.e}}, {{object.w}}, '#fff', '{{object.ge
   <div class="item-container col-sm-12">
     <div class="item-container__inner">
       <h3>Orbital Simulation</h3>
-      <div id="orbit-sim" class="vis-container vis-container__detail"></div>
+      <div class="vis-panel">
+        <div class="vis-controls">
+          <button class="vis-controls__slower">Slower</button>
+          <button class="vis-controls__faster">Faster</button>
+          <button class="vis-controls__set-date">Set Date</button>
+          <span class="vis-status"></span>
+        </div>
+        <div id="orbit-sim" class="vis-container vis-container__detail"></div>
+      </div>
     </div>
   </div>
 </div>
