@@ -3,8 +3,8 @@
   const viz = new Spacekit.Container(document.querySelector('.vis-container'), {
     //assetPath: 'http://localhost:8001/src/assets',
     assetPath: '/static/spacekit',
-    jed: 2458461.459,
-    jedPerSecond: 0.25,
+    startDate: Date.now(),
+    jedPerSecond: 0.1,
   });
 
   // Create a skybox using NASA TYCHO artwork.
@@ -32,12 +32,12 @@
   // Controls
   document.querySelectorAll('.vis-controls__slower').forEach(function(elt) {
     elt.onclick = function() {
-      viz.setJedDelta(viz.getJedDelta() * 0.5);
+      viz.setJedPerSecond(viz.getJedPerSecond() * 0.1);
     };
   });
   document.querySelectorAll('.vis-controls__faster').forEach(function(elt) {
     elt.onclick = function() {
-      viz.setJedDelta(viz.getJedDelta() * 2.0);
+      viz.setJedPerSecond(viz.getJedPerSecond() * 10.0);
     };
   });
   document.querySelectorAll('.vis-controls__set-date').forEach(function(elt) {
