@@ -63,10 +63,10 @@ diagram.plotOrbit({{object.a}}, {{object.e}}, {{object.w}}, '#fff');
   <div class="item-container col-sm-8">
     <div class="item-container__inner">
       <h3>About</h3>
-      {{orbit_class.name}}s ({{orbit_class.abbrev}}) are objects {{orbit_class.orbit_sentence}}.  There are {{count|intcomma}} {{orbit_class.name|lower}}s in this database out of {{total_count|intcomma}} total, accounting for {{population_pct|floatformat:1}}% of objects.
+      {{orbit_class.name}}s ({{orbit_class.abbrev}}) are objects {{orbit_class.orbit_sentence}}.  There are {{count|intcomma}} {{orbit_class.name|capfirst}}s in this database out of {{total_count|intcomma}} total, accounting for {{population_pct|floatformat:1}}% of objects.
 
       <h3>Examples</h3>
-      Here are some asteroids that belong to the {{orbit_class.abbrev}} family:
+      Here are some objects that belong to the {{orbit_class.abbrev}} family:
       <ul>
         {% for object in objects %}
           <li><a href="/asteroid/{{object.slug}}">{{object.name}}</a></li>

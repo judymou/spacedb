@@ -40,6 +40,7 @@ def index(request):
               'potential_impactors': potential_impactors,
               'close_approaches': close_approaches,
               'nhats_objects': NhatsObject.objects.all().order_by('min_dv')[:5],
+              'orbit_classes': OrbitClass.objects.all(),
               'hide_top_nav': True,
           })
 

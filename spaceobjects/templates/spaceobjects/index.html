@@ -59,7 +59,9 @@ window.VIZ_OPTS = {};
 <div class="row">
   <h2>Asteroids</h2>
   <div>
-    We got all sorts of asteroids.  Main-belt asteroids, Mars-crossing, near Earth objects, potentially hazardous objects, and more!
+    <p>
+      We've organized hundreds of thousands celestial objects into these categories below for your perusal.
+    </p>
   </div>
   <div class="col-sm-4 vis-selector__DISABLED" data-showvis="LARGEST">
     <h3>Largest</h3>
@@ -154,6 +156,14 @@ window.VIZ_OPTS = {};
         <li><a href="/asteroid/6471-collins-1983-eb1">6471 Collins</a></li>
       </ol>
     </p>
+  </div>
+  <div>
+    Orbit types of objects:
+    <ul>
+    {% for orbit_class in orbit_classes %}
+      <li><a href="/category/{{orbit_class.slug}}">{{orbit_class.name}}</a> - {{orbit_class.desc}}</li>
+    {% endfor %}
+    </ul>
   </div>
 </div>
 {% endblock %}

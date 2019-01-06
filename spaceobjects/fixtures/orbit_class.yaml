@@ -52,7 +52,7 @@
     name: Jupiter-family Comet
     slug: jupiter-family-comet
     desc: Jupiter-family comets, as defined by Levison and Duncan (2 < TJupiter < 3)
-    orbit_sentence: whose orbit features a relatively short period, low inclination, and is controlled by Jupiter\'s gravitational effects
+    orbit_sentence: whose orbit features a relatively short period, low inclination, and is controlled by Jupiter's gravitational effects
 
 - model: spaceobjects.OrbitClass
   pk: 8
@@ -78,7 +78,7 @@
     abbrev: APO
     name: Apollo-class Asteroid
     slug: apollo-class-asteroid
-    desc: Near-Earth asteroids whose orbits cross the Earth\'s orbit similar to that of 1862 Apollo (a > 1.0 AU; q < 1.017 AU).
+    desc: Near-Earth asteroids whose orbits cross the Earth's orbit similar to that of 1862 Apollo (a > 1.0 AU; q < 1.017 AU).
     orbit_sentence: whose orbit crosses the orbit of Earth
 
 - model: spaceobjects.OrbitClass
@@ -124,7 +124,7 @@
     name: Interior-Earth Asteroid
     slug: interior-earth-asteroid
     desc: Asteroids with orbits contained entirely within the orbit of the Earth (Q < 0.983 AU)
-    orbit_sentence: with an orbit that is entirely confined within Earth\'s orbit
+    orbit_sentence: with an orbit that is entirely confined within Earth's orbit
 
 - model: spaceobjects.OrbitClass
   pk: 16
@@ -177,8 +177,8 @@
     abbrev: TJN
     name: Jupiter Trojan
     slug: jupiter-trojan
-    desc: Asteroids traped in Jupiter\'s L4/L5 Lagrange points (4.6 AU < a < 5.5 AU; e < 0.3)
-    orbit_sentence: that shares Jupiter\'s orbit around the sun
+    desc: Asteroids traped in Jupiter's L4/L5 Lagrange points (4.6 AU < a < 5.5 AU; e < 0.3)
+    orbit_sentence: that shares Jupiter's orbit around the sun
 
 - model: spaceobjects.OrbitClass
   pk: 22
