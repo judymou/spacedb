@@ -120,10 +120,18 @@ ul.keyfacts li {
   height: 500px;
 }
 
+.vis-selector-container {
+  display: flex;
+  align-content: stretch;
+  flex-wrap: wrap;
+
+}
+
 .vis-selector {
   cursor: pointer;
+  width: 33%;
 }
 
 .vis-selector:hover {
-  box-shadow: 1px 1px 1px rgba(0, 0, 0, 1);
+  /*box-shadow: 1px 1px 1px rgba(0, 0, 0, 1);*/
 }

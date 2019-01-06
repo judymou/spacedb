@@ -1,11 +1,10 @@
 (function() {
   // Create the visualization and put it in our div.
-  const viz = new Spacekit.Container(document.querySelector('.vis-container'), {
+  const viz = new Spacekit.Container(document.querySelector('.vis-container'), Object.assign({
     //assetPath: 'http://localhost:8001/src/assets',
     assetPath: '/static/spacekit',
     startDate: Date.now(),
-    jedPerSecond: 0.1,
-  });
+  }, window.VIZ_SIMULATION_OPTS));
 
   // Create a skybox using NASA TYCHO artwork.
   viz.createSkybox(Spacekit.SkyboxPresets.NASA_TYCHO);
@@ -24,7 +23,7 @@
   viz.createObject('neptune', Spacekit.SpaceObjectPresets.NEPTUNE);
 
   window.EPHEMERIS.forEach(function(ephem) {
-    const spaceobject = viz.createObject('spaceobject', Object.assign(window.VIZ_OPTS, {
+    const spaceobject = viz.createObject('spaceobject', Object.assign(window.VIZ_OBJECT_OPTS, {
       ephem: new Spacekit.Ephem(ephem, 'deg'),
     }));
   });

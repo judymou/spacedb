@@ -27,7 +27,11 @@ window.EPHEMERIS = [
 },
 {% endfor %}
 ];
-window.VIZ_OPTS = {};
+
+window.VIZ_SIMULATION_OPTS = {
+  jedPerSecond: 40,
+};
+window.VIZ_OBJECT_OPTS = {};
 </script>
 <script src="{% static "js/main.js" %}"></script>
 {% endblock %}
@@ -42,12 +46,14 @@ window.VIZ_OPTS = {};
 {% block content %}
 <div class="row">
   <div class="item-container col-sm-8">
-    <p>
-      Welcome to SpaceReference.org. The purpose of this site is to catalog and showcase every known object in space.  We've started with asteroids and comets but this <a href="https://www.github.com/judymou/spacedb">open-source</a> project is being quickly expanded.
-    </p>
-    <p>
-      SpaceDB compiles data from the NASA/JPL Small Body Database, the IAU Minor Planet Center, and the NASA/JPL Center for Near Earth Object Studies.
-    </p>
+    <div class="item-container__inner">
+      <p>
+        Welcome to SpaceReference.org. The purpose of this site is to catalog and showcase every known object in space.  We've started with asteroids and comets but this <a href="https://www.github.com/judymou/spacedb">open-source</a> project is being quickly expanded.
+      </p>
+      <p>
+        SpaceDB compiles data from the NASA/JPL Small Body Database, the IAU Minor Planet Center, and the NASA/JPL Center for Near Earth Object Studies.
+      </p>
+    </div>
   </div>
   <div class="item-container item-container__rightside col-sm-4">
     <div class="item-container__inner">
@@ -56,108 +62,111 @@ window.VIZ_OPTS = {};
     </div>
   </div>
 </div>
+<div class="item-container">
+  <div class="item-container__inner">
+    <h2>Asteroids</h2>
+    <div>
+      <p>
+        We've organized hundreds of thousands celestial objects into these categories below for your perusal.
+      </p>
+    </div>
+    <div class="vis-container vis-container__home"></div>
+    <div class="vis-selector-container">
+      <div class="vis-selector" data-showvis="LARGEST">
+        <h3>Largest</h3>
+        <p>
+          These are among the largest and earliest discovered asteroids in our solar system.
+        </p>
+        <p>
+          <ol>
+            <li><a href="/asteroid/1-ceres">1 Ceres</a></li>
+            <li><a href="/asteroid/4-vesta">4 Vesta</a></li>
+            <li><a href="/asteroid/2-pallas">2 Pallas</a></li>
+            <li><a href="/asteroid/10-hygiea">10 Hygiea</a></li>
+            <li><a href="/asteroid/704-interamnia-1910-ku">704 Interamnia</a></li>
+    <!--
+          {% for space_object in space_objects %}
+            <li><a href="/asteroid/{{space_object.slug}}">{{space_object.name}}</a></li>
+          {% endfor %}
+    -->
+          </ol>
+        </p>
+      </div>
+      <div class="vis-selector" data-showvis="VISITED">
+        <h3>Targets of Exploration</h3>
+        <p>
+          These objects have been visited by spacecraft.
+        </p>
+        <p>
+          <ol>
+            <li><a href="/asteroid/101955-bennu-1999-rq36">Bennu</a> - visited by OSIRIS-Rex</li>
+            <li><a href="/asteroid/162173-ryugu-1999-ju3">Ryugu</a> - visited by Hayabusa 2</li>
+            <li><a href="/asteroid/2867-steins-1969-vc">Steins</a> - visited by Rosetta</li>
+            <li><a href="/asteroid/21-lutetia">Lutetia</a> - visited by Rosetta</li>
+            <li><a href="/asteroid/486958-2014-mu69">Ultima Thule</a> - visited by New Horizons</li>
+          </ol>
+        </p>
+      </div>
+      <div class="vis-selector" data-showvis="APPROACHES">
+        <h3>Upcoming Approaches</h3>
+        <p>
+          These objects have upcoming fly-bys of Earth.
+        </p>
+        <p>
+          <ol>
+          {% for event in close_approaches %}
+            <li><a href="/asteroid/{{event.space_object.slug}}">{{event.space_object.name}}</a> - {{event.date | date}}</li>
+          {% endfor %}
+          </ol>
+        </p>
+      </div>
+      <div class="vis-selector" data-showvis="POTENTIAL_EXPLORATION">
+        <h3>Potential for Exploration</h3>
+        <p>
+          It is relatively inexpensive to send a spacecraft to these objects in terms of propulsive cost (listed by delta-v).
+        </p>
+        <p>
+          <ol>
+          {% for nhats in nhats_objects %}
+            <li><a href="/asteroid/{{nhats.space_object.slug}}">{{nhats.space_object.name}}</a> - {{nhats.min_dv}} km/s</li>
+          {% endfor %}
+          </ol>
+        </p>
+      </div>
+      <div class="vis-selector" data-showvis="SENTRY">
+        <h3>Potential Impactors</h3>
+        <p>
+          These objects have the potential to impact Earth (listed by probability of impact).
+        </p>
+        <p>
+          <ol>
+          {% for event in potential_impactors %}
+            <li><a href="/asteroid/{{event.space_object.slug}}">{{event.space_object.name}}</a> - {{event.get_prob_percentage}}%, {{event.date | date}}</li>
+          {% endfor %}
+          </ol>
+        </p>
+      </div>
+      <div class="vis-selector" data-showvis="NAMED_AFTER">
+        <h3>In Honor Of...</h3>
+        <p>
+          These objects are named after notable people.
+        </p>
+        <p>
+          <ol>
+            <li><a href="/asteroid/2001-einstein-1973-eb">2001 Einstein</a></li>
+            <li><a href="/asteroid/7672-hawking-1995-uo2">7672 Hawking</a></li>
+            <li><a href="/asteroid/2709-sagan-1982-fh">2709 Sagan</a></li>
+            <li><a href="/asteroid/6469-armstrong-1982-pc">6469 Armstrong</a></li>
+            <li><a href="/asteroid/6471-collins-1983-eb1">6471 Collins</a></li>
+          </ol>
+        </p>
+      </div> <!-- end vis-selector -->
+    </div> <!-- end vis-selector-container -->
+  </div> <!-- end item-container__inner -->
+</div> <!-- end item-container -->
+<hr/>
 <div class="row">
-  <h2>Asteroids</h2>
-  <div>
-    <p>
-      We've organized hundreds of thousands celestial objects into these categories below for your perusal.
-    </p>
-  </div>
-  <div class="col-sm-4 vis-selector__DISABLED" data-showvis="LARGEST">
-    <h3>Largest</h3>
-    <p>
-      These are among the largest and earliest discovered asteroids in our solar system.
-    </p>
-    <p>
-      <ol>
-        <li><a href="/asteroid/1-ceres">1 Ceres</a></li>
-        <li><a href="/asteroid/4-vesta">4 Vesta</a></li>
-        <li><a href="/asteroid/2-pallas">2 Pallas</a></li>
-        <li><a href="/asteroid/10-hygiea">10 Hygiea</a></li>
-        <li><a href="/asteroid/704-interamnia-1910-ku">704 Interamnia</a></li>
-<!--
-      {% for space_object in space_objects %}
-        <li><a href="/asteroid/{{space_object.slug}}">{{space_object.name}}</a></li>
-      {% endfor %}
--->
-      </ol>
-    </p>
-  </div>
-  <div class="col-sm-4 vis-selector__DISABLED" data-showvis="VISITED">
-    <h3>Targets of Exploration</h3>
-    <p>
-      These objects have been visited by spacecraft.
-    </p>
-    <p>
-      <ol>
-        <li><a href="/asteroid/101955-bennu-1999-rq36">Bennu</a> - visited by OSIRIS-Rex</li>
-        <li><a href="/asteroid/162173-ryugu-1999-ju3">Ryugu</a> - visited by Hayabusa 2</li>
-        <li><a href="/asteroid/2867-steins-1969-vc">Steins</a> - visited by Rosetta</li>
-        <li><a href="/asteroid/21-lutetia">Lutetia</a> - visited by Rosetta</li>
-        <li><a href="/asteroid/486958-2014-mu69">Ultima Thule</a> - visited by New Horizons</li>
-      </ol>
-    </p>
-  </div>
-  <div class="col-sm-4 vis-selector__DISABLED" data-showvis="APPROACHES">
-    <h3>Upcoming Approaches</h3>
-    <p>
-      These objects have upcoming fly-bys of Earth.
-    </p>
-    <p>
-      <ol>
-      {% for event in close_approaches %}
-        <li><a href="/asteroid/{{event.space_object.slug}}">{{event.space_object.name}}</a> - {{event.date | date}}</li>
-      {% endfor %}
-      </ol>
-    </p>
-  </div>
-</div>
-<div class="row">
-  <div class="vis-container vis-container__home"></div>
-</div>
-<div class="row">
-  <div class="col-sm-4 vis-selector__DISABLED" data-showvis="POTENTIAL_EXPLORATION">
-    <h3>Potential for Exploration</h3>
-    <p>
-      It is relatively inexpensive to send a spacecraft to these objects in terms of propulsive cost (listed by delta-v).
-    </p>
-    <p>
-      <ol>
-      {% for nhats in nhats_objects %}
-        <li><a href="/asteroid/{{nhats.space_object.slug}}">{{nhats.space_object.name}}</a> - {{nhats.min_dv}} km/s</li>
-      {% endfor %}
-      </ol>
-    </p>
-  </div>
-  <div class="col-sm-4 vis-selector__DISABLED" data-showvis="SENTRY">
-    <h3>Potential Impactors</h3>
-    <p>
-      These objects have the potential to impact Earth (listed by probability of impact).
-    </p>
-    <p>
-      <ol>
-      {% for event in potential_impactors %}
-        <li><a href="/asteroid/{{event.space_object.slug}}">{{event.space_object.name}}</a> - {{event.get_prob_percentage}}%, {{event.date | date}}</li>
-      {% endfor %}
-      </ol>
-    </p>
-  </div>
-  <div class="col-sm-4 vis-selector__DISABLED" data-showvis="NAMED_AFTER">
-    <h3>In Honor Of...</h3>
-    <p>
-      These objects are named after notable people.
-    </p>
-    <p>
-      <ol>
-        <li><a href="/asteroid/2001-einstein-1973-eb">2001 Einstein</a></li>
-        <li><a href="/asteroid/7672-hawking-1995-uo2">7672 Hawking</a></li>
-        <li><a href="/asteroid/2709-sagan-1982-fh">2709 Sagan</a></li>
-        <li><a href="/asteroid/6469-armstrong-1982-pc">6469 Armstrong</a></li>
-        <li><a href="/asteroid/6471-collins-1983-eb1">6471 Collins</a></li>
-      </ol>
-    </p>
-  </div>
-  <div>
+  <div class="col-sm-12">
     Orbit types of objects:
     <ul>
     {% for orbit_class in orbit_classes %}

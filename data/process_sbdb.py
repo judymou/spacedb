@@ -8,6 +8,7 @@ import os
 import sys
 
 import django
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from django.utils.text import slugify
 
@@ -38,9 +39,6 @@ def process(reader):
         if count % 10000 == 0:
             logger.info(count)
 
-        if count > 20000:
-            break
-
         if count % 30000 == 0:
             # Subdivide insertions - slower, but needed for low memory
             # environments
@@ -67,13 +65,18 @@ def process(reader):
                 epoch = float(row['epoch']),
                 is_neo = True if row['neo'] == 'Y' else False,
                 is_pha = True if row['pha'] == 'Y' else False,
-                orbit_class = OrbitClass.objects.get(abbrev=row['class']),
+                orbit_class = OrbitClass.objects.get(abbrev__iexact=row['class']),
                 diameter = float(row['diameter'].decode('utf-8')) if row['diameter'] else None,
                 spec_B = row['spec_B'],
                 spec_T = row['spec_T'],
                 H = float(row['H']),
                 sbdb_entry = row,
                 )
+        except ObjectDoesNotExist:
+            print 'ObjectDoesNotExist: Failed to parse row %d (%s): %s' % \
+                            (count, row.get('full_name', '?'), json.dumps(row))
+            failures_other += 1
+            continue
         except ValueError:
             #print 'Failed to parse row %d (%s): %s' % \
             #                (count, row.get('full_name', '?'), json.dumps(row))
