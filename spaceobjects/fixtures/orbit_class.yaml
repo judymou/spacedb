@@ -177,7 +177,7 @@
     abbrev: TJN
     name: Jupiter Trojan
     slug: jupiter-trojan
-    desc: Asteroids traped in Jupiter's L4/L5 Lagrange points (4.6 AU < a < 5.5 AU; e < 0.3)
+    desc: Asteroids trapped in Jupiter's L4/L5 Lagrange points (4.6 AU < a < 5.5 AU; e < 0.3)
     orbit_sentence: that shares Jupiter's orbit around the sun
 
 - model: spaceobjects.OrbitClass
