@@ -1,0 +1,99 @@
+{% extends 'layout.html' %}
+{% load humanize %}
+{% load static %}
+
+{% block title%}{{orbit_class.name}}s | Space Reference{% endblock %}
+
+{% block scripts %}
+<script src="{% static "js/lib/three.r98.min.js" %}"></script>
+<script src="{% static "js/lib/TrackballControls.js" %}"></script>
+<script src="{% static "js/lib/spacekit.js" %}"></script>
+<script src="{% static "js/orbitDiagram.js" %}"></script>
+<script src="{% static "js/lib/d3.v2.js" %}"></script>
+<!--
+<script src="http://localhost:8001/src/lib/three.r98.min.js"></script>
+<script src="http://localhost:8001/src/lib/TrackballControls.js"></script>
+<script src="http://localhost:8001/build/spacekit.js"></script>
+-->
+<script>
+window.EPHEMERIS = [
+{% for object in objects %}
+{
+  a: {{object.a}},
+  e: {{object.e}},
+  i: {{object.i}},
+  om: {{object.om}},
+  w: {{object.w}},
+  ma: {{object.ma}},
+  epoch: {{object.epoch}}
+},
+{% endfor %}
+];
+window.VIZ_OPTS = {
+  ecliptic: {
+    displayLines: false,
+  },
+};
+
+var diagram = new OrbitDiagram('.orbit-diagram', {
+  // object's semimajor axis should be 40px
+  pixels_per_au: 40 / {{objects.0.a}},
+});
+diagram.prepareRender();
+diagram.renderPlanets(true /* useSmartLabels */, {{objects.0.a}});
+{% for object in objects %}
+diagram.plotOrbit({{object.a}}, {{object.e}}, {{object.w}}, '#fff');
+{% endfor %}
+</script>
+<script src="{% static "js/main.js" %}"></script>
+{% endblock %}
+
+{% block header %}
+<header class="site-header">
+  <div class="topnav">
+    <strong><a href="/" class="nav-link">Space Reference</a></strong>
+  </div>
+  <h1 class="mainheading">{{orbit_class.name}}s</h1>
+  <div class="orbit-diagram"></div>
+</header>
+{% endblock %}
+
+{% block content %}
+<div>
+  <div class="item-container col-sm-8">
+    <div class="item-container__inner">
+      <h3>About</h3>
+      {{orbit_class.name}}s ({{orbit_class.abbrev}}) are objects {{orbit_class.orbit_sentence}}.  There are {{count|intcomma}} {{orbit_class.name|lower}}s in this database out of {{total_count|intcomma}} total, accounting for {{population_pct|floatformat:1}}% of objects.
+
+      <h3>Examples</h3>
+      Here are some asteroids that belong to the {{orbit_class.abbrev}} family:
+      <ul>
+        {% for object in objects %}
+          <li><a href="/asteroid/{{object.slug}}">{{object.name}}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="item-container item-container__rightside col-sm-4">
+    <div class="item-container__inner">
+      <h3>Search</h3>
+      <div class="react-search"></div>
+      &nbsp;&nbsp; or view a <a rel="nofollow" href="/asteroid/random">random</a> object
+    </div>
+  </div>
+  <div class="item-container col-sm-12">
+    <div class="item-container__inner">
+      <h3>Visualization</h3>
+      <div class="vis-panel">
+        <div class="vis-controls">
+          <button class="vis-controls__slower">Slower</button>
+          <button class="vis-controls__faster">Faster</button>
+          <button class="vis-controls__set-date">Set Date</button>
+          <span class="vis-status"></span>
+        </div>
+        <div id="orbit-sim" class="vis-container vis-container__detail"></div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

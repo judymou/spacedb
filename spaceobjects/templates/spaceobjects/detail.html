@@ -50,7 +50,7 @@ diagram.plotOrbit({{object.a}}, {{object.e}}, {{object.w}}, '#fff', '{{object.ge
   <h1 class="mainheading">{{object.name}}</h1>
   <h2 class="subheading">
     {% if object.fullname == object.name %}
-      {{object.get_size_adjective|capfirst}} {{object.get_orbit_class}}
+      {{object.get_size_adjective|capfirst}} {{object.orbit_class.name}}
     {% else %}
       {{object.fullname}}
     {% endif %}
@@ -72,7 +72,7 @@ diagram.plotOrbit({{object.a}}, {{object.e}}, {{object.w}}, '#fff', '{{object.ge
     <div class="item-container__inner">
       <h3>Key Facts</h3>
       <ul class="keyfacts">
-        <li>Classified as a {{object.get_orbit_class}}</li>
+        <li>Classified as a <a href="/category/{{object.orbit_class.slug}}">{{object.orbit_class.name}}</a></li>
         {% if object.has_size_info %}
           <li>Comparable in size to {{object.get_diameter_comparison}} ({{object.sbdb_entry.diameter | floatformat:2}} km diameter)</li>
         {% elif object.has_size_info_estimate %}
@@ -263,7 +263,7 @@ diagram.plotOrbit({{object.a}}, {{object.e}}, {{object.w}}, '#fff', '{{object.ge
   </div>
   <div class="item-container col-sm-12">
     <div class="item-container__inner">
-      <h3>Orbital Simulation</h3>
+      <h3>Orbit Simulation</h3>
       <div class="vis-panel">
         <div class="vis-controls">
           <button class="vis-controls__slower">Slower</button>

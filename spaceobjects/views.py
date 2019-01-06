@@ -4,9 +4,10 @@ from __future__ import unicode_literals
 import json
 from random import randint
 
-from django.http import JsonResponse
+from django.core.exceptions import ObjectDoesNotExist
+from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
-from spaceobjects.models import SpaceObject, SentryEvent, CloseApproach, NhatsObject
+from spaceobjects.models import SpaceObject, SentryEvent, CloseApproach, NhatsObject, OrbitClass
 
 def index(request):
     # TODO(ian): order by pdes
@@ -55,8 +56,22 @@ def detail(request, slug):
                 'sentry_events': sentry_events,
             })
 
-def orbit_classes(request, category):
-    pass
+def category(request, category):
+    try:
+        orbit_class = OrbitClass.objects.get(slug=category)
+    except ObjectDoesNotExist:
+        return HttpResponse('unknown category')
+
+    count = SpaceObject.objects.filter(orbit_class=orbit_class).count()
+    total_count = SpaceObject.objects.all().count()
+    population_pct = count / float(total_count) * 100.0
+    return render(request, 'spaceobjects/category.html', {
+                'orbit_class': orbit_class,
+                'count': count,
+                'total_count': total_count,
+                'population_pct': population_pct,
+                'objects': SpaceObject.objects.filter(orbit_class=orbit_class)[:20],
+            })
 
 def search(request):
     search_str = request.GET.get('q')

@@ -18,6 +18,9 @@ class OrbitClass(models.Model):
     desc = models.CharField(max_length=500)
     orbit_sentence = models.CharField(max_length=500)
 
+    def __str__(self):
+        return self.abbrev
+
     class Meta:
         indexes = [
             models.Index(fields=['slug']),
@@ -52,12 +55,6 @@ class SpaceObject(models.Model):
     # sbdb blob
     sbdb_entry = JSONField()
 
-    class Meta:
-        indexes = [
-            models.Index(fields=['fullname']),
-            models.Index(fields=['slug']),
-        ]
-
     def get_absolute_url(self):
         return '/asteroid/%s' % self.slug
 
@@ -76,12 +73,6 @@ class SpaceObject(models.Model):
         if self.fullname == '1 Ceres':
             return 'object'
         return 'asteroid'
-
-    def get_orbit_class(self):
-        return self.orbit_class.name
-
-    def get_orbit_desc(self):
-        return self.orbit_class.orbit_sentence
 
     def get_composition(self):
         return get_composition(self)
@@ -201,6 +192,15 @@ class SpaceObject(models.Model):
           'name': self.name,
           'slug': self.slug,
         }
+
+    def __str__(self):
+        return self.fullname
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['fullname']),
+            models.Index(fields=['slug']),
+        ]
 
 class CloseApproach(models.Model):
     space_object = models.ForeignKey(SpaceObject)
