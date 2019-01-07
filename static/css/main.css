@@ -135,3 +135,9 @@ ul.keyfacts li {
 .vis-selector:hover {
   /*box-shadow: 1px 1px 1px rgba(0, 0, 0, 1);*/
 }
+
+/* Plot circle on google map */
+#size-comparison {
+  height: 350px;;  
+}
+

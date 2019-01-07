@@ -9,6 +9,7 @@
 <script src="{% static "js/lib/TrackballControls.js" %}"></script>
 <script src="{% static "js/lib/spacekit.js" %}"></script>
 <script src="{% static "js/orbitDiagram.js" %}"></script>
+<script src="{% static "js/sizeComparison.js" %}"></script>
 <script src="{% static "js/lib/d3.v2.js" %}"></script>
 <!--
 <script src="http://localhost:8001/src/lib/three.r98.min.js"></script>
@@ -41,8 +42,17 @@ var diagram = new OrbitDiagram('.orbit-diagram', {
 diagram.prepareRender();
 diagram.renderPlanets(true /* useSmartLabels */, {{object.a}});
 diagram.plotOrbit({{object.a}}, {{object.e}}, {{object.w}}, '#fff', '{{object.get_shorthand}}');
+
+function initMap() {
+  var sizeComparison = new SizeComparison('#size-comparison', {
+  });
+  sizeComparison.render({{object.get_diameter_estimate}});
+}
 </script>
 <script src="{% static "js/main.js" %}"></script>
+<script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCGGGEBu3lHIz-sfzh-OB6PUe3-6mBteQI&callback=initMap">
+</script>
 {% endblock %}
 
 {% block header %}
@@ -262,6 +272,12 @@ diagram.plotOrbit({{object.a}}, {{object.e}}, {{object.w}}, '#fff', '{{object.ge
           <li>Spectral type (SMASS): {{object.spec_B}}</li>
         {% endif %}
       </ul>
+    </div>
+  </div>
+  <div class="item-container item-container__rightside col-sm-4">
+    <div class="item-container__inner">
+      <h3>Size Comparison</h3>
+        <div id="size-comparison"></div>
     </div>
   </div>
   <div class="item-container col-sm-12">
