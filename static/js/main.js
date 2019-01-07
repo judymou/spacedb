@@ -15,7 +15,7 @@
   // Then add some planets
   viz.createObject('mercury', Spacekit.SpaceObjectPresets.MERCURY);
   viz.createObject('venus', Spacekit.SpaceObjectPresets.VENUS);
-  viz.createObject('earth', Spacekit.SpaceObjectPresets.EARTH);
+  viz.createObject('earth', Object.assign(Spacekit.SpaceObjectPresets.EARTH, { labelText: 'Earth' }));
   viz.createObject('mars', Spacekit.SpaceObjectPresets.MARS);
   viz.createObject('jupiter', Spacekit.SpaceObjectPresets.JUPITER);
   viz.createObject('saturn', Spacekit.SpaceObjectPresets.SATURN);
