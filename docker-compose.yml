@@ -4,7 +4,7 @@ services:
   db:
     image: postgres:10.1-alpine
     volumes:
-      - postgres_volume:/var/lib/postgresql/data/
+      - /var/spacedb/postgres/data:/var/lib/postgresql/data/
     networks:
       - db_network
 
@@ -41,6 +41,3 @@ networks:
     driver: bridge
   db_network:
     driver: bridge
-
-volumes:
-  postgres_volume:
