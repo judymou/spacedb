@@ -105,6 +105,7 @@ ul.keyfacts li {
 }
 
 .vis-container {
+  position: relative;
   background-color: #000;
 }
 
@@ -138,6 +139,6 @@ ul.keyfacts li {
 
 /* Plot circle on google map */
 #size-comparison {
-  height: 350px;;  
+  height: 350px;
 }
 
