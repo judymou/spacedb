@@ -498,6 +498,11 @@ var Spacekit = (function (exports) {
       text.style.position = 'absolute';
       text.style.marginLeft = '1.5em';
 
+      text.style.backgroundColor = '#0009';
+      text.style.borderRadius = '8px';
+      text.style.padding = '1px 5px';
+      text.style.border = '1px solid #5f5f5f';
+
       this._container.getContainerElement().appendChild(text);
       this._label = text;
     }
