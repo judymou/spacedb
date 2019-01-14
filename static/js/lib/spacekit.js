@@ -308,6 +308,9 @@ var Spacekit = (function (exports) {
 
       // Cached orbital points.
       this._points = null;
+
+      // Cached ellipse.
+      this._ellipse = null;
     }
 
     getOrbitPoints() {
@@ -398,11 +401,14 @@ var Spacekit = (function (exports) {
     }
 
     getEllipse() {
-      const pointGeometry = this.getOrbitPoints();
-      return new THREE.Line(pointGeometry,
-        new THREE.LineBasicMaterial({
-          color: this._options.color,
-        }), THREE.LineStrip);
+      if (!this._ellipse) {
+        const pointGeometry = this.getOrbitPoints();
+        this._ellipse = new THREE.Line(pointGeometry,
+          new THREE.LineBasicMaterial({
+            color: this._options.color,
+          }), THREE.LineStrip);
+      }
+      return this._ellipse;
     }
 
     getLinesToEcliptic() {
@@ -421,6 +427,14 @@ var Spacekit = (function (exports) {
         }),
         THREE.LineStrip,
       );
+    }
+
+    getHexColor() {
+      return this._ellipse.material.color.getHex();
+    }
+
+    setHexColor(hexVal) {
+      return this._ellipse.material.color = new THREE.Color(hexVal);
     }
   }
 
@@ -620,6 +634,10 @@ var Spacekit = (function (exports) {
         return this._options.theme.color || 0xffffff;
       }
       return 0xffffff;
+    }
+
+    getOrbit() {
+      return this._orbit;
     }
 
     getId() {
@@ -863,6 +881,7 @@ var Spacekit = (function (exports) {
       };
 
       const geometry = new THREE.BufferGeometry();
+      geometry.setDrawRange(0, 0);
       Object.keys(this._attributes).forEach((attributeName) => {
         const attribute = this._attributes[attributeName];
         // attribute.setDynamic(true);
@@ -909,6 +928,8 @@ var Spacekit = (function (exports) {
         }
       }
       this._shaderMaterial.needsUpdate = true;
+      this._geometry.setDrawRange(0, this._particleCount);
+      this._geometry.needsUpdate = true;
 
       if (!this._addedToScene && this._container) {
         // This happens lazily when the first data point is added in order to
@@ -958,7 +979,7 @@ var Spacekit = (function (exports) {
       // stats.js panel
       this._stats = null;
       this._fps = 1;
-      this._lastRenderedTime = Date.now();
+      this._lastUpdatedTime = Date.now();
 
       this.init();
       this.animate();
@@ -1003,28 +1024,27 @@ var Spacekit = (function (exports) {
 
     animate() {
       window.requestAnimationFrame(this.animate.bind(this));
-      if (this._isPaused) {
-        return;
-      }
 
       if (this._stats) {
         this._stats.begin();
       }
 
-      if (this._jedDelta) {
-        this._jed += this._jedDelta;
-      } else {
-        // N jed per second
-        this._jed += (this._jedPerSecond) / this._fps;
+      if (!this._isPaused) {
+        if (this._jedDelta) {
+          this._jed += this._jedDelta;
+        } else {
+          // N jed per second
+          this._jed += (this._jedPerSecond) / this._fps;
+        }
+
+        const timeDelta = (Date.now() - this._lastUpdatedTime) / 1000;
+        this._lastUpdatedTime = Date.now();
+        this._fps = (1 / timeDelta) || 1;
       }
 
       this.update();
       this._cameraControls.update();
       this._renderer.render(this._scene, this._camera);
-
-      const timeDelta = (Date.now() - this._lastRenderedTime) / 1000;
-      this._lastRenderedTime = Date.now();
-      this._fps = (1 / timeDelta) || 1;
 
       if (this.onTick) {
         this.onTick();
@@ -1090,7 +1110,7 @@ var Spacekit = (function (exports) {
     }
 
     start() {
-      this._lastRenderedTime = Date.now();
+      this._lastUpdatedTime = Date.now();
       this._isPaused = false;
     }
 
