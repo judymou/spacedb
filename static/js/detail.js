@@ -3,11 +3,11 @@ var config = {
   container: 'celestial-map',
   //projection: 'stereographic',
   //projection: 'airy',
-  projection: 'equirectangular',
+  //projection: 'equirectangular',
   datapath: 'https://ofrohn.github.io/data/',
   location: true,
   dsos: {
-    show: true,
+    show: false,
   },
   stars: {
     show: true,
@@ -17,9 +17,33 @@ var config = {
   constellations: {
     show: true,
     desig: false,  // Show full names of constellations
+    namestyle: { fill:'#cccc99', align: 'center', baseline: 'middle',
+                 font: ['12px Helvetica, Arial, sans-serif',  // Style for constellations
+                        '9px Helvetica, Arial, sans-serif',  // Different fonts for diff.
+                        '8px Helvetica, Arial, sans-serif']},// ranked constellations
+    linestyle: { stroke: "#cccccc", width: 1, opacity: 0.3 },
   },
   planets: {
     show: true,
+    //which: ['sol', 'mer', 'ven', 'lun', 'mar', 'jup', 'sat', 'ura', 'nep'],
+    style: { fill: '#00ccff', font: 'bold 12px \'Lucida Sans Unicode\', Consolas, sans-serif',
+             align: 'center', baseline: 'middle' },
+    symbols: {
+      'sol': {symbol: '\u25cf Sun', fill: '#ffff00'},
+      'mer': {symbol: '\u25cf Mercury', fill: '#cccccc'},
+      'ven': {symbol: '\u25cf Venus', fill: '#eeeecc'},
+      'ter': {symbol: '\u2295', fill: '#00ffff'},
+      'lun': {symbol: '\u25cf Moon', fill: '#ffffff'}, // overridden by generated cresent
+      'mar': {symbol: '\u25cf Mars', fill: '#ff9999'},
+      'cer': {symbol: '\u25cf Ceres', fill: '#cccccc'},
+      'ves': {symbol: '\u25cf Vesta', fill: '#cccccc'},
+      'jup': {symbol: '\u25cf Jupiter', fill: '#ff9966'},
+      'sat': {symbol: '\u25cf Saturn', fill: '#ffcc66'},
+      'ura': {symbol: '\u25cf Uranus', fill: '#66ccff'},
+      'nep': {symbol: '\u25cf Neptune', fill: '#6666ff'},
+      'plu': {symbol: '\u25cf Pluto', fill: '#aaaaaa'},
+      'eri': {symbol: '\u25cf Eris', fill: '#eeeeee'}
+    },
   },
   mw: {
     style: { fill: '#ffffff', opacity: 0.05 }  // Style for MW layers
