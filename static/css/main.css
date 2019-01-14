@@ -166,6 +166,11 @@ ul.keyfacts li {
   /*box-shadow: 1px 1px 1px rgba(0, 0, 0, 1);*/
 }
 
+.skymap-container{
+  width: 75%;
+  margin: 0 auto;
+}
+
 /* Plot circle on google map */
 #size-comparison {
   height: 350px;

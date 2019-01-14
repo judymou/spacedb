@@ -4,13 +4,20 @@
 
 {% block title%}{{object.name}} | Space Reference{% endblock %}
 
+{% block css %}
+<link rel="stylesheet" href="{% static "css/lib/celestial0.5.css" %}" />
+{% endblock %}
+
 {% block scripts %}
 <script src="{% static "js/lib/three.r98.min.js" %}"></script>
 <script src="{% static "js/lib/TrackballControls.js" %}"></script>
 <script src="{% static "js/lib/spacekit.js" %}"></script>
 <script src="{% static "js/orbitDiagram.js" %}"></script>
 <script src="{% static "js/sizeComparison.js" %}"></script>
-<script src="{% static "js/lib/d3.v2.js" %}"></script>
+<script src="{% static "js/lib/d3.v3.js" %}"></script>
+<script src="{% static "js/lib/d3.geo.zoom.js" %}"></script>
+<script src="{% static "js/lib/d3.geo.projection.js" %}"></script>
+<script src="{% static "js/lib/celestial0.5.js" %}"></script>
 <!--
 <script src="http://localhost:8001/src/lib/three.r98.min.js"></script>
 <script src="http://localhost:8001/src/lib/TrackballControls.js"></script>
@@ -36,21 +43,41 @@ window.VIZ_OBJECT_OPTS = {
   labelText: '{{object.name}}',
 };
 
-var diagram = new OrbitDiagram('.orbit-diagram', {
-  // object's semimajor axis should be 40px
-  pixels_per_au: 40 / {{object.a}},
-});
-diagram.prepareRender();
-diagram.renderPlanets(true /* useSmartLabels */, {{object.a}});
-diagram.plotOrbit({{object.a}}, {{object.e}}, {{object.w}}, '#fff', '{{object.get_shorthand}}');
-
-function initMap() {
-  var sizeComparison = new SizeComparison('#size-comparison', {
-  });
-  sizeComparison.render({{object.get_diameter_estimate}});
-}
+// This is here because celestial.js doesn't play nice with other canvases on
+// the page. Don't load anything else until celestial is done loading.
+window.pageReady = false;
 </script>
 <script src="{% static "js/main.js" %}"></script>
+<script src="{% static "js/detail.js" %}"></script>
+<script>
+let onPageReadyHandlers = [];
+
+onPageReadyHandlers.push(() => {
+  const diagram = new OrbitDiagram('.orbit-diagram', {
+    // object's semimajor axis should be 40px
+    pixels_per_au: 40 / {{object.a}},
+  });
+  diagram.prepareRender();
+  diagram.renderPlanets(true /* useSmartLabels */, {{object.a}});
+  diagram.plotOrbit({{object.a}}, {{object.e}}, {{object.w}}, '#fff', '{{object.get_shorthand}}');
+});
+
+onPageReadyHandlers.push(init3dVis);
+
+function initMap() {
+  onPageReadyHandlers.push(() => {
+    const sizeComparison = new SizeComparison('#size-comparison', {});
+    sizeComparison.render({{object.get_diameter_estimate}});
+  });
+}
+
+const t = setInterval(function() {
+  if (window.pageReady) {
+    onPageReadyHandlers.forEach(fn => fn());
+    clearInterval(t);
+  }
+}, 500);
+</script>
 <script async defer
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCGGGEBu3lHIz-sfzh-OB6PUe3-6mBteQI&callback=initMap">
 </script>
@@ -292,6 +319,15 @@ function initMap() {
           <span class="vis-status"></span>
         </div>
         <div id="orbit-sim" class="vis-container vis-container__detail"></div>
+      </div>
+    </div>
+  </div>
+  <div class="item-container col-sm-12">
+    <div class="item-container__inner">
+      <h3>Sky Map</h3>
+      <div class="skymap-container">
+        <div id="celestial-map" class="skymap-panel"></div>
+        <div id="celestial-form"></div>
       </div>
     </div>
   </div>
