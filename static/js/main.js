@@ -1,4 +1,5 @@
 (function() {
+
   // Create the visualization and put it in our div.
   const viz = new Spacekit.Container(document.querySelector('.vis-container'), Object.assign({
     //assetPath: 'http://localhost:8001/src/assets',
@@ -22,10 +23,12 @@
   viz.createObject('uranus', Spacekit.SpaceObjectPresets.URANUS);
   viz.createObject('neptune', Spacekit.SpaceObjectPresets.NEPTUNE);
 
-  window.EPHEMERIS.forEach(function(ephem) {
+  window.spaceobjects = {};
+  window.OBJECT_DEFINITIONS.forEach(function(objDef) {
     const spaceobject = viz.createObject('spaceobject', Object.assign(window.VIZ_OBJECT_OPTS, {
-      ephem: new Spacekit.Ephem(ephem, 'deg'),
+      ephem: new Spacekit.Ephem(objDef.ephem, 'deg'),
     }));
+    window.spaceobjects[objDef.slug] = spaceobject;
   });
 
   // Controls

@@ -14,16 +14,19 @@
 <script src="http://localhost:8001/build/spacekit.js"></script>
 -->
 <script>
-window.EPHEMERIS = [
+window.OBJECT_DEFINITIONS= [
 {% for object in space_objects %}
 {
-  a: {{object.a}},
-  e: {{object.e}},
-  i: {{object.i}},
-  om: {{object.om}},
-  w: {{object.w}},
-  ma: {{object.ma}},
-  epoch: {{object.epoch}}
+  slug: "{{object.slug}}",
+  ephem: {
+    a: {{object.a}},
+    e: {{object.e}},
+    i: {{object.i}},
+    om: {{object.om}},
+    w: {{object.w}},
+    ma: {{object.ma}},
+    epoch: {{object.epoch}}
+  }
 },
 {% endfor %}
 ];

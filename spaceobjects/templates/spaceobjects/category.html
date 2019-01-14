@@ -16,16 +16,19 @@
 <script src="http://localhost:8001/build/spacekit.js"></script>
 -->
 <script>
-window.EPHEMERIS = [
+window.OBJECT_DEFINITIONS = [
 {% for object in objects %}
 {
-  a: {{object.a}},
-  e: {{object.e}},
-  i: {{object.i}},
-  om: {{object.om}},
-  w: {{object.w}},
-  ma: {{object.ma}},
-  epoch: {{object.epoch}}
+  slug: "{{object.slug}}",
+  ephem : {
+    a: {{object.a}},
+    e: {{object.e}},
+    i: {{object.i}},
+    om: {{object.om}},
+    w: {{object.w}},
+    ma: {{object.ma}},
+    epoch: {{object.epoch}}
+  }
 },
 {% endfor %}
 ];
@@ -47,6 +50,13 @@ diagram.renderPlanets(true /* useSmartLabels */, {{objects.0.a}});
 {% for object in objects %}
 diagram.plotOrbit({{object.a}}, {{object.e}}, {{object.w}}, '#fff');
 {% endfor %}
+
+function selectOrbit(domElement) {
+  window.spaceobjects[domElement.dataset.slug].getOrbit().setHexColor(0xff0000);
+}
+function deselectOrbit(domElement) {
+  window.spaceobjects[domElement.dataset.slug].getOrbit().setHexColor(0xffffff);
+}
 </script>
 <script src="{% static "js/main.js" %}"></script>
 {% endblock %}
@@ -77,7 +87,8 @@ diagram.plotOrbit({{object.a}}, {{object.e}}, {{object.w}}, '#fff');
   <div class="item-container col-sm-4">
     <div class="item-container__inner tile-list">
       {% for object in objects %}
-        <div class="tile">
+        <div class="tile" data-slug="{{object.slug}}" onmouseover="if (typeof selectOrbit !== 'undefined') selectOrbit(this)"
+          onmouseout="if (typeof deselectOrbit !== 'undefined') deselectOrbit(this)">
           <a href="/asteroid/{{object.slug}}">
             <div>
               <h5>{{object.name}}</h5>
