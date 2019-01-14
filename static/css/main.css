@@ -171,3 +171,33 @@ ul.keyfacts li {
   height: 350px;
 }
 
+/* Category page */
+.tile-list {
+  padding:0;
+}
+
+.tile {
+  border-bottom: 1px solid #e8e8e8;
+  padding: 1em;
+}
+
+.tile:hover {
+  background: #d9edf7;
+}
+
+.tile a:hover {
+  text-decoration: none;
+}
+
+.tile a:hover h5 {
+  text-decoration: underline; 
+}
+
+.tile-content {
+  color: #000;
+}
+
+.tile-desc {
+  padding-top: 5px;
+}
+

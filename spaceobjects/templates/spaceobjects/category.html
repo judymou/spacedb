@@ -56,35 +56,50 @@ diagram.plotOrbit({{object.a}}, {{object.e}}, {{object.w}}, '#fff');
   <div class="topnav">
     <strong><a href="/" class="nav-link">Space Reference</a></strong>
   </div>
-  <h1 class="mainheading">{{orbit_class.name}}s</h1>
-  <div class="orbit-diagram"></div>
 </header>
 {% endblock %}
 
 {% block content %}
 <div>
-  <div class="item-container col-sm-8">
-    <div class="item-container__inner">
-      <h3>About</h3>
-      {{orbit_class.name}}s ({{orbit_class.abbrev}}) are objects {{orbit_class.orbit_sentence}}.  There are {{count|intcomma}} {{orbit_class.name|capfirst}}s in this database out of {{total_count|intcomma}} total, accounting for {{population_pct|floatformat:1}}% of objects.
-
-      <h3>Examples</h3>
-      Here are some objects that belong to the {{orbit_class.abbrev}} family:
-      <ul>
-        {% for object in objects %}
-          <li><a href="/asteroid/{{object.slug}}">{{object.name}}</a></li>
-        {% endfor %}
-      </ul>
-    </div>
-  </div>
-  <div class="item-container item-container__rightside col-sm-4">
+  <!--
+  <div class="item-container item-container__rightside col-sm-12">
     <div class="item-container__inner">
       <h3>Search</h3>
       <div class="react-search"></div>
       &nbsp;&nbsp; or view a <a rel="nofollow" href="/asteroid/random">random</a> object
     </div>
   </div>
+  -->
   <div class="item-container col-sm-12">
+    <h1 class="mainheading">{{orbit_class.name}}s</h1>
+    {{orbit_class.name}}s ({{orbit_class.abbrev}}) are objects {{orbit_class.orbit_sentence}}.  There are {{count|intcomma}} {{orbit_class.name|capfirst}}s in this database out of {{total_count|intcomma}} total, accounting for {{population_pct|floatformat:1}}% of objects.
+  </div>
+  <div class="item-container col-sm-4">
+    <div class="item-container__inner tile-list">
+      {% for object in objects %}
+        <div class="tile">
+          <a href="/asteroid/{{object.slug}}">
+            <div>
+              <h5>{{object.name}}</h5>
+              <div class="tile-content">
+                <span class="label label-danger">{{object.get_size_adjective}}</span>
+                {% if object.is_pha %}
+                  <span class="label label-warning">Potentially Hazardous</span>
+                {% else %}
+                  <span class="label label-info">Not Hazardous</span>
+                {% endif %}
+                <br>
+                <div class="tile-desc">
+                {{object.get_shorthand}} <!--was discovered in the year {{object.get_firstobs_date|date:"Y"}}.  It--> orbits the sun every {{object.sbdb_entry.per|floatformat:0|intcomma}} days, coming as close as {{object.get_perihelion|floatformat:2}} AU and reaching as far as {{object.get_aphelion|floatformat:2}} AU from the sun.
+                </div>
+              </div>
+            </div>
+          </a>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="item-container item-container__rightside col-sm-8">
     <div class="item-container__inner">
       <h3>Visualization</h3>
       <div class="vis-panel">
