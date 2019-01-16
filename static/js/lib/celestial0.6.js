@@ -12,43 +12,43 @@ var ANIMDISTANCE = 0.035,  // Rotation animation threshold, ~2deg in radians
     ANIMINTERVAL_P = 2500, // Projection duration in ms
     ANIMINTERVAL_Z = 1500, // Zoom duration scale in ms
     ZOOMEXTENT = 10;        // Maximum extent of zoom (max/min)
-    
+
 var cfg, prjMap, zoom, map, circle;
 
 // Show it all, with the given config, otherwise with default settings
 Celestial.display = function(config) {
   var par, container = Celestial.container,
       animations = [], current = 0, repeat = false, aID;
-  
+
   //Mash config with default settings
-  cfg = settings.set(config); 
+  cfg = settings.set(config);
   cfg.stars.size = cfg.stars.size || 7;  // Nothing works without these
 	cfg.stars.exponent = cfg.stars.exponent || -0.28;
-  cfg.center = cfg.center || [0,0];     
+  cfg.center = cfg.center || [0,0];
   if (!cfg.lang || cfg.lang.search(/^de|es$/) === -1) cfg.lang = "name";
-  
+
   var parent = $(cfg.container);
-  if (parent) { 
+  if (parent) {
     par = "#"+cfg.container;
     var st = window.getComputedStyle(parent, null);
-    if (!parseInt(st.width) && !cfg.width) parent.style.width = px(parent.parentNode.clientWidth); 
-  } else { 
-    par = "body"; 
-    parent = null; 
+    if (!parseInt(st.width) && !cfg.width) parent.style.width = px(parent.parentNode.clientWidth);
+  } else {
+    par = "body";
+    parent = null;
   }
-   
+
   var margin = [16, 16],
       width = getWidth(),
       proj = getProjection(cfg.projection);
   if (cfg.lines.graticule.lat && cfg.lines.graticule.lat.pos[0] === "outline") proj.scale -= 2;
-  
+
   if (!proj) return;
-      
+
   var trans = cfg.transform || "equatorial",
       ratio = proj.ratio,
       height = width / ratio,
       scale = proj.scale * width/1024,
-      starbase = cfg.stars.size, 
+      starbase = cfg.stars.size,
       dsobase = cfg.dsos.size || starbase,
       starexp = cfg.stars.exponent,
       dsoexp = cfg.dsos.exponent || starexp, //Object size base & exponent
@@ -56,48 +56,48 @@ Celestial.display = function(config) {
       rotation = getAngles(cfg.center),
       path = cfg.datapath || "";
       path = path.replace(/([^\/]$)/, "$1\/");
-  
-      
+
+
   if (par != "body") $(cfg.container).style.height = px(height);
-  
+
   prjMap = Celestial.projection(cfg.projection).rotate(rotation).translate([width/2, height/2]).scale(scale);
-    
+
   zoom = d3.geo.zoom().projection(prjMap).center([width/2, height/2]).scaleExtent([scale, scale*ZOOMEXTENT]).on("zoom.redraw", redraw);
 
   var canvas = d3.select(par).selectAll("canvas");
   if (canvas[0].length === 0) canvas = d3.select(par).append("canvas");
   canvas.attr("width", width).attr("height", height);
-  var context = canvas.node().getContext("2d");  
-  
+  var context = canvas.node().getContext("2d");
+
   var graticule = d3.geo.graticule().minorStep([15,10]);
-  
+
   map = d3.geo.path().projection(prjMap).context(context);
-   
+
   //parent div with id #celestial-map or body
   if (container) container.selectAll("*").remove();
   else container = d3.select(par).append("container");
 
   if (cfg.interactive) canvas.call(zoom);
   else canvas.attr("style", "cursor: default!important");
-  
+
   setClip(proj.clip);
 
   d3.select(window).on('resize', resize);
   d3.select(par).on('dblclick', function () { zoomBy(1.5625); return false; });
- 
+
   if (cfg.controls === true && $("celestial-zoomin") === null) {
     d3.select(par).append("input").attr("type", "button").attr("id", "celestial-zoomin").attr("value", "\u002b").on("click", function () { zoomBy(1.25); return false; });
     d3.select(par).append("input").attr("type", "button").attr("id", "celestial-zoomout").attr("value", "\u2212").on("click", function () { zoomBy(0.8); return false; });
   }
-  
+
   if (cfg.location === true) {
-    circle = d3.geo.circle().angle([90]);  
+    circle = d3.geo.circle().angle([90]);
     container.append("path").datum(circle).attr("class", "horizon");
     if ($("loc") === null) geo(cfg);
     else if (cfg.follow === "zenith") rotate({center:Celestial.zenith()});
     fldEnable("horizon-show", proj.clip);
   }
-  
+
   if (cfg.form === true && $("params") === null) form(cfg);
   if ($("error") === null) d3.select("body").append("div").attr("id", "error");
 
@@ -107,17 +107,17 @@ Celestial.display = function(config) {
     for (var key in cfg.lines) {
       if (!has(cfg.lines, key)) continue;
       if (key === "graticule") {
-        container.append("path").datum(graticule).attr("class", "graticule"); 
-				if (has(cfg.lines.graticule, "lon") && cfg.lines.graticule.lon.pos.length > 0) 
+        container.append("path").datum(graticule).attr("class", "graticule");
+				if (has(cfg.lines.graticule, "lon") && cfg.lines.graticule.lon.pos.length > 0)
           container.selectAll(".gridvalues_lon")
             .data(getGridValues("lon", cfg.lines.graticule.lon.pos))
             .enter().append("path")
-            .attr("class", "graticule_lon"); 
-				if (has(cfg.lines.graticule, "lat") && cfg.lines.graticule.lat.pos.length > 0) 
+            .attr("class", "graticule_lon");
+				if (has(cfg.lines.graticule, "lat") && cfg.lines.graticule.lat.pos.length > 0)
           container.selectAll(".gridvalues_lat")
             .data(getGridValues("lat", cfg.lines.graticule.lat.pos))
             .enter().append("path")
-            .attr("class", "graticule_lat"); 
+            .attr("class", "graticule_lat");
       } else {
         container.append("path")
           .datum(d3.geo.circle().angle([90]).origin(transformDeg(poles[key], euler[trans])) )
@@ -127,9 +127,9 @@ Celestial.display = function(config) {
 
     //Milky way outline
     d3.json(path + "mw.json", function(error, json) {
-      if (error) { 
+      if (error) {
         window.alert("Your Browser doesn't support local file loading or the file doesn't exist. See readme.md");
-        return console.warn(error);  
+        return console.warn(error);
       }
 
       var mw = getData(json, trans);
@@ -139,14 +139,14 @@ Celestial.display = function(config) {
          .enter().append("path")
          .attr("class", "mw");
       redraw();
-    }); 
+    });
 
     //Constellation names or designation
     d3.json(path + "constellations.json", function(error, json) {
       if (error) return console.warn(error);
-      
+
       var con = getData(json, trans);
-      
+
       container.selectAll(".constnames")
          .data(con.features)
          .enter().append("text")
@@ -156,12 +156,12 @@ Celestial.display = function(config) {
       if ($("constellation")) {
         var sel = d3.select("#constellation"),
             selected = 0,
-            list = Object.keys(l).map( function (key, i) { 
+            list = Object.keys(l).map( function (key, i) {
               if (key === config.constellation) selected = i;
               return {o:key, n:l[key].name};
             });
         list = [{o:"", n:"(Select constellation)"}].concat(list);
-        
+
         sel.selectAll('option').data(list).enter().append('option')
            .attr("value", function (d) { return d.o; })
            .text(function (d) { return d.n; });
@@ -169,8 +169,8 @@ Celestial.display = function(config) {
         //$("constellation").firstChild.disabled = true;
       }
       Celestial.constellations = l;
-      
-      redraw();      
+
+      redraw();
     });
 
     //Constellation boundaries
@@ -178,7 +178,7 @@ Celestial.display = function(config) {
       if (error) return console.warn(error);
 
       var conb = getData(json, trans);
-      
+
       container.selectAll(".bounds")
          .data(conb.features)
          .enter().append("path")
@@ -198,7 +198,7 @@ Celestial.display = function(config) {
          .attr("class", "constline");
       redraw();
     });
-    
+
     //Stars
     d3.json(path + cfg.stars.data, function(error, json) {
       if (error) return console.warn(error);
@@ -216,7 +216,7 @@ Celestial.display = function(config) {
     //Deep space objects
     d3.json(path + cfg.dsos.data, function(error, json) {
       if (error) return console.warn(error);
-      
+
       var ds = getData(json, trans);
 
       container.selectAll(".dsos")
@@ -230,7 +230,7 @@ Celestial.display = function(config) {
     //Planets, Sun & (Moon tbi)
     d3.json(path + "planets.json", function(error, json) {
       if (error) return console.warn(error);
-      
+
       var pl = getPlanets(json, trans);
 
       container.selectAll(".planets")
@@ -241,58 +241,58 @@ Celestial.display = function(config) {
       redraw();
     });
 
-    if (Celestial.data.length > 0) { 
+    if (Celestial.data.length > 0) {
       Celestial.data.forEach( function(d) {
         if (has(d, "file")) d3.json(d.file, d.callback);
         else setTimeout(d.callback, 0);
       }, this);
     }
   }
-  
-  // Zoom by factor; >1 larger <1 smaller 
+
+  // Zoom by factor; >1 larger <1 smaller
   function zoomBy(factor) {
     if (!factor || factor === 1) return;
     var sc0 = prjMap.scale(),
         sc1 = sc0 * factor,
         ext = zoom.scaleExtent(),
         interval = ANIMINTERVAL_Z * Math.sqrt(Math.abs(1-factor));
-        
+
     if (sc1 < ext[0]) sc1 = ext[0];
     if (sc1 > ext[1]) sc1 = ext[1];
     var zTween = d3.interpolateNumber(sc0, sc1);
     d3.select({}).transition().duration(interval).tween("scale", function () {
         return function(t) {
           var z = zTween(t);
-          prjMap.scale(z); 
-          redraw(); 
-        };      
+          prjMap.scale(z);
+          redraw();
+        };
     }).transition().duration(0).tween("scale", function () {
-      zoom.scale(sc1); 
-      redraw(); 
+      zoom.scale(sc1);
+      redraw();
     });
     return interval;
-  }  
-  
+  }
+
   function apply(config) {
-    cfg = cfg.set(config); 
+    cfg = cfg.set(config);
     redraw();
   }
 
 
   function rotate(config) {
-    var cFrom = cfg.center, 
+    var cFrom = cfg.center,
         rot = prjMap.rotate(),
         sc = prjMap.scale(),
         interval = ANIMINTERVAL_R,
-        keep = false, 
+        keep = false,
         cTween, zTween, oTween,
         oof = cfg.orientationfixed;
-    
+
     if (Round(rot[1], 1) === -Round(config.center[1], 1)) keep = true; //keep lat fixed if equal
     cfg = cfg.set(config);
     var d = Round(d3.geo.distance(cFrom, cfg.center), 2);
     var o = d3.geo.distance([cFrom[2],0], [cfg.center[2],0]);
-    if (d < ANIMDISTANCE && o < ANIMDISTANCE) {  
+    if (d < ANIMDISTANCE && o < ANIMDISTANCE) {
       rotation = getAngles(cfg.center);
       prjMap.rotate(rotation);
       redraw();
@@ -304,7 +304,7 @@ Celestial.display = function(config) {
       if (o === 0) oTween = function () { return rot[2]; };
       else oTween = interpolateAngle(cFrom[2], cfg.center[2]);
       if (d > 3.14) cfg.center[0] -= 0.01; //180deg turn doesn't work well
-      cfg.orientationfixed = false;  
+      cfg.orientationfixed = false;
       // Rotation interpolator
       if (d === 0) cTween = function () { return cfg.center; };
       else cTween = d3.geo.interpolate(cFrom, cfg.center);
@@ -314,7 +314,7 @@ Celestial.display = function(config) {
           var c = getAngles(cTween(t));
           c[2] = oTween(t);
           var z = t < 0.5 ? zTween(t) : zTween(1-t);
-          if (keep) c[1] = rot[1]; 
+          if (keep) c[1] = rot[1];
           prjMap.scale(z);
           prjMap.rotate(c);
           redraw();
@@ -328,7 +328,7 @@ Celestial.display = function(config) {
     }
     return interval;
   }
-  
+
   function resize(set) {
     width = getWidth();
     if (cfg.width === width && !set) return;
@@ -344,15 +344,15 @@ Celestial.display = function(config) {
   function reproject(config) {
     var prj = getProjection(config.projection);
     if (!prj) return;
-    
+
     var rot = prjMap.rotate(), ctr = prjMap.center(), sc = prjMap.scale(), ext = zoom.scaleExtent(),
         prjFrom = Celestial.projection(cfg.projection).center(ctr).translate([width/2, height/2]).scale([ext[0]]),
-        interval = ANIMINTERVAL_P, 
-        delay = 0, 
+        interval = ANIMINTERVAL_P,
+        delay = 0,
         rTween = d3.interpolateNumber(ratio, prj.ratio);
 
     if (proj.clip != prj.clip) interval = 0;   // Different clip = no transition
-    
+
     var prjTo = Celestial.projection(config.projection).center(ctr).translate([width/2, width/prj.ratio/2]).scale([prj.scale * width/1024]);
     var bAdapt = cfg.adaptable;
 
@@ -361,9 +361,9 @@ Celestial.display = function(config) {
       setTimeout(reproject, delay, config);
       return delay + interval;
     }
-    
+
     if (cfg.location) fldEnable("horizon-show", prj.clip);
-    
+
     prjMap = projectionTween(prjFrom, prjTo);
     cfg.adaptable = false;
 
@@ -388,7 +388,7 @@ Celestial.display = function(config) {
       cfg.projection = config.projection;
       prjMap = Celestial.projection(config.projection).rotate(rot).translate([width/2, height/2]).scale(scale);
       map.projection(prjMap);
-      setClip(proj.clip); 
+      setClip(proj.clip);
       zoom.projection(prjMap).scaleExtent([scale, scale*ZOOMEXTENT]).scale(scale);
       cfg.adaptable = bAdapt;
       redraw();
@@ -396,125 +396,125 @@ Celestial.display = function(config) {
     return interval;
   }
 
-  
-  function redraw() {  
+
+  function redraw() {
     var rot = prjMap.rotate();
-    
+
     if (cfg.adaptable) adapt = Math.sqrt(prjMap.scale()/scale);
     if (!adapt) adapt = 1;
     starbase = cfg.stars.size;
     starexp = cfg.stars.exponent;
     dsobase = cfg.dsos.size || starbase;
     dsoexp = cfg.dsos.exponent;
-    
+
     if (cfg.orientationfixed) {
-      rot[2] = cfg.center[2]; 
+      rot[2] = cfg.center[2];
       prjMap.rotate(rot);
     }
     cfg.center = [-rot[0], -rot[1], rot[2]];
-    
+
     setCenter(cfg.center, cfg.transform);
     clear();
-    
+
     drawOutline();
-    
+
     //Draw all types of objects on the canvas
-    if (cfg.mw.show) { 
+    if (cfg.mw.show) {
       container.selectAll(".mw").each(function(d) { setStyle(cfg.mw.style); map(d); context.fill(); });
     }
-    
+
     for (var key in cfg.lines) {
       if (!has(cfg.lines, key)) continue;
       if (cfg.lines[key].show !== true) continue;
       setStyle(cfg.lines[key]);
-      container.selectAll("."+key).attr("d", map);  
-      context.stroke();    
+      container.selectAll("."+key).attr("d", map);
+      context.stroke();
     }
 
     if (has(cfg.lines.graticule, "lon")) {
       setTextStyle(cfg.lines.graticule.lon);
-      container.selectAll(".graticule_lon").each(function(d, i) { 
+      container.selectAll(".graticule_lon").each(function(d, i) {
         if (clip(d.geometry.coordinates)) {
           var pt = prjMap(d.geometry.coordinates);
           gridOrientation(pt, d.properties.orientation);
-          context.fillText(d.properties.value, pt[0], pt[1]); 
+          context.fillText(d.properties.value, pt[0], pt[1]);
         }
       });
     }
-    
+
     if (has(cfg.lines.graticule, "lat")) {
       setTextStyle(cfg.lines.graticule.lat);
-      container.selectAll(".graticule_lat").each(function(d, i) { 
+      container.selectAll(".graticule_lat").each(function(d, i) {
         if (clip(d.geometry.coordinates)) {
           var pt = prjMap(d.geometry.coordinates);
           gridOrientation(pt, d.properties.orientation);
-          context.fillText(d.properties.value, pt[0], pt[1]); 
+          context.fillText(d.properties.value, pt[0], pt[1]);
         }
       });
 	  }
-    
+
     drawOutline(true);
 
-    if (cfg.constellations.show) {     
-      if (cfg.constellations.bounds) { 
-        container.selectAll(".boundaryline").each(function(d) { 
-          setStyle(cfg.constellations.boundstyle); 
+    if (cfg.constellations.show) {
+      if (cfg.constellations.bounds) {
+        container.selectAll(".boundaryline").each(function(d) {
+          setStyle(cfg.constellations.boundstyle);
           if (Celestial.constellation && Celestial.constellation === d.id) {
             context.lineWidth *= 1.5;
             context.setLineDash([]);
           }
-          map(d); 
-          context.stroke(); 
+          map(d);
+          context.stroke();
         });
         drawOutline(true);
       }
 
-      if (cfg.constellations.names) { 
+      if (cfg.constellations.names) {
         setTextStyle(cfg.constellations.namestyle);
-        container.selectAll(".constname").each( function(d) { 
+        container.selectAll(".constname").each( function(d) {
           if (clip(d.geometry.coordinates)) {
             setConstStyle(d.properties.rank, cfg.constellations.namestyle.font);
             var pt = prjMap(d.geometry.coordinates);
-            context.fillText(constName(d), pt[0], pt[1]); 
+            context.fillText(constName(d), pt[0], pt[1]);
           }
         });
       }
 
-      if (cfg.constellations.lines) { 
-        container.selectAll(".constline").each(function(d) { 
-          setStyle(cfg.constellations.linestyle); 
-          map(d); 
-          context.stroke(); 
+      if (cfg.constellations.lines) {
+        container.selectAll(".constline").each(function(d) {
+          setStyle(cfg.constellations.linestyle);
+          map(d);
+          context.stroke();
         });
       }
-      
-    }
-      
 
-    if (cfg.stars.show) { 
+    }
+
+
+    if (cfg.stars.show) {
       setStyle(cfg.stars.style);
       container.selectAll(".star").each(function(d) {
         if (clip(d.geometry.coordinates) && d.properties.mag <= cfg.stars.limit) {
           var pt = prjMap(d.geometry.coordinates),
               r = starSize(d);
-          context.fillStyle = starColor(d); 
+          context.fillStyle = starColor(d);
           context.beginPath();
           context.arc(pt[0], pt[1], r, 0, 2 * Math.PI);
           context.closePath();
           context.fill();
           if (cfg.stars.names && d.properties.mag <= cfg.stars.namelimit*adapt) {
             setTextStyle(cfg.stars.namestyle);
-            context.fillText(starName(d), pt[0]+r, pt[1]);         
+            context.fillText(starName(d), pt[0]+r, pt[1]);
           }
           if (cfg.stars.proper && d.properties.mag <= cfg.stars.propernamelimit*adapt) {
             setTextStyle(cfg.stars.propernamestyle);
-            context.fillText(starProperName(d), pt[0]-r, pt[1]);         
+            context.fillText(starProperName(d), pt[0]-r, pt[1]);
           }
         }
       });
     }
-    
-    if (cfg.dsos.show) { 
+
+    if (cfg.dsos.show) {
       container.selectAll(".dso").each(function(d) {
         if (clip(d.geometry.coordinates) && dsoDisplay(d.properties, cfg.dsos.limit)) {
           var pt = prjMap(d.geometry.coordinates),
@@ -523,17 +523,17 @@ Celestial.display = function(config) {
           var r = dsoSymbol(d, pt);
           if (has(cfg.dsos.symbols[type], "stroke")) context.stroke();
           else context.fill();
-          
+
           if (cfg.dsos.names && dsoDisplay(d.properties, cfg.dsos.namelimit)) {
             setTextStyle(cfg.dsos.namestyle);
             context.fillStyle = cfg.dsos.symbols[type].fill;
-            context.fillText(dsoName(d), pt[0]+r, pt[1]-r);         
-          }         
+            context.fillText(dsoName(d), pt[0]+r, pt[1]-r);
+          }
         }
       });
     }
 
-    if (cfg.location && cfg.transform === "equatorial" && cfg.planets.show && Celestial.origin) { 
+    if (cfg.location && cfg.transform === "equatorial" && cfg.planets.show && Celestial.origin) {
       var dt = Celestial.date(),
           o = Celestial.origin(dt).spherical();
       container.selectAll(".planet").each(function(d) {
@@ -542,53 +542,86 @@ Celestial.display = function(config) {
         if (clip(p.pos)) {
           var pt = prjMap(p.pos),
               sym = cfg.planets.symbols[id];
-          if (id !== "lun") {
+          if (id === "lun") {
+            Canvas.symbol().type("crescent").size(144).age(p.age).position(pt)(context);
+          } else if (id === 'added-planet') {
+            const pointStyle = {
+              stroke: 'rgba(255, 0, 204, 1)',
+              fill: 'rgba(255, 0, 204, 0.15)',
+              width: 5,
+            };
+            const textStyle = {
+              fill:'rgba(255, 0, 204, 1)',
+              font: '15px Helvetica, Arial, sans-serif',
+              align: 'left',
+              baseline: 'bottom'
+            };
+            const r = 10;
+            /*
+            setStyle(pointStyle);
+            // Start the drawing path
+            context.beginPath();
+            // Thats a circle in html5 canvas
+            context.arc(pt[0], pt[1], r, 0, 2 * Math.PI);
+            // Finish the drawing path
+            context.closePath();
+            // Draw a line along the path with the prevoiusly set stroke color and line width
+            context.stroke();
+            // Fill the object path with the prevoiusly set fill color
+            context.fill();
+            // Set text styles
+            setTextStyle(textStyle);
+            */
+
+            context.fillStyle = pointStyle.fill;
+            // and draw text on canvas
+            setTextStyle(textStyle);
+            context.fillText('assss', pt[0]+r, pt[1]+r);
+          } else {
             setTextStyle(cfg.planets.style);
             context.fillStyle = sym.fill;
             context.fillText(sym.symbol, pt[0], pt[1]);
-          } else {
-            Canvas.symbol().type("crescent").size(144).age(p.age).position(pt)(context);
           }
         }
       });
     }
-    
-    if (Celestial.data.length > 0) { 
+
+    if (Celestial.data.length > 0) {
       Celestial.data.forEach( function(d) {
         d.redraw();
       });
     }
-    
+
 //    drawOutline(true);
-    
+
     if (cfg.location && cfg.horizon.show && !proj.clip) {
       circle.origin(Celestial.nadir());
       setStyle(cfg.horizon);
-      container.selectAll(".horizon").datum(circle).attr("d", map);  
-      context.fill();    
-      if (cfg.horizon.stroke) context.stroke();    
+      container.selectAll(".horizon").datum(circle).attr("d", map);
+      context.fill();
+      if (cfg.horizon.stroke) context.stroke();
     }
 
-    if (cfg.controls) { 
+    if (cfg.controls) {
       zoomState(prjMap.scale());
     }
   }
-    
+
   function drawOutline(stroke) {
     var rot = prjMap.rotate();
-    
+
     prjMap.rotate([0,0]);
     setStyle(cfg.background);
     container.selectAll(".outline").attr("d", map);
-    if (stroke === true) 
-      context.stroke(); 
-    else 
+    if (stroke === true)
+      context.stroke();
+    else
       context.fill();
     prjMap.rotate(rot);
   }
 
   // Helper functions -------------------------------------------------
-  
+
   function clip(coords) {
     return proj.clip && d3.geo.distance(cfg.center, coords) > halfπ ? 0 : 1;
   }
@@ -597,7 +630,7 @@ Celestial.display = function(config) {
     context.fillStyle = s.fill || null;
     context.strokeStyle = s.stroke || null;
     context.lineWidth = s.width || null;
-    context.globalAlpha = s.opacity || 1;  
+    context.globalAlpha = s.opacity || 1;
     context.font = s.font || null;
     if (has(s, "dash")) context.setLineDash(s.dash); else context.setLineDash([]);
     context.beginPath();
@@ -607,7 +640,7 @@ Celestial.display = function(config) {
     context.fillStyle = s.fill;
     context.textAlign = s.align || "left";
     context.textBaseline = s.baseline || "bottom";
-    context.globalAlpha = s.opacity || 1;  
+    context.globalAlpha = s.opacity || 1;
     context.font = s.font;
   }
 
@@ -618,15 +651,15 @@ Celestial.display = function(config) {
     else context.font = font[rank-1];
   }
 
-  
+
   function zoomState(sc) {
     var czi = $("celestial-zoomin"),
         czo = $("celestial-zoomout");
     if (!czi || !czo) return;
     czi.disabled = sc >= scale*ZOOMEXTENT*0.99;
-    czo.disabled = sc <= scale;    
+    czo.disabled = sc <= scale;
   }
-  
+
   function setClip(setit) {
     if (setit) {
       prjMap.clipAngle(90);
@@ -635,15 +668,15 @@ Celestial.display = function(config) {
     } else {
       prjMap.clipAngle(null);
       container.selectAll(".outline").remove();
-      container.append("path").datum(graticule.outline).attr("class", "outline"); 
-    }        
+      container.append("path").datum(graticule.outline).attr("class", "outline");
+    }
   }
-  
+
   function dsoDisplay(prop, limit) {
     return prop.mag === 999 && Math.sqrt(parseInt(prop.dim)) > limit ||
            prop.mag !== 999 && prop.mag <= limit;
   }
-  
+
   function dsoSymbol(d, pt) {
     var prop = d.properties;
     var size = dsoSize(prop) || 9,
@@ -653,55 +686,55 @@ Celestial.display = function(config) {
   }
 
   function dsoShape(type) {
-    if (!type || !has(cfg.dsos.symbols, type)) return "circle"; 
-    else return cfg.dsos.symbols[type].shape; 
+    if (!type || !has(cfg.dsos.symbols, type)) return "circle";
+    else return cfg.dsos.symbols[type].shape;
   }
 
   function dsoSize(prop) {
-    if (!prop.mag || prop.mag === 999) return Math.pow(parseInt(prop.dim) * dsobase * adapt / 7, 0.5); 
+    if (!prop.mag || prop.mag === 999) return Math.pow(parseInt(prop.dim) * dsobase * adapt / 7, 0.5);
     return Math.pow(2 * dsobase * adapt - prop.mag, dsoexp);
   }
- 
+
 
   function dsoName(d) {
     var prop = d.properties;
-    if (prop.name === "") return; 
-    if (cfg.dsos.desig && prop.desig) return prop.desig; 
+    if (prop.name === "") return;
+    if (cfg.dsos.desig && prop.desig) return prop.desig;
     return prop.name;
   }
-  
+
   /*Star designation, if desig = false, no long desigs  */
   function starName(d) {
     var name = d.properties.desig;
-    if (!cfg.stars.desig) return name.replace(/^(HD|HIP|V\d{3}).+/, ""); 
-    return name; 
+    if (!cfg.stars.desig) return name.replace(/^(HD|HIP|V\d{3}).+/, "");
+    return name;
   }
 
   function starProperName(d) {
     var name = d.properties.name;
-    
-    return name; 
+
+    return name;
   }
-  
+
   function starSize(d) {
     var mag = d.properties.mag;
-    if (mag === null) return 0.1; 
+    if (mag === null) return 0.1;
     var r = starbase * adapt * Math.exp(starexp * (mag+2));
     return Math.max(r, 0.1);
   }
-  
+
   function starColor(d) {
     var bv = d.properties.bv;
     if (!cfg.stars.colors || isNaN(bv)) {return cfg.stars.style.fill; }
     return bvcolor(bv);
   }
-  
-  function constName(d) { 
-    return cfg.constellations.desig ? d.properties.desig : d.properties[cfg.lang]; 
+
+  function constName(d) {
+    return cfg.constellations.desig ? d.properties.desig : d.properties[cfg.lang];
   }
 
   function gridOrientation(pos, orient) {
-    var o = orient.split(""), h = "center", v = "middle"; 
+    var o = orient.split(""), h = "center", v = "middle";
     for (var i = o.length-1; i >= 0; i--) {
       switch(o[i]) {
         case "N": v = "bottom"; break;
@@ -714,37 +747,37 @@ Celestial.display = function(config) {
     context.textBaseline = v;
     return pos;
   }
-  
+
   function clear() {
     context.clearRect(0, 0, width + margin[0], height + margin[1]);
   }
-  
+
   function getWidth() {
     if (cfg.width && cfg.width > 0) return cfg.width;
     if (parent) return parent.clientWidth - margin[0];
     return window.innerWidth - margin[0]*2;
   }
-  
+
   function getProjection(p) {
     if (!has(projections, p)) return;
     var res = projections[p];
-    if (!has(res, "ratio")) res.ratio = 2;  // Default w/h ratio 2:1    
+    if (!has(res, "ratio")) res.ratio = 2;  // Default w/h ratio 2:1
     return res;
   }
-  
+
   function getAngles(coords) {
     if (coords === null) return [0,0,0];
-    var rot = eulerAngles.equatorial; 
+    var rot = eulerAngles.equatorial;
     if (!coords[2]) coords[2] = 0;
     return [rot[0] - coords[0], rot[1] - coords[1], rot[2] + coords[2]];
   }
-  
-  
+
+
   function animate() {
     if (!animations || animations.length < 1) return;
 
     var d, a = animations[current];
-    
+
     switch (a.param) {
       case "projection": d = reproject({projection:a.value}); break;
       case "center": d = rotate({center:a.value}); break;
@@ -756,13 +789,13 @@ Celestial.display = function(config) {
     d = a.duration === 0 || a.duration < d ? d : a.duration;
     if (current < animations.length) aID = setTimeout(animate, d);
   }
-  
+
   function stop() {
     clearTimeout(aID);
     //current = 0;
     //repeat = false;
   }
-  
+
   // Exported objects and functions for adding data
   this.container = container;
   this.clip = clip;
@@ -773,36 +806,36 @@ Celestial.display = function(config) {
   this.setTextStyle = setTextStyle;
   this.setConstStyle = setConstStyle;
   this.dsoSymbol = dsoSymbol;
-  this.redraw = redraw; 
-  this.resize = function(config) { 
-    if (config && has(config, "width")) cfg.width = config.width; 
-    resize(true); 
-  }; 
-  this.reload = function(config) { 
+  this.redraw = redraw;
+  this.resize = function(config) {
+    if (config && has(config, "width")) cfg.width = config.width;
+    resize(true);
+  };
+  this.reload = function(config) {
     if (!config || !has(config, "transform")) return;
-    trans = cfg.transform = config.transform; 
+    trans = cfg.transform = config.transform;
     if (trans === "equatorial") graticule.minorStep([15,10]);
     else  graticule.minorStep([10,10]);
-    container.selectAll("*").remove(); 
+    container.selectAll("*").remove();
     setClip();
     container.append("path").datum(circle).attr("class", "horizon");
-    load(); 
-  }; 
-  this.apply = function(config) { apply(config); }; 
-  this.reproject = function(config) { return reproject(config); }; 
-  this.rotate = function(config) { if (!config) return cfg.center; return rotate(config); }; 
+    load();
+  };
+  this.apply = function(config) { apply(config); };
+  this.reproject = function(config) { return reproject(config); };
+  this.rotate = function(config) { if (!config) return cfg.center; return rotate(config); };
   this.zoomBy = function(factor) { if (!factor) return prjMap.scale()/scale; return zoomBy(factor); };
   this.color = function(type) {
     if (!type) return "#000";
     if (has(cfg.dsos.symbols, type)) return cfg.dsos.symbols[type].fill;
     return "#000";
   };
-  this.animate = function(anims, dorepeat) { 
-    if (!anims) return; 
-    animations = anims; 
-    current = 0; 
-    repeat = dorepeat ? true : false; 
-    animate(); 
+  this.animate = function(anims, dorepeat) {
+    if (!anims) return;
+    animations = anims;
+    current = 0;
+    repeat = dorepeat ? true : false;
+    animate();
   };
   this.stop  = function(wipe) {
     stop();
@@ -811,11 +844,11 @@ Celestial.display = function(config) {
   this.go = function(index) {
     if (animations.length < 1) return;
     if (index && index < animations.length) current = index;
-    animate(); 
+    animate();
   };
   if (!has(this, "date"))
     this.date = function() { console.log("Celestial.date() needs config.location = true to work." ); };
-  
+
   load();
 };
 
@@ -823,16 +856,16 @@ Celestial.display = function(config) {
 //Flipped projection generated on the fly
 Celestial.projection = function(projection) {
   var p, raw, forward;
-  
+
   if (!has(projections, projection)) { throw new Error("Projection not supported: " + projection); }
-  p = projections[projection];    
+  p = projections[projection];
 
   if (p.arg !== null) {
     raw = d3.geo[projection].raw(p.arg);
   } else {
-    raw = d3.geo[projection].raw;  
+    raw = d3.geo[projection].raw;
   }
-  
+
   forward = function(λ, φ) {
     var coords = raw(-λ, φ);
     return coords;
@@ -866,7 +899,7 @@ function projectionTween(a, b) {
     α = +_;
     var ca = a.center(), cb = b.center(),
         ta = a.translate(), tb = b.translate();
-    
+
     center([(1 - α) * ca[0] + α * cb[0], (1 - α) * ca[1] + α * cb[1]]);
     translate([(1 - α) * ta[0] + α * tb[0], (1 - α) * ta[1] + α * tb[1]]);
     return prj;
@@ -913,44 +946,44 @@ function transform(c, euler) {
   var x, y, z, β, γ, λ, φ, dψ, ψ, θ,
       ε = 1.0e-5;
 
-  if (!euler) return c; 
+  if (!euler) return c;
 
   λ = c[0];  // celestial longitude 0..2pi
-  if (λ < 0) λ += τ; 
+  if (λ < 0) λ += τ;
   φ = c[1];  // celestial latitude  -pi/2..pi/2
-  
+
   λ -= euler[0];  // celestial longitude - celestial coordinates of the native pole
   β = euler[1];  // inclination between the poles (colatitude)
   γ = euler[2];  // native coordinates of the celestial pole
-  
+
   x = Math.sin(φ) * Math.sin(β) - Math.cos(φ) * Math.cos(β) * Math.cos(λ);
   if (Math.abs(x) < ε) {
     x = -Math.cos(φ + β) + Math.cos(φ) * Math.cos(β) * (1 - Math.cos(λ));
   }
   y = -Math.cos(φ) * Math.sin(λ);
-  
+
   if (x !== 0 || y !== 0) {
     dψ = Math.atan2(y, x);
   } else {
     dψ = λ - Math.PI;
   }
-  ψ = (γ + dψ); 
-  if (ψ > Math.PI) ψ -= τ; 
-  
+  ψ = (γ + dψ);
+  if (ψ > Math.PI) ψ -= τ;
+
   if (λ % Math.PI === 0) {
     θ = φ + Math.cos(λ) * β;
-    if (θ > halfπ) θ = Math.PI - θ; 
-    if (θ < -halfπ) θ = -Math.PI - θ; 
+    if (θ > halfπ) θ = Math.PI - θ;
+    if (θ < -halfπ) θ = -Math.PI - θ;
   } else {
     z = Math.sin(φ) * Math.cos(β) + Math.cos(φ) * Math.sin(β) * Math.cos(λ);
     if (Math.abs(z) > 0.99) {
       θ = Math.abs(Math.acos(Math.sqrt(x*x+y*y)));
-      if (z < 0) θ *= -1; 
+      if (z < 0) θ *= -1;
     } else {
       θ = Math.asin(z);
     }
   }
-  
+
   return [ψ, θ];
 }
 
@@ -958,19 +991,19 @@ function transform(c, euler) {
 var euler = {
   "ecliptic": [-90.0, 23.4393, 90.0],
   "inverse ecliptic": [90.0, 23.4393, -90.0],
-  "galactic": [-167.1405, 62.8717, 122.9319], 
+  "galactic": [-167.1405, 62.8717, 122.9319],
   "inverse galactic": [122.9319, 62.8717, -167.1405],
   "supergalactic": [283.7542, 74.2911, 26.4504],
   "inverse supergalactic": [26.4504, 74.2911, 283.7542],
   "init": function () {
     for (var key in this) {
-      if (this[key].constructor == Array) { 
+      if (this[key].constructor == Array) {
         this[key] = this[key].map( function(val) { return val * deg2rad; } );
       }
     }
   },
   "add": function(name, ang) {
-    if (!ang || !name || ang.length !== 3 || this.hasOwnProperty(name)) return; 
+    if (!ang || !name || ang.length !== 3 || this.hasOwnProperty(name)) return;
     this[name] = ang.map( function(val) { return val * deg2rad; } );
     return this[name];
   }
@@ -981,10 +1014,10 @@ Celestial.euler = function () { return euler; };
 
 
 var horizontal = function(dt, pos, loc) {
-  //dt: datetime, pos: celestial coordinates [lat,lng], loc: location [lat,lng]  
+  //dt: datetime, pos: celestial coordinates [lat,lng], loc: location [lat,lng]
   var ha = getMST(dt, loc[1]) - pos[0];
   if (ha < 0) ha = ha + 360;
-  
+
   ha  = ha * deg2rad;
   var dec = pos[1] * deg2rad;
   var lat = loc[0] * deg2rad;
@@ -993,25 +1026,25 @@ var horizontal = function(dt, pos, loc) {
   var az = Math.acos((Math.sin(dec) - Math.sin(alt) * Math.sin(lat)) / (Math.cos(alt) * Math.cos(lat)));
 
   if (Math.sin(ha) > 0) az = Math.PI * 2 - az;
-  
+
   return [alt / deg2rad, az / deg2rad, 0];
 };
 
 horizontal.inverse = function(dt, hor, loc) {
-  
+
   var alt = hor[0] * deg2rad;
   var az = hor[1] * deg2rad;
   var lat = loc[0] * deg2rad;
-   
+
   var dec = Math.asin((Math.sin(alt) * Math.sin(lat)) + (Math.cos(alt) * Math.cos(lat) * Math.cos(az)));
   var ha = ((Math.sin(alt) - (Math.sin(dec) * Math.sin(lat))) / (Math.cos(dec) * Math.cos(lat))).toFixed(6);
-  
+
   ha = Math.acos(ha);
   ha  = ha / deg2rad;
-  
+
   var ra = getMST(dt, loc[1]) - ha;
   //if (ra < 0) ra = ra + 360;
-    
+
   return [ra, dec / deg2rad, 0];
 };
 
@@ -1036,7 +1069,7 @@ function getMST(dt, lng)
 
     // days since J2000.0
     var jd = b + c + d - 730550.5 + dy + (h + m/60.0 + s/3600.0)/24.0;
-    
+
     // julian centuries since J2000.0
     var jt = jd/36525.0;
 
@@ -1044,11 +1077,11 @@ function getMST(dt, lng)
     var mst = 280.46061837 + 360.98564736629*jd + 0.000387933*jt*jt - jt*jt*jt/38710000 + lng;
 
     // in degrees modulo 360.0
-    if (mst > 0.0) 
+    if (mst > 0.0)
         while (mst > 360.0) mst = mst - 360.0;
     else
         while (mst < 0.0)   mst = mst + 360.0;
-        
+
     return mst;
 }
 
@@ -1058,14 +1091,14 @@ Celestial.horizontal = horizontal;
 
 Celestial.add = function(dat) {
   var res = {};
-  //dat: {file: path, type:'json|raw', callback: func(), redraw: func()} 
+  //dat: {file: path, type:'json|raw', callback: func(), redraw: func()}
   //or {file:file, size:null, shape:null, color:null}  TBI
-  //  with size,shape,color: "prop=val:result;.." || function(prop) { .. return res; } 
+  //  with size,shape,color: "prop=val:result;.." || function(prop) { .. return res; }
   if (!has(dat, "type")) return console.log("Missing type");
-  
+
   if ((dat.type === "dso" || dat.type === "json") && (!has(dat, "file") || !has(dat, "callback"))) return console.log("Can't add data file");
   if ((dat.type === "line" || dat.type === "raw") && !has(dat, "callback")) return console.log("Can't add line");
-  
+
   if (has(dat, "file")) res.file = dat.file;
   res.type = dat.type;
   if (has(dat, "callback")) res.callback = dat.callback;
@@ -1090,7 +1123,7 @@ Celestial.clear = function() {
 function getPoint(coords, trans) {
   return transformDeg(coords, euler[trans]);
 }
- 
+
 function getData(d, trans) {
   if (trans === "equatorial") return d;
 
@@ -1099,21 +1132,21 @@ function getData(d, trans) {
 
   for (var i=0; i<f.length; i++)
     f[i].geometry.coordinates = translate(f[i], leo);
-  
+
   return d;
 }
 
 function getPlanets(d) {
   var res = [];
-  
+
   for (var key in d) {
     if (!has(d, key)) continue;
     if (cfg.planets.which.indexOf(key) === -1) continue;
     var dat = Kepler().id(key);
     if (has(d[key], "parent")) dat.parentBody(d[key].parent);
     dat.elements(d[key].elements[0]);
-  
-    if (key === "ter") 
+
+    if (key === "ter")
       Celestial.origin = dat;
     else res.push(dat);
   }
@@ -1126,7 +1159,7 @@ function getConstellationList(d, trans) {
   var res = {},
       leo = euler[trans],
       f = d.features;
-      
+
   for (var i=0; i<f.length; i++) {
     res[f[i].id] = {
       name: f[i].properties.name,
@@ -1147,7 +1180,7 @@ function translate(d, leo) {
     case "Polygon": res.push(transLine(d.geometry.coordinates[0], leo)); break;
     case "MultiPolygon": res.push(transMultiLine(d.geometry.coordinates[0], leo)); break;
   }
-  
+
   return res;
 }
 
@@ -1158,14 +1191,14 @@ function getGridValues(type, loc) {
   //center, outline, values
   for (var i=0; i < loc.length; i++) {
     switch (loc[i]) {
-      case "center": 
+      case "center":
         if (type === "lat")
           lines = lines.concat(getLine(type, cfg.center[0], "N"));
         else
-          lines = lines.concat(getLine(type, cfg.center[1], "S")); 
+          lines = lines.concat(getLine(type, cfg.center[1], "S"));
         break;
-      case "outline": 
-        if (type === "lon") { 
+      case "outline":
+        if (type === "lon") {
           lines = lines.concat(getLine(type, cfg.center[1]-89.99, "S"));
           lines = lines.concat(getLine(type, cfg.center[1]+89.99), "N");
         } else {
@@ -1178,8 +1211,8 @@ function getGridValues(type, loc) {
         if (type === "lat")
           lines = lines.concat(getLine(type, loc[i], "N"));
         else
-          lines = lines.concat(getLine(type, loc[i], "S")); 
-        break;        
+          lines = lines.concat(getLine(type, loc[i], "S"));
+        break;
       }
     }
   }
@@ -1205,13 +1238,13 @@ function getLine(type, loc, orient) {
       res = [],
       lr = loc;
   if (cfg.transform === "equatorial" && tp === "lon") tp = "ra";
-  
+
   if (tp === "ra") {
     min = 0; max = 23; step = 1;
   } else if (tp === "lon") {
-    min = 0; max = 350; step = 10;    
+    min = 0; max = 350; step = 10;
   } else {
-    min = -80; max = 80; step = 10;    
+    min = -80; max = 80; step = 10;
   }
   for (var i=min; i<=max; i+=step) {
     var o = orient;
@@ -1226,7 +1259,7 @@ function getLine(type, loc, orient) {
       coord = [i, lr];
       val = i.toString() + "\u00b0";
     }
-  
+
     res.push({coordinates: coord, value: val, orientation: o});
   }
   return res;
@@ -1234,19 +1267,19 @@ function getLine(type, loc, orient) {
 
 function transLine(c, leo) {
   var line = [];
-  
+
   for (var i=0; i<c.length; i++)
     line.push(transformDeg(c[i], leo));
-  
+
   return line;
 }
 
 function transMultiLine(c, leo) {
   var lines = [];
-  
+
   for (var i=0; i<c.length; i++)
     lines.push(transLine(c[i], leo));
-  
+
   return lines;
 }
 
@@ -1254,11 +1287,11 @@ Celestial.getData = getData;
 Celestial.getPoint = getPoint;
 
 //Defaults
-var settings = { 
+var settings = {
   width: 0,     // Default width; height is determined by projection
   projection: "aitoff",  // Map projection used: airy, aitoff, armadillo, august, azimuthalEqualArea, azimuthalEquidistant, baker, berghaus, boggs, bonne, bromley, collignon, craig, craster, cylindricalEqualArea, cylindricalStereographic, eckert1, eckert2, eckert3, eckert4, eckert5, eckert6, eisenlohr, equirectangular, fahey, foucaut, ginzburg4, ginzburg5, ginzburg6, ginzburg8, ginzburg9, gringorten, hammer, hatano, healpix, hill, homolosine, kavrayskiy7, lagrange, larrivee, laskowski, loximuthal, mercator, miller, mollweide, mtFlatPolarParabolic, mtFlatPolarQuartic, mtFlatPolarSinusoidal, naturalEarth, nellHammer, orthographic, patterson, polyconic, rectangularPolyconic, robinson, sinusoidal, stereographic, times, twoPointEquidistant, vanDerGrinten, vanDerGrinten2, vanDerGrinten3, vanDerGrinten4, wagner4, wagner6, wagner7, wiechel, winkel3
   transform: "equatorial", // Coordinate transformation: equatorial (default), ecliptic, galactic, supergalactic
-  center: null,       // Initial center coordinates in equatorial transformation [hours, degrees, degrees], 
+  center: null,       // Initial center coordinates in equatorial transformation [hours, degrees, degrees],
                       // otherwise [degrees, degrees, degrees], 3rd parameter is orientation, null = default center
   geopos: null,       // optional initial geographic position [lat,lon] in degrees, overrides center
   follow: "zenith",   // on which coordinates to center the map, default: zenith, if location enabled, otherwise center
@@ -1267,7 +1300,7 @@ var settings = {
   interactive: true,  // Enable zooming and rotation with mousewheel and dragging
   form: false,        // Display settings form
   location: false,    // Display location settings
-  daterange: [],      // Calender date range; null: displaydate-+10; [n<100]: displaydate-+n; [yr]: yr-+10; 
+  daterange: [],      // Calender date range; null: displaydate-+10; [n<100]: displaydate-+n; [yr]: yr-+10;
                       // [yr, n<100]: [yr-n, yr+n]; [yr0, yr1]
   controls: true,     // Display zoom controls
   lang: "",           // Language for names, so far only for constellations: de: german, es: spanish
@@ -1291,7 +1324,7 @@ var settings = {
     data: "stars.6.json" // Data source for stellar data
   },
   dsos: {
-    show: true,    // Show Deep Space Objects 
+    show: true,    // Show Deep Space Objects
     limit: 6,      // Show only DSOs brighter than limit magnitude
     names: true,   // Show DSO names
     desig: true,   // Show short DSO names
@@ -1314,54 +1347,54 @@ var settings = {
       bn: {shape: "square", fill: "#ff00cc"},                                 // Generic bright nebula
       sfr:{shape: "square", fill: "#cc00ff"},                                 // Star forming region
       rn: {shape: "square", fill: "#0000ff"},                                 // Reflection nebula
-      pn: {shape: "diamond", fill: "#00cccc"},                                // Planetary nebula 
+      pn: {shape: "diamond", fill: "#00cccc"},                                // Planetary nebula
       snr:{shape: "diamond", fill: "#ff00cc"},                                // Supernova remnant
-      dn: {shape: "square", fill: "#999999", stroke: "#999999", width: 2},    // Dark nebula 
+      dn: {shape: "square", fill: "#999999", stroke: "#999999", width: 2},    // Dark nebula
       pos:{shape: "marker", fill: "#cccccc", stroke: "#cccccc", width: 1.5}   // Generic marker
     }
   },
   constellations: {
-    show: true,    // Show constellations 
-    names: true,   // Show constellation names 
+    show: true,    // Show constellations
+    names: true,   // Show constellation names
     desig: true,   // Show short constellation names (3 letter designations)
-    namestyle: { fill:"#cccc99", align: "center", baseline: "middle", opacity:0.8, 
+    namestyle: { fill:"#cccc99", align: "center", baseline: "middle", opacity:0.8,
 		             font: ["14px 'Lucida Sans Unicode', Helvetica, Arial, sans-serif",  // Different fonts for brighter &
 								        "12px 'Lucida Sans Unicode', Helvetica, Arial, sans-serif",  // sdarker constellations
 												"11px 'Lucida Sans Unicode', Helvetica, Arial, sans-serif"]},
-    lines: true,   // Show constellation lines 
+    lines: true,   // Show constellation lines
     linestyle: { stroke: "#cccccc", width: 1.5, opacity: 0.6 },
-    bounds: false,  // Show constellation boundaries 
+    bounds: false,  // Show constellation boundaries
     boundstyle: { stroke: "#ccff00", width: 1, opacity: 0.8, dash: [2, 4] }
   },
   mw: {
-    show: true,    // Show Milky Way as filled polygons 
+    show: true,    // Show Milky Way as filled polygons
     style: { fill: "#ffffff", opacity: "0.15" } // style for each MW-layer (5 on top of each other)
   },
   lines: {
-    graticule: { show: true, stroke: "#cccccc", width: 0.6, opacity: 0.8,      // Show graticule lines 
+    graticule: { show: true, stroke: "#cccccc", width: 0.6, opacity: 0.8,      // Show graticule lines
 			// grid values: "outline", "center", or [lat,...] specific position
-      lon: {pos: [""], fill: "#eee", font: "10px 'Lucida Sans Unicode', Helvetica, Arial, sans-serif"}, 
+      lon: {pos: [""], fill: "#eee", font: "10px 'Lucida Sans Unicode', Helvetica, Arial, sans-serif"},
 			// grid values: "outline", "center", or [lon,...] specific position
 		  lat: {pos: [""], fill: "#eee", font: "10px 'Lucida Sans Unicode', Helvetica, Arial, sans-serif"}},
-    equatorial: { show: true, stroke: "#aaaaaa", width: 1.3, opacity: 0.7 },    // Show equatorial plane 
-    ecliptic: { show: true, stroke: "#66cc66", width: 1.3, opacity: 0.7 },      // Show ecliptic plane 
-    galactic: { show: false, stroke: "#cc6666", width: 1.3, opacity: 0.7 },     // Show galactic plane 
-    supergalactic: { show: false, stroke: "#cc66cc", width: 1.3, opacity: 0.7 } // Show supergalactic plane 
+    equatorial: { show: true, stroke: "#aaaaaa", width: 1.3, opacity: 0.7 },    // Show equatorial plane
+    ecliptic: { show: true, stroke: "#66cc66", width: 1.3, opacity: 0.7 },      // Show ecliptic plane
+    galactic: { show: false, stroke: "#cc6666", width: 1.3, opacity: 0.7 },     // Show galactic plane
+    supergalactic: { show: false, stroke: "#cc66cc", width: 1.3, opacity: 0.7 } // Show supergalactic plane
    //mars: { show: false, stroke:"#cc0000", width:1.3, opacity:.7 }
   }, // Background style
-  background: { 
-    fill: "#000000", 
-    opacity: 1, 
+  background: {
+    fill: "#000000",
+    opacity: 1,
     stroke: "#000000", // Outline
-    width: 1.5 
-  }, 
+    width: 1.5
+  },
   horizon: {  //Show horizon marker, if geo-position and date-time is set
-    show: false, 
+    show: false,
     stroke: "#000099", // Line
-    width: 1.0, 
+    width: 1.0,
     fill: "#000000", // Area below horizon
     opacity: 0.5
-  },  
+  },
   planets: {  //Show planet locations, if date-time is set
     show: false,
     which: ["sol", "mer", "ven", "ter", "lun", "mar", "jup", "sat", "ura", "nep"],
@@ -1384,18 +1417,18 @@ var settings = {
     }
   },
   daylight: {  // Show daylight marker (tbi)
-    show: false, 
-    fill: "#fff", 
-    opacity: 0.4 
-  },  
+    show: false,
+    fill: "#fff",
+    opacity: 0.4
+  },
   set: function(cfg) {  // Override defaults with values of cfg
     var prop, key, res = {};
-    if (!cfg) return this; 
+    if (!cfg) return this;
     for (prop in this) {
-      if (!has(this, prop)) continue; 
-      //if (typeof(this[prop]) === 'function'); 
-      if (!has(cfg, prop) || cfg[prop] === null) { 
-        res[prop] = this[prop]; 
+      if (!has(this, prop)) continue;
+      //if (typeof(this[prop]) === 'function');
+      if (!has(cfg, prop) || cfg[prop] === null) {
+        res[prop] = this[prop];
       } else if (this[prop] === null || this[prop].constructor != Object ) {
         res[prop] = cfg[prop];
       } else {
@@ -1405,24 +1438,24 @@ var settings = {
             res[prop][key] = cfg[prop][key];
           } else {
             res[prop][key] = this[prop][key];
-          }            
+          }
         }
       }
     }
     return res;
   }
-  
+
 };
 
 Celestial.settings = function () { return settings; };
 
 //b-v color index to rgb color value scale
-var bvcolor = 
+var bvcolor =
   d3.scale.quantize().domain([3.347, -0.335]) //main sequence <= 1.7
     .range([ '#ff4700', '#ff4b00', '#ff4f00', '#ff5300', '#ff5600', '#ff5900', '#ff5b00', '#ff5d00', '#ff6000', '#ff6300', '#ff6500', '#ff6700', '#ff6900', '#ff6b00', '#ff6d00', '#ff7000', '#ff7300', '#ff7500', '#ff7800', '#ff7a00', '#ff7c00', '#ff7e00', '#ff8100', '#ff8300', '#ff8506', '#ff870a', '#ff8912', '#ff8b1a', '#ff8e21', '#ff9127', '#ff932c', '#ff9631', '#ff9836', '#ff9a3c', '#ff9d3f', '#ffa148', '#ffa34b', '#ffa54f', '#ffa753', '#ffa957', '#ffab5a', '#ffad5e', '#ffb165', '#ffb269', '#ffb46b', '#ffb872', '#ffb975', '#ffbb78', '#ffbe7e', '#ffc184', '#ffc489', '#ffc78f', '#ffc892', '#ffc994', '#ffcc99', '#ffce9f', '#ffd1a3', '#ffd3a8', '#ffd5ad', '#ffd7b1', '#ffd9b6', '#ffdbba', '#ffddbe', '#ffdfc2', '#ffe1c6', '#ffe3ca', '#ffe4ce', '#ffe8d5', '#ffe9d9', '#ffebdc', '#ffece0', '#ffefe6', '#fff0e9', '#fff2ec', '#fff4f2', '#fff5f5', '#fff6f8', '#fff9fd', '#fef9ff', '#f9f6ff', '#f6f4ff', '#f3f2ff', '#eff0ff', '#ebeeff', '#e9edff', '#e6ebff', '#e3e9ff', '#e0e7ff', '#dee6ff', '#dce5ff', '#d9e3ff', '#d7e2ff', '#d3e0ff', '#c9d9ff', '#bfd3ff', '#b7ceff', '#afc9ff', '#a9c5ff', '#a4c2ff', '#9fbfff', '#9bbcff']);
- 
+
 /* Default parameters for each supported projection
-     arg: constructor argument, if any 
+     arg: constructor argument, if any
      scale: scale parameter so that they all have ~equal width, normalized to 1024 pixels
      ratio: width/height ratio, 2.0 if none
      clip: projection clipped to 90 degrees from center, otherwise to antimeridian
@@ -1430,7 +1463,7 @@ var bvcolor =
 var projections = {
   "airy": {n:"Airy’s Minimum Error", arg:Math.PI/2, scale:360, ratio:1.0, clip:true},
   "aitoff": {n:"Aitoff", arg:null, scale:162},
-  "armadillo": {n:"Armadillo", arg:0, scale:250}, 
+  "armadillo": {n:"Armadillo", arg:0, scale:250},
   "august": {n:"August", arg:null, scale:94, ratio:1.4},
   "azimuthalEqualArea": {n:"Azimuthal Equal Area", arg:null, scale:340, ratio:1.0, clip:true},
   "azimuthalEquidistant": {n:"Azimuthal Equidistant", arg:null, scale:320, ratio:1.0, clip:true},
@@ -1489,9 +1522,9 @@ var projections = {
   "robinson": {n:"Robinson", arg:null, scale:160},
   "sinusoidal": {n:"Sinusoidal", arg:null, scale:160, ratio:2},
   "stereographic": {n:"Stereographic", arg:null, scale:500, ratio:1.0, clip:true},
-  "times": {n:"Times", arg:null, scale:210, ratio:1.4}, 
+  "times": {n:"Times", arg:null, scale:210, ratio:1.4},
   "twoPointEquidistant": {n:"Two-Point Equidistant", arg:Math.PI/2, scale:320, ratio:1.15, clip:true},
-  "vanDerGrinten": {n:"van Der Grinten", arg:null, scale:160, ratio:1.0}, 
+  "vanDerGrinten": {n:"van Der Grinten", arg:null, scale:160, ratio:1.0},
   "vanDerGrinten2": {n:"van Der Grinten II", arg:null, scale:160, ratio:1.0},
   "vanDerGrinten3": {n:"van Der Grinten III", arg:null, scale:160, ratio:1.0},
   "vanDerGrinten4": {n:"van Der Grinten IV", arg:null, scale:160, ratio:1.6},
@@ -1506,31 +1539,31 @@ Celestial.projections = function () { return projections; };
 
 
 
-var Canvas = {}; 
+var Canvas = {};
 
 Canvas.symbol = function () {
   // parameters and default values
-  var type = d3.functor("circle"), 
-      size = d3.functor(64), 
+  var type = d3.functor("circle"),
+      size = d3.functor(64),
       age = d3.functor(Math.PI), //crescent shape 0..2Pi
-      color = d3.functor("#fff"),  
-      text = d3.functor(""),  
-      padding = d3.functor([2,2]),  
+      color = d3.functor("#fff"),
+      text = d3.functor(""),
+      padding = d3.functor([2,2]),
       pos;
-  
+
   function canvas_symbol(context) {
     draw_symbol[type()](context);
   }
-  
+
   var draw_symbol = {
     "circle": function(ctx) {
-      var s = Math.sqrt(size()), 
+      var s = Math.sqrt(size()),
           r = s/2;
       ctx.arc(pos[0], pos[1], r, 0, 2 * Math.PI);
       return r;
     },
     "square": function(ctx) {
-      var s = Math.sqrt(size()), 
+      var s = Math.sqrt(size()),
           r = s/1.7;
       ctx.moveTo(pos[0]-r, pos[1]-r);
       ctx.lineTo(pos[0]+r, pos[1]-r);
@@ -1540,7 +1573,7 @@ Canvas.symbol = function () {
       return r;
     },
     "diamond": function(ctx) {
-      var s = Math.sqrt(size()), 
+      var s = Math.sqrt(size()),
           r = s/1.5;
       ctx.moveTo(pos[0], pos[1]-r);
       ctx.lineTo(pos[0]+r, pos[1]);
@@ -1550,7 +1583,7 @@ Canvas.symbol = function () {
       return r;
     },
     "triangle": function(ctx) {
-      var s = Math.sqrt(size()), 
+      var s = Math.sqrt(size()),
           r = s/Math.sqrt(3);
       ctx.moveTo(pos[0], pos[1]-r);
       ctx.lineTo(pos[0]+r, pos[1]+r);
@@ -1559,19 +1592,19 @@ Canvas.symbol = function () {
       return r;
     },
     "ellipse": function(ctx) {
-      var s = Math.sqrt(size()), 
+      var s = Math.sqrt(size()),
           r = s/2;
       ctx.save();
       ctx.translate(pos[0], pos[1]);
-      ctx.scale(1.6, 0.8); 
+      ctx.scale(1.6, 0.8);
       ctx.beginPath();
-      ctx.arc(0, 0, r, 0, 2 * Math.PI); 
+      ctx.arc(0, 0, r, 0, 2 * Math.PI);
       ctx.closePath();
-      ctx.restore();      
+      ctx.restore();
       return r;
     },
     "marker": function(ctx) {
-      var s = Math.sqrt(size()), 
+      var s = Math.sqrt(size()),
           r = s/2;
       ctx.moveTo(pos[0], pos[1]-r);
       ctx.lineTo(pos[0], pos[1]+r);
@@ -1581,7 +1614,7 @@ Canvas.symbol = function () {
       return r;
     },
     "cross-circle": function(ctx) {
-      var s = Math.sqrt(size()), 
+      var s = Math.sqrt(size()),
           r = s/2;
       ctx.moveTo(pos[0], pos[1]-s);
       ctx.lineTo(pos[0], pos[1]+s);
@@ -1590,74 +1623,74 @@ Canvas.symbol = function () {
       ctx.stroke();
       ctx.beginPath();
       ctx.moveTo(pos[0], pos[1]);
-      ctx.arc(pos[0], pos[1], r, 0, 2 * Math.PI);    
+      ctx.arc(pos[0], pos[1], r, 0, 2 * Math.PI);
       ctx.closePath();
       return r;
     },
     "stroke-circle": function(ctx) {
-      var s = Math.sqrt(size()), 
+      var s = Math.sqrt(size()),
           r = s/2;
       ctx.moveTo(pos[0], pos[1]-s);
       ctx.lineTo(pos[0], pos[1]+s);
       ctx.stroke();
       ctx.beginPath();
       ctx.moveTo(pos[0], pos[1]);
-      ctx.arc(pos[0], pos[1], r, 0, 2 * Math.PI);    
+      ctx.arc(pos[0], pos[1], r, 0, 2 * Math.PI);
       ctx.closePath();
       return r;
-    }, 
+    },
     "crescent": function(ctx) {
-      var s = Math.sqrt(size()), 
+      var s = Math.sqrt(size()),
           r = s/2,
           ag = age(),
           ph = 0.5 * (1 - Math.cos(ag)),
           e = 1.6 * Math.abs(ph - 0.5) + 0.01,
           dir = ag > Math.PI,
-          termdir = Math.abs(ph) > 0.5 ? dir : !dir; 
+          termdir = Math.abs(ph) > 0.5 ? dir : !dir;
 
       ctx.save();
       ctx.fillStyle = "#557";
       ctx.moveTo(pos[0], pos[1]);
-      ctx.arc(pos[0], pos[1], r, 0, 2 * Math.PI);    
+      ctx.arc(pos[0], pos[1], r, 0, 2 * Math.PI);
       ctx.closePath();
       ctx.fill();
       ctx.fillStyle = "#eee";
       ctx.beginPath();
       ctx.moveTo(pos[0], pos[1]);
-      ctx.arc(pos[0], pos[1], r, -Math.PI/2, Math.PI/2, dir); 
+      ctx.arc(pos[0], pos[1], r, -Math.PI/2, Math.PI/2, dir);
       ctx.scale(e, 1);
-      ctx.arc(pos[0]/e, pos[1], r, Math.PI/2, -Math.PI/2, termdir); 
+      ctx.arc(pos[0]/e, pos[1], r, Math.PI/2, -Math.PI/2, termdir);
       ctx.closePath();
       ctx.fill();
       ctx.restore();
-      
+
       return r;
-    } 
+    }
   };
 
-  
+
   canvas_symbol.type = function(_) {
-    if (!arguments.length) return type; 
+    if (!arguments.length) return type;
     type = d3.functor(_);
     return canvas_symbol;
   };
   canvas_symbol.size = function(_) {
-    if (!arguments.length) return size; 
+    if (!arguments.length) return size;
     size = d3.functor(_);
     return canvas_symbol;
   };
   canvas_symbol.age = function(_) {
-    if (!arguments.length) return age; 
+    if (!arguments.length) return age;
     age = d3.functor(_);
     return canvas_symbol;
   };
   canvas_symbol.text = function(_) {
-    if (!arguments.length) return text; 
+    if (!arguments.length) return text;
     text = d3.functor(_);
     return canvas_symbol;
   };
   canvas_symbol.position = function(_) {
-    if (!arguments.length) return; 
+    if (!arguments.length) return;
     pos = _;
     return canvas_symbol;
   };
@@ -1676,28 +1709,28 @@ canvas.text = function () {
     ctx.fillStyle = color;
     ctx.textAlign = align;
     ctx.textBaseline = baseline;
-    
+
     //var pt = projection(d.geometry.coordinates);
     if (angle) {
-      canvas.save();     
+      canvas.save();
       canvas.translate(aPos[0], aPos[1]);
-      canvas.rotate(angle); 
+      canvas.rotate(angle);
       canvas.fillText(sText, 0, 0);
-      canvas.restore();     
+      canvas.restore();
     } else
       canvas.fillText(sText, aPos[0], aPos[1]);
   }
-  
+
   txt.angle = function(x) {
     if (!arguments.length) return angle * 180 / Math.PI;
     color = x  * Math.PI / 180;
     return txt;
-  };  
+  };
   txt.color = function(s) {
     if (!arguments.length) return color;
     color = s;
     return txt;
-  };  
+  };
   txt.align = function(s) {
     if (!arguments.length) return align;
     align = s;
@@ -1728,8 +1761,8 @@ canvas.text = function () {
     if (o.fill) color = o.fill;
     if (o.font) font = o.font;
     return txt;
-  }; 
-  
+  };
+
 }
 
   function ctxPath(d) {
@@ -1745,25 +1778,25 @@ canvas.text = function () {
     }
     context.fill();
   }
-  
+
 
   function ctxText(d, ang) {
     var pt = projection(d.geometry.coordinates);
     if (ang) {
-      canvas.save();     
+      canvas.save();
       canvas.translate(pt[0], pt[1]);
-      canvas.rotate(Math.PI/2); 
+      canvas.rotate(Math.PI/2);
       canvas.fillText(txt, 0, 0);
-      canvas.restore();     
+      canvas.restore();
     } else
       canvas.fillText(d.properties.txt, pt[0], pt[1]);
   }
-  
+
 
 */
 
 function $(id) { return document.getElementById(id); }
-function px(n) { return n + "px"; } 
+function px(n) { return n + "px"; }
 function Round(x, dg) { return(Math.round(Math.pow(10,dg)*x)/Math.pow(10,dg)); }
 function sign(x) { return x ? x < 0 ? -1 : 1 : 0; }
 function pad(n) { return n < 10 ? '0' + n : n; }
@@ -1797,7 +1830,7 @@ function hasParent(t, id){
 
 function attach(node, event, func) {
   if (node.addEventListener) node.addEventListener(event, func, false);
-  else node.attachEvent("on" + event, func); 
+  else node.attachEvent("on" + event, func);
 }
 
 function stopPropagation(e) {
@@ -1815,18 +1848,18 @@ function dateDiff(dt1, dt2, type) {
     case 'h': case 'hr': diff /= 3600000; break;
     case 'n': case 'mn': diff /= 60000; break;
     case 's': case 'sec': diff /= 1000; break;
-    case 'ms': break;    
+    case 'ms': break;
   }
   return Math.floor(diff);
 }
 
 function dateParse(s) {
-  if (!s) return; 
+  if (!s) return;
   var t = s.split(".");
-  if (t.length < 1) return; 
+  if (t.length < 1) return;
   t = t[0].split("-");
   t[0] = t[0].replace(/\D/g, "");
-  if (!t[0]) return; 
+  if (!t[0]) return;
   t[1] = t[1] ? t[1].replace(/\D/g, "") : "1";
   t[2] = t[2] ? t[2].replace(/\D/g, "") : "1";
   //Fraction -> h:m:s
@@ -1851,7 +1884,7 @@ var Trig = {
   asinh: function (val) { return Math.log(val + Math.sqrt(val * val + 1)); },
   acosh: function (val) { return Math.log(val + Math.sqrt(val * val - 1)); },
   normalize0: function(val) {  return ((val + Math.PI*3) % (Math.PI*2)) - Math.PI; },
-  normalize: function(val) {  return ((val + Math.PI*2) % (Math.PI*2)); },  
+  normalize: function(val) {  return ((val + Math.PI*2) % (Math.PI*2)); },
   cartesian: function(p) {
     var ϕ = p[0], θ = halfπ - p[1], r = p[2];
     return {"x": r * Math.sin(θ) * Math.cos(ϕ), "y": r * Math.sin(θ) * Math.sin(ϕ), "z": r * Math.cos(θ)};
@@ -1868,15 +1901,15 @@ var Trig = {
 
 //display settings form in div with id "celestial-form"
 function form(cfg) {
-  var config = settings.set(cfg); 
+  var config = settings.set(cfg);
 
   var prj = Celestial.projections(), leo = Celestial.eulerAngles();
   var ctrl = d3.select("#celestial-form").append("div").attr("class", "ctrl");
   var frm = ctrl.append("form").attr("id", "params").attr("name", "params").attr("method", "get").attr("action" ,"#");
-  
-  //Map parameters    
+
+  //Map parameters
   var col = frm.append("div").attr("class", "col").attr("id", "general");
-  
+
   col.append("label").attr("title", "Map width in pixel, 0 indicates full width").attr("for", "width").html("Width ");
   col.append("input").attr("type", "number").attr("maxlength", "4").attr("max", "20000").attr("min", "0").attr("title", "Map width").attr("id", "width").attr("value", config.width).on("change", resize);
   col.append("span").html("px");
@@ -1884,8 +1917,8 @@ function form(cfg) {
   col.append("label").attr("title", "Map projection, (hemi) indicates hemispherical projection").attr("for", "projection").html("Projection");
   var sel = col.append("select").attr("id", "projection").on("change", reproject);
   var selected = 0;
-  var list = Object.keys(prj).map( function (key, i) { 
-    var n = prj[key].clip && prj[key].clip === true ? prj[key].n + " (hemi)" : prj[key].n; 
+  var list = Object.keys(prj).map( function (key, i) {
+    var n = prj[key].clip && prj[key].clip === true ? prj[key].n + " (hemi)" : prj[key].n;
     if (key === config.projection) selected = i;
     return {o:key, n:n};
   });
@@ -1893,13 +1926,13 @@ function form(cfg) {
      .attr("value", function (d) { return d.o; })
      .text(function (d) { return d.n; });
   sel.property("selectedIndex", selected);
-  
+
   selected = 0;
   col.append("label").attr("title", "Coordinate space in which the map is displayed").attr("for", "transform").html("Coordinates");
   sel = col.append("select").attr("id", "transform").on("change", reload);
   list = Object.keys(leo).map(function (key, i) {
-    if (key === config.transform) selected = i;    
-    return {o:key, n:key.replace(/^([a-z])/, function(s, m) { return m.toUpperCase(); } )}; 
+    if (key === config.transform) selected = i;
+    return {o:key, n:key.replace(/^([a-z])/, function(s, m) { return m.toUpperCase(); } )};
   });
   sel.selectAll("option").data(list).enter().append('option')
      .attr("value", function (d) { return d.o; })
@@ -1911,7 +1944,7 @@ function form(cfg) {
   col.append("input").attr("type", "number").attr("id", "centerx").attr("title", "Center right ascension/longitude").attr("max", "24").attr("min", "0").attr("step", "0.1").on("change", turn);
   col.append("span").attr("id", "cxunit").html("h");
   //addList("centerx", "ra");
-  
+
   col.append("input").attr("type", "number").attr("id", "centery").attr("title", "Center declination/latitude").attr("max", "90").attr("min", "-90").attr("step", "0.1").on("change", turn);
   col.append("span").html("\u00b0");
 
@@ -1920,41 +1953,41 @@ function form(cfg) {
   col.append("span").html("\u00b0");
 
   col.append("label").attr("for", "orientationfixed").html("Fixed");
-  col.append("input").attr("type", "checkbox").attr("id", "orientationfixed").property("checked", config.orientationfixed).on("change", apply);    
+  col.append("input").attr("type", "checkbox").attr("id", "orientationfixed").property("checked", config.orientationfixed).on("change", apply);
 
   col.append("label").attr("title", "Center and zoom in on this constellation").attr("for", "constellation").html("Show");
   col.append("select").attr("id", "constellation").on("change", showConstellation);
 
   setCenter(config.center, config.transform);
 
-  // Stars 
+  // Stars
   col = frm.append("div").attr("class", "col").attr("id", "stars");
-  
+
   col.append("label").attr("class", "header").attr("for", "stars-show").html("Stars");
   col.append("input").attr("type", "checkbox").attr("id", "stars-show").property("checked", config.stars.show).on("change", apply);
-  
+
   col.append("label").attr("for", "stars-limit").html("down to magnitude");
   col.append("input").attr("type", "number").attr("id", "stars-limit").attr("title", "Star display limit (magnitude)").attr("value", config.stars.limit).attr("max", "6").attr("min", "-1").attr("step", "0.1").on("change", apply);
-  
+
   col.append("label").attr("for", "stars-colors").html("with spectral colors");
   col.append("input").attr("type", "checkbox").attr("id", "stars-colors").property("checked", config.stars.colors).on("change", apply);
-  
+
   col.append("label").attr("for", "stars-color").html("or default color ");
   col.append("input").attr("type", "color").attr("autocomplete", "off").attr("id", "stars-style-fill").attr("title", "Star color").property("value", config.stars.style.fill).on("change", apply);
   col.append("br");
-  
+
   col.append("label").attr("for", "stars-names").html("Show designations");
   col.append("input").attr("type", "checkbox").attr("id", "stars-names").property("checked", config.stars.names).on("change", apply);
 
   col.append("label").attr("for", "stars-namelimit").html("down to mag");
   col.append("input").attr("type", "number").attr("id", "stars-namelimit").attr("title", "Star designaton display limit (magnitude)").attr("value", config.stars.namelimit).attr("max", "6").attr("min", "-1").attr("step", "0.1").on("change", apply);
-  
+
   col.append("label").attr("for", "stars-desig").attr("title", "include HD/HIP designations").html("all");
   col.append("input").attr("type", "checkbox").attr("id", "stars-desig").property("checked", config.stars.desig).on("change", apply);
 
   col.append("label").attr("for", "stars-proper").html("proper names");
   col.append("input").attr("type", "checkbox").attr("id", "stars-proper").property("checked", config.stars.proper).on("change", apply);
-  
+
   col.append("label").attr("for", "stars-propernamelimit").html("down to mag");
   col.append("input").attr("type", "number").attr("id", "stars-propernamelimit").attr("title", "Star name display limit (magnitude)").attr("value", config.stars.propernamelimit).attr("max", "6").attr("min", "-1").attr("step", "0.1").on("change", apply);
   col.append("br");
@@ -1965,24 +1998,24 @@ function form(cfg) {
   col.append("label").attr("for", "stars-exponent").html(" * e ^ (exponent");
   col.append("input").attr("type", "number").attr("id", "stars-exponent").attr("title", "Size of the displayed star disk; exponent").attr("value", config.stars.exponent).attr("max", "3").attr("min", "-1").attr("step", "0.01").on("change", apply);
   col.append("span").text(" * (magnitude + 2))  [* adaptation]");
-  
+
   enable($("stars-show"));
-  
-  // DSOs 
+
+  // DSOs
   col = frm.append("div").attr("class", "col").attr("id", "dsos");
-  
+
   col.append("label").attr("class", "header").attr("title", "Deep Space Objects").attr("for", "dsos-show").html("DSOs");
   col.append("input").attr("type", "checkbox").attr("id", "dsos-show").property("checked", config.dsos.show).on("change", apply);
-  
+
   col.append("label").attr("for", "dsos-limit").html("down to mag");
   col.append("input").attr("type", "number").attr("id", "dsos-limit").attr("title", "DSO display limit (magnitude)").attr("value", config.dsos.limit).attr("max", "6").attr("min", "0").attr("step", "0.1").on("change", apply);
-  
+
   col.append("label").attr("for", "dsos-names").html("with names");
   col.append("input").attr("type", "checkbox").attr("id", "dsos-names").property("checked", config.dsos.names).on("change", apply);
-  
+
   col.append("label").attr("for", "dsos-desig").html("or designations");
   col.append("input").attr("type", "checkbox").attr("id", "dsos-desig").property("checked", config.dsos.desig).on("change", apply);
-  
+
   col.append("label").attr("for", "dsos-namelimit").html("down to mag");
   col.append("input").attr("type", "number").attr("id", "dsos-namelimit").attr("title", "DSO name display limit (magnitude)").attr("value", config.dsos.namelimit).attr("max", "6").attr("min", "0").attr("step", "0.1").on("change", apply);
   col.append("br");
@@ -1995,93 +2028,93 @@ function form(cfg) {
 
   enable($("dsos-show"));
 
-  // Constellations 
+  // Constellations
   col = frm.append("div").attr("class", "col").attr("id", "constellations");
   col.append("label").attr("class", "header").html("Constellations");
   //col.append("input").attr("type", "checkbox").attr("id", "constellations-show").property("checked", config.constellations.show).on("change", apply);
-  
+
   col.append("label").attr("for", "constellations-names").html("Show names");
   col.append("input").attr("type", "checkbox").attr("id", "constellations-names").property("checked", config.constellations.names).on("change", apply);
-  
+
   col.append("label").attr("for", "constellations-desig").html("abbreviated");
   col.append("input").attr("type", "checkbox").attr("id", "constellations-desig").property("checked", config.constellations.desig).on("change", apply);
-  
+
   col.append("label").attr("for", "constellations-lines").html("with lines");
   col.append("input").attr("type", "checkbox").attr("id", "constellations-lines").property("checked", config.constellations.lines).on("change", apply);
-  
+
   col.append("label").attr("for", "constellations-bounds").html("with boundaries");
   col.append("input").attr("type", "checkbox").attr("id", "constellations-bounds").property("checked", config.constellations.bounds).on("change", apply);
 
   enable($("constellations-names"));
 
-  // graticules & planes 
+  // graticules & planes
   col = frm.append("div").attr("class", "col").attr("id", "lines");
   col.append("label").attr("class", "header").html("Lines");
-  
+
   col.append("label").attr("title", "Laitudet/longitude grid lines").attr("for", "lines-graticule").html("Graticule");
   col.append("input").attr("type", "checkbox").attr("id", "lines-graticule-show").property("checked", config.lines.graticule.show).on("change", apply);
-  
+
   col.append("label").attr("for", "lines-equatorial").html("Equator");
   col.append("input").attr("type", "checkbox").attr("id", "lines-equatorial-show").property("checked", config.lines.equatorial.show).on("change", apply);
-  
+
   col.append("label").attr("for", "lines-ecliptic").html("Ecliptic");
   col.append("input").attr("type", "checkbox").attr("id", "lines-ecliptic-show").property("checked", config.lines.ecliptic.show).on("change", apply);
-  
+
   col.append("label").attr("for", "lines-galactic").html("Galactic plane");
   col.append("input").attr("type", "checkbox").attr("id", "lines-galactic-show").property("checked", config.lines.galactic.show).on("change", apply);
-  
+
   col.append("label").attr("for", "lines-supergalactic").html("Supergalactic plane");
   col.append("input").attr("type", "checkbox").attr("id", "lines-supergalactic-show").property("checked", config.lines.supergalactic.show).on("change", apply);
 
   // Other
   col = frm.append("div").attr("class", "col").attr("id", "other");
   col.append("label").attr("class", "header").html("Other");
-  
+
   col.append("label").attr("for", "mw-show").html("Milky Way");
   col.append("input").attr("type", "checkbox").attr("id", "mw-show").property("checked", config.mw.show).on("change", apply);
-  
+
   col.append("label").attr("for", "mw-style-fill").html(" color");
   col.append("input").attr("type", "color").attr("id", "mw-style-fill").attr("title", "Milky Way color").attr("value", config.mw.style.fill).on("change", apply);
 
   col.append("label").attr("for", "mw-style-opacity").html(" opacity");
   col.append("input").attr("type", "number").attr("id", "mw-style-opacity").attr("title", "Transparency of each Milky Way layer").attr("value", config.mw.style.opacity).attr("max", "1").attr("min", "0").attr("step", "0.01").on("change", apply);
   col.append("br");
-  
+
   col.append("label").attr("for", "background").html("Background color");
   col.append("input").attr("type", "color").attr("id", "background-fill").attr("title", "Background color").attr("value", config.background.fill).on("change", apply);
-  
+
   col.append("label").attr("title", "Star/DSO sizes are increased with higher zoom-levels").attr("for", "adaptable").html("Adaptable object sizes");
   col.append("input").attr("type", "checkbox").attr("id", "adaptable").property("checked", config.adaptable).on("change", apply);
-   
+
   setLimits();
   setUnit(config.transform);
 
   function resize() {
     var src = this,
         w = src.value;
-    if (testNumber(src) === false) return; 
+    if (testNumber(src) === false) return;
     config.width = w;
     Celestial.resize({width:w});
   }
-  
+
   function reload() {
     var src = this,
         trans = src.value,
-        cx = setUnit(trans, config.transform); 
-    if (cx !== null) config.center[0] = cx; 
+        cx = setUnit(trans, config.transform);
+    if (cx !== null) config.center[0] = cx;
     config.transform = trans;
     Celestial.reload({transform:trans});
-  }  
-  
+  }
+
   function reproject() {
     var src = this;
     if (!src) return;
-    config.projection = src.value; 
+    config.projection = src.value;
     Celestial.reproject(config);
   }
-  
+
   function turn() {
-    if (testNumber(this) === false) return;   
+    if (testNumber(this) === false) return;
     if (getCenter() === false) return;
     Celestial.rotate(config);
   }
@@ -2092,22 +2125,22 @@ function form(cfg) {
 
     if (!cx || !cy) return;
 
-    if (config.transform !== "equatorial") config.center[0] = parseFloat(cx.value); 
-    else { 
+    if (config.transform !== "equatorial") config.center[0] = parseFloat(cx.value);
+    else {
       var vx = parseFloat(cx.value);
       config.center[0] = vx > 12 ? vx * 15 - 360 : vx * 15;
     }
-    config.center[1] = parseFloat(cy.value); 
-    
-    var vz = parseFloat(cz.value); 
+    config.center[1] = parseFloat(cy.value);
+
+    var vz = parseFloat(cz.value);
     config.center[2] = isNaN(vz) ? 0 : vz;
-    
+
     return cx.value !== "" && cy.value !== "";
   }
-  
+
   function showConstellation() {
     var id = this.value, anims = [];
-    if (id === "") { 
+    if (id === "") {
       Celestial.constellation = null;
       Celestial.redraw();
       return;
@@ -2128,20 +2161,20 @@ function form(cfg) {
     var sc = con.scale > 10 ? 10 : con.scale;
     anims.push({param:"zoom", value:sc, duration:0});
     Celestial.constellation = id;
-    Celestial.animate(anims, false);    
+    Celestial.animate(anims, false);
   }
-  
+
   function apply() {
     var value, src = this;
 
     switch (src.type) {
       case "checkbox": value = src.checked; enable(src); break;
-      case "number": if (testNumber(src) === false) return; 
+      case "number": if (testNumber(src) === false) return;
                      value = parseFloat(src.value); break;
-      case "color": if (testColor(src) === false) return; 
+      case "color": if (testColor(src) === false) return;
                     value = src.value; break;
       case "text": if (src.id.search(/fill$/) === -1) return;
-                   if (testColor(src) === false) return; 
+                   if (testColor(src) === false) return;
                    value = src.value; break;
     }
     if (value === null) return;
@@ -2157,7 +2190,7 @@ function form(cfg) {
       case 2: config[a[0]][a[1]] = val; break;
       case 3: config[a[0]][a[1]][a[2]] = val; break;
       default: return;
-    }   
+    }
   }
 }
 
@@ -2175,44 +2208,44 @@ var depends = {
 // De/activate fields depending on selection of dependencies
 function enable(source) {
   var fld = source.id, off;
-  
+
   switch (fld) {
-    case "stars-show": 
+    case "stars-show":
       off = !$(fld).checked;
       for (var i=0; i< depends[fld].length; i++) { fldEnable(depends[fld][i], off); }
       /* falls through */
-    case "stars-names": 
-      off = !$("stars-names").checked || !$("stars-show").checked;      
+    case "stars-names":
+      off = !$("stars-names").checked || !$("stars-show").checked;
       for (i=0; i< depends["stars-names"].length; i++) { fldEnable(depends["stars-names"][i], off); }
       /* falls through */
-    case "stars-proper": 
+    case "stars-proper":
       off = !$("stars-names").checked || !$("stars-show").checked || !$("stars-proper").checked;
       for (i=0; i< depends["stars-proper"].length; i++) { fldEnable(depends["stars-proper"][i], off); }
       break;
-    case "dsos-show": 
+    case "dsos-show":
       off = !$(fld).checked;
       for (i=0; i< depends[fld].length; i++) { fldEnable(depends[fld][i], off); }
       /* falls through */
-    case "dsos-names": 
-      off = !$("dsos-names").checked || !$("dsos-show").checked;      
+    case "dsos-names":
+      off = !$("dsos-names").checked || !$("dsos-show").checked;
       for (i=0; i< depends["dsos-names"].length; i++) { fldEnable(depends["dsos-names"][i], off); }
       break;
-    case "constellations-show": 
+    case "constellations-show":
       off = !$(fld).checked;
       for (i=0; i< depends[fld].length; i++) { fldEnable(depends[fld][i], off); }
       break;
-    case "mw-show": 
+    case "mw-show":
       off = !$(fld).checked;
       for (i=0; i< depends[fld].length; i++) { fldEnable(depends[fld][i], off); }
       break;
-  }  
+  }
 }
 
 // Enable/disable field d to status off
 function fldEnable(d, off) {
   var node = $(d);
   node.disabled = off;
-  node.previousSibling.style.color = off ? "#999" : "#000";  
+  node.previousSibling.style.color = off ? "#999" : "#000";
 }
 
 // Error notification
@@ -2235,8 +2268,8 @@ function testNumber(node) {
     v = parseFloat(v);
     if (v < node.min || v > node.max ) { popError(node, node.title + " must be between " + (node.min + adj) + " and " + (+node.max - adj)); return false; }
   }
-  d3.select("#error").style( {top:"-9999px", left:"-9999px", opacity:0} ); 
-  return true; 
+  d3.select("#error").style( {top:"-9999px", left:"-9999px", opacity:0} );
+  return true;
 }
 
 //Check color field
@@ -2258,7 +2291,7 @@ function testColor(node) {
 function setUnit(trans, old) {
   var cx = $("centerx");
   if (!cx) return null;
-  
+
   if (old) {
     if (trans === "equatorial" && old !== "equatorial") {
       cx.value = (cx.value/15).toFixed(1);
@@ -2283,13 +2316,13 @@ function setUnit(trans, old) {
 function setCenter(ctr, trans) {
   var cx = $("centerx"), cy = $("centery"), cz = $("centerz");
   if (!cx || !cy) return;
-  
-  if (ctr === null) ctr = [0,0,0]; 
+
+  if (ctr === null) ctr = [0,0,0];
   if (ctr.length <= 2) ctr[2] = 0;
-  //config.center = ctr; 
-  if (trans !== "equatorial") cx.value = ctr[0].toFixed(1); 
-  else cx.value = ctr[0] < 0 ? (ctr[0] / 15 + 24).toFixed(1) : (ctr[0] / 15).toFixed(1); 
-  
+  //config.center = ctr;
+  if (trans !== "equatorial") cx.value = ctr[0].toFixed(1);
+  else cx.value = ctr[0] < 0 ? (ctr[0] / 15 + 24).toFixed(1) : (ctr[0] / 15).toFixed(1);
+
   cy.value = ctr[1].toFixed(1);
   cz.value = ctr[2] !== null ? ctr[2].toFixed(1) : 0;
 }
@@ -2301,7 +2334,7 @@ function setLimits() {
       config =  Celestial.settings();
 
   d = config.dsos.data;
-  
+
   //test dso limit
   t = d.match(rx);
   if (t !== null) {
@@ -2312,9 +2345,9 @@ function setLimits() {
     $("dsos-limit").max = res.d;
     $("dsos-namelimit").max = res.d;
   }
-   
+
    s = config.stars.data;
-  
+
   //test star limit
   t = s.match(rx);
   if (t !== null) {
@@ -2335,26 +2368,26 @@ function geo(cfg) {
   var frm = d3.select("#celestial-form").append("div").attr("id", "loc"),
       dtFormat = d3.time.format("%Y-%m-%d %H:%M:%S"),
       zenith = [0,0],
-      geopos = [0,0], 
+      geopos = [0,0],
       date = new Date(),
       zone = date.getTimezoneOffset();
 
-  var dtpick = new datetimepicker(cfg, function(date, tz) { 
-    $("datetime").value = dateFormat(date, tz); 
+  var dtpick = new datetimepicker(cfg, function(date, tz) {
+    $("datetime").value = dateFormat(date, tz);
     zone = tz;
-    go(); 
+    go();
   });
-  
+
   if (has(cfg, "geopos") && cfg.geopos !== null && cfg.geopos.length === 2) geopos = cfg.geopos;
   var col = frm.append("div").attr("class", "col").attr("id", "location");
   //Latitude & longitude fields
   col.append("label").attr("title", "Location coordinates long/lat").attr("for", "lat").html("Location");
   col.append("input").attr("type", "number").attr("id", "lat").attr("title", "Latitude").attr("placeholder", "Latitude").attr("max", "90").attr("min", "-90").attr("step", "0.0001").attr("value", geopos[0]).on("change",  function () {
-    if (testNumber(this) === true) go(); 
+    if (testNumber(this) === true) go();
   });
   col.append("span").html("\u00b0");
-  col.append("input").attr("type", "number").attr("id", "lon").attr("title", "Longitude").attr("placeholder", "Longitude").attr("max", "180").attr("min", "-180").attr("step", "0.0001").attr("value", geopos[1]).on("change",  function () { 
-    if (testNumber(this) === true) go(); 
+  col.append("input").attr("type", "number").attr("id", "lon").attr("title", "Longitude").attr("placeholder", "Longitude").attr("max", "180").attr("min", "-180").attr("step", "0.0001").attr("value", geopos[1]).on("change",  function () {
+    if (testNumber(this) === true) go();
   });
   col.append("span").html("\u00b0");
   //Here-button if supported
@@ -2364,34 +2397,34 @@ function geo(cfg) {
   //Datetime field with dtpicker-button
   col.append("label").attr("title", "Local date/time").attr("for", "datetime").html(" Date/time");
   col.append("input").attr("type", "button").attr("id", "day-left").attr("title", "One day back").on("click", function () {
-    date.setDate(date.getDate() - 1); 
-    $("datetime").value = dateFormat(date, zone); 
-    go(); 
+    date.setDate(date.getDate() - 1);
+    $("datetime").value = dateFormat(date, zone);
+    go();
   });
   col.append("input").attr("type", "text").attr("id", "datetime").attr("title", "Date and time").attr("value", dateFormat(date, zone))
-  .on("click", showpick, true).on("input", function () { 
-    this.value = dateFormat(date, zone); 
-    if (!dtpick.isVisible()) showpick(); 
+  .on("click", showpick, true).on("input", function () {
+    this.value = dateFormat(date, zone);
+    if (!dtpick.isVisible()) showpick();
   });
   col.append("div").attr("id", "datepick").on("click", showpick);
-  col.append("input").attr("type", "button").attr("id", "day-right").attr("title", "One day forward").on("click", function () { 
-    date.setDate(date.getDate() + 1); 
-    $("datetime").value = dateFormat(date, zone); 
-    go(); 
+  col.append("input").attr("type", "button").attr("id", "day-right").attr("title", "One day forward").on("click", function () {
+    date.setDate(date.getDate() + 1);
+    $("datetime").value = dateFormat(date, zone);
+    go();
   });
-  //Now -button sets current time & date of device  
+  //Now -button sets current time & date of device
   col.append("input").attr("type", "button").attr("value", "Now").attr("id", "now").on("click", now);
   //Horizon marker
   col.append("br");
   col.append("label").attr("title", "Show horizon marker").attr("for", "horizon-show").html(" Horizon marker");
-  col.append("input").attr("type", "checkbox").attr("id", "horizon-show").property("checked", cfg.horizon.show).on("change", go);    
+  col.append("input").attr("type", "checkbox").attr("id", "horizon-show").property("checked", cfg.horizon.show).on("change", go);
   col.append("label").attr("title", "Show solar system objects").attr("for", "planets-show").html(" Planets, Sun & Moon");
-  col.append("input").attr("type", "checkbox").attr("id", "planets-show").property("checked", cfg.planets.show).on("change", go);    
-  
-  d3.select(document).on("mousedown", function () { 
-    if (!hasParent(d3.event.target, "celestial-date") && dtpick.isVisible()) dtpick.hide(); 
+  col.append("input").attr("type", "checkbox").attr("id", "planets-show").property("checked", cfg.planets.show).on("change", go);
+
+  d3.select(document).on("mousedown", function () {
+    if (!hasParent(d3.event.target, "celestial-date") && dtpick.isVisible()) dtpick.hide();
   });
-  
+
   function now() {
     date.setTime(Date.now());
     $("datetime").value = dateFormat(date, zone);
@@ -2404,13 +2437,13 @@ function geo(cfg) {
       $("lat").value = geopos[0];
       $("lon").value = geopos[1];
       go();
-    });  
+    });
   }
-  
+
   function showpick() {
     dtpick.show(date);
   }
-  
+
   function dateFormat(dt, tz) {
     var tzs;
     if (!tz || tz === "0") tzs = " ±0000";
@@ -2421,8 +2454,8 @@ function geo(cfg) {
       tzs = s + pad(h) + pad(m);
     }
     return dtFormat(dt) + tzs;
-  }  
-  
+  }
+
   function go() {
     var lon = $("lon").value,
         lat = $("lat").value;
@@ -2434,7 +2467,7 @@ function geo(cfg) {
 
     cfg.horizon.show = !!$("horizon-show").checked;
     cfg.planets.show = !!$("planets-show").checked;
-    
+
     if (lon !== "" && lat !== "") {
       geopos = [parseFloat(lat), parseFloat(lon)];
       zenith = Celestial.getPoint(horizontal.inverse(dtc, [90, 0], geopos), cfg.transform);
@@ -2448,14 +2481,14 @@ function geo(cfg) {
   }
 
   Celestial.getPosition = function (p) {
-    
+
   };
 
-  Celestial.date = function (dt) { 
-    if (!dt) return date;  
+  Celestial.date = function (dt) {
+    if (!dt) return date;
     if (dtpick.isVisible()) return;
     date.setTime(dt.valueOf());
-    $("datetime").value = dateFormat(dt, zone); 
+    $("datetime").value = dateFormat(dt, zone);
     Celestial.redraw();
   };
   Celestial.position = function () { return geopos; };
@@ -2463,12 +2496,12 @@ function geo(cfg) {
   Celestial.nadir = function () {
     var b = -zenith[1],
         l = zenith[0] + 180;
-    if (l > 180) l -= 360;    
-    return [l, b-0.001]; 
+    if (l > 180) l -= 360;
+    return [l, b-0.001];
   };
 
-  setTimeout(go, 1000); 
- 
+  setTimeout(go, 1000);
+
 }
 
 ﻿
@@ -2487,11 +2520,11 @@ var gmdat = {
   "nep": 51034453325494200,
   "plu": 7327611364884,
   "eri": 8271175680000
-}, 
+},
 symbols = {
-  "sol":"\u2609", "mer":"\u263f", "ven":"\u2640", "ter":"\u2295", "lun":"\u25cf", "mar":"\u2642", "cer":"\u26b3", 
+  "sol":"\u2609", "mer":"\u263f", "ven":"\u2640", "ter":"\u2295", "lun":"\u25cf", "mar":"\u2642", "cer":"\u26b3",
   "ves":"\u26b6", "jup":"\u2643", "sat":"\u2644", "ura":"\u2645", "nep":"\u2646", "plu":"\u2647", "eri":"\u26aa"
-}, 
+},
 
 ε = 23.43928 * deg2rad,
 sinε = Math.sin(ε),
@@ -2500,13 +2533,13 @@ kelements = ["a","e","i","w","M","L","W","N","n","ep","ref","lecl","becl","Tilt"
 /*
     ep = epoch (iso-date)
     N = longitude of the ascending node (deg) Ω
-    i = inclination to the refrence plane, default:ecliptic (deg) 
+    i = inclination to the refrence plane, default:ecliptic (deg)
     w = argument of periapsis (deg)  ω
     a = semi-major axis, or mean distance from parent body (AU,km)
     e = eccentricity (0=circle, 0-1=ellipse, 1=parabola, >1=hyperbola ) (-)
     M = mean anomaly (0 at periapsis; increases uniformly with time) (deg)
     n = mean daily motion = 360/P (deg/day)
-    
+
     W = N + w  = longitude of periapsis ϖ
     L = M + W  = mean longitude
     q = a*(1-e) = periapsis distance
@@ -2515,14 +2548,14 @@ kelements = ["a","e","i","w","M","L","W","N","n","ep","ref","lecl","becl","Tilt"
     T = Epoch_of_M - (M(deg)/360_deg) / P  = time of periapsis
     v = true anomaly (angle between position and periapsis) ν
     E = eccentric anomaly
-    
+
     Mandatory: a, e, i, N, w|W, M|L, dM|n
-    
+
 */
 
 var Kepler = function () {
-  var gm = gmdat.sol, 
-      parentBody = "sol", 
+  var gm = gmdat.sol,
+      parentBody = "sol",
       elem = {}, dat = {},
       id, name, symbol;
 
@@ -2548,7 +2581,7 @@ var Kepler = function () {
     }
     if (!dt) { dt = new Date(); }
     dat.jd = JD(dt);
-      
+
     dt = dateParse(elem.ep);
     if (!dt) dt = dateParse("2000-01-01");
     dat.jd0 = JD(dt);
@@ -2564,7 +2597,7 @@ var Kepler = function () {
     } else {
       for (var i=0; i<kelements.length; i++) {
         key = kelements[i];
-        if (!has(elem, key)) continue; 
+        if (!has(elem, key)) continue;
         if (has(elem, "d"+key)) {
           dat[key] = elem[key] + elem["d"+key] * dat.cy;
         } else if (has(elem, key)) {
@@ -2577,78 +2610,78 @@ var Kepler = function () {
     }
     derive();
     trueAnomaly();
-    cartesian();    
+    cartesian();
   };
 
   kepler.cartesian = function() {
-    return dat;    
+    return dat;
   };
 
   kepler.spherical = function() {
     spherical();
-    return dat;    
+    return dat;
   };
 
   kepler.equatorial = function(pos) {
     equatorial(pos);
-    return dat;    
+    return dat;
   };
 
   kepler.transpose = function() {
     transpose(dat);
-    return dat;    
+    return dat;
   };
-  
+
   kepler.elements = function(_) {
     var key;
-    
+
     if (!arguments.length) return elem;
-    
+
     for (var i=0; i<kelements.length; i++) {
       key = kelements[i];
-      if (!has(_, key)) continue; 
+      if (!has(_, key)) continue;
       elem[key] = _[key];
-      
-      if (key === "a" || key === "e") elem[key] *= 1.0; 
+
+      if (key === "a" || key === "e") elem[key] *= 1.0;
       else if (key !== "ref" && key !== "ep") elem[key] *= deg2rad;
 
       if (has(_, "d" + key)) {
         key = "d" + key;
         elem[key] = _[key];
-        if (key === "da" || key === "de") elem[key] *= 1.0; 
+        if (key === "da" || key === "de") elem[key] *= 1.0;
         else elem[key] *= deg2rad;
-      } 
+      }
     }
     return kepler;
   };
 
   kepler.parentBody = function(_) {
-    if (!arguments.length) return parentBody; 
+    if (!arguments.length) return parentBody;
     parentBody = _;
     gm = gmdat[parentBody];
     return kepler;
   };
 
   kepler.id = function(_) {
-    if (!arguments.length) return id; 
+    if (!arguments.length) return id;
     id = _;
     symbol = symbols[_];
     return kepler;
   };
 
   kepler.name = function(_) {
-    if (!arguments.length) return name; 
+    if (!arguments.length) return name;
     name = _;
     return kepler;
   };
 
   kepler.symbol = function(_) {
-    if (!arguments.length) return symbol; 
+    if (!arguments.length) return symbol;
     symbol = symbols[_];
     return kepler;
   };
 
-  
+
   function near_parabolic(E, e) {
     var anom2 = e > 1.0 ? E*E : -E*E,
         term = e * anom2 * E / 6.0,
@@ -2667,12 +2700,12 @@ var Kepler = function () {
     var curr, err, trial, tmod,
         e = dat.e, M = dat.M,
         thresh = 1e-8,
-        offset = 0.0, 
-        delta_curr = 1.9, 
-        is_negative = false, 
+        offset = 0.0,
+        delta_curr = 1.9,
+        is_negative = false,
         n_iter = 0;
 
-    if (!M) return(0.0); 
+    if (!M) return(0.0);
 
     if (e < 1.0) {
       if (M < -Math.PI || M > Math.PI) {
@@ -2681,7 +2714,7 @@ var Kepler = function () {
         M = tmod;
       }
 
-      if (e < 0.9) {   
+      if (e < 0.9) {
         curr = Math.atan2(Math.sin(M), Math.cos(M) - e);
         do {
           err = (curr - e * Math.sin(curr) - M) / (1.0 - e * Math.cos(curr));
@@ -2835,7 +2868,7 @@ var Kepler = function () {
         lat = Math.atan2(dat.z, Math.sqrt(dat.x*dat.x + dat.y*dat.y));
     dat.l = Trig.normalize(lon);
     dat.b = lat;
-    return dat; 
+    return dat;
   }
 
   function polar2cart(pos) {
@@ -2846,52 +2879,52 @@ var Kepler = function () {
     return pos;
   }
 
-  
-  function JD(dt) {  
+
+  function JD(dt) {
     var yr = dt.getUTCFullYear(),
         mo = dt.getUTCMonth() + 1,
         dy = dt.getUTCDate(),
-        frac = (dt.getUTCHours() - 12 + dt.getUTCMinutes()/60.0 + dt.getUTCSeconds()/3600.0) / 24, 
+        frac = (dt.getUTCHours() - 12 + dt.getUTCMinutes()/60.0 + dt.getUTCSeconds()/3600.0) / 24,
         IYMIN = -4799;        /* Earliest year allowed (4800BC) */
 
-    if (yr < IYMIN) return -1; 
+    if (yr < IYMIN) return -1;
     var a = Math.floor((14 - mo) / 12),
         y = yr + 4800 - a,
         m = mo + (12 * a) - 3;
     var jdn = dy + Math.floor((153 * m + 2)/5) + (365 * y) + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
-    return jdn + frac;   
+    return jdn + frac;
   }
 
   function mst(lon) {
     var l = lon || 0;  // lon=0 -> gmst
     return (18.697374558 + 24.06570982441908 * dat.d) * 15 + l;
   }
-  
-    
+
+
   function observer(pos) {
     var flat = 298.257223563,    // WGS84 flattening of earth
         re = 6378.137,           // GRS80/WGS84 semi major axis of earth ellipsoid
         h = pos.h || 0,
         cart = {},
         gmst = mst();
-    
+
     var cosl = Math.cos(pos.lat),
         sinl = Math.sin(pos.lat),
         fl = 1.0 - 1.0 / flat;
     var fl2 = fl * fl;
-    
+
     var u = 1.0 / Math.sqrt (cosl * cosl + fl2 * sinl * sinl),
         a = re * u + h,
         b = re * fl2 * u + h,
         r = Math.sqrt (a * a * cosl * cosl + b * b * sinl * sinl); // geocentric distance from earth center
 
-    cart.lat = Math.acos (a * cosl / r); 
-    cart.lon = pos.lon; 
+    cart.lat = Math.acos (a * cosl / r);
+    cart.lon = pos.lon;
     cart.r = h;
-    
-    if (pos.lat < 0.0) cart.lat *= -1; 
 
-    polar2cart(cart); 
+    if (pos.lat < 0.0) cart.lat *= -1;
+
+    polar2cart(cart);
 
     // rotate around earth's polar axis to align coordinate system from Greenwich to vernal equinox
     var angle = gmst * deg2rad; // sideral time gmst given in hours. Convert to radians
@@ -2904,14 +2937,16 @@ var Kepler = function () {
   function moon_elements(dat) {
     if ((typeof Moon !== "undefined")) return Moon.elements(dat);
   }
-  
+
   function moon_corr(dat, pos) {
     spherical();
     if ((typeof Moon !== "undefined")) return Moon.corr(dat, pos);
   }
 
-  return kepler;  
+  return kepler;
 };
+Celestial.Kepler = Kepler;
+
 ﻿
 var Moon = {
   elements: function(dat) {
@@ -2925,164 +2960,164 @@ var Moon = {
         t4e8 = t4 * 1e-8;
 
     // semimajor axis
-    var sa = 3400.4 * Math.cos(deg2rad * (235.7004 + 890534.2230 * t - 32.601 * t2e4 
-        + 3.664 * t3e6 - 1.769 * t4e8)) 
-        - 635.6 * Math.cos(deg2rad * (100.7370 + 413335.3554 * t - 122.571 * t2e4 
-        - 10.684 * t3e6 + 5.028 * t4e8)) 
-        - 235.6 * Math.cos(deg2rad * (134.9634 + 477198.8676 * t + 89.970 * t2e4 
-        + 14.348 * t3e6 - 6.797 * t4e8)) 
-        + 218.1 * Math.cos(deg2rad * (238.1713 +  854535.1727 * t - 31.065 * t2e4 
-        + 3.623 * t3e6  - 1.769 * t4e8)) 
-        + 181.0 * Math.cos(deg2rad * (10.6638 + 1367733.0907 * t + 57.370 * t2e4 
-        + 18.011 * t3e6 - 8.566 * t4e8)) 
-        - 39.9 * Math.cos(deg2rad * (103.2079 + 377336.3051 * t - 121.035 * t2e4 
-        - 10.724 * t3e6 + 5.028 * t4e8)) 
-        - 38.4 * Math.cos(deg2rad * (233.2295 + 926533.2733 * t - 34.136 * t2e4 
-        + 3.705 * t3e6 - 1.769 * t4e8)) 
-        + 33.8 * Math.cos(deg2rad * (336.4374 + 1303869.5784 * t - 155.171 * t2e4 
-        - 7.020 * t3e6 + 3.259 * t4e8)) 
-        + 28.8 * Math.cos(deg2rad * (111.4008 + 1781068.4461 * t - 65.201 * t2e4 
-        + 7.328 * t3e6 - 3.538 * t4e8)) 
-        + 12.6 * Math.cos(deg2rad * (13.1347 + 1331734.0404 * t + 58.906 * t2e4 
-        + 17.971 * t3e6 - 8.566 * t4e8)) 
-        + 11.4 * Math.cos(deg2rad * (186.5442 + 966404.0351 * t - 68.058 * t2e4 
-        - 0.567 * t3e6 + 0.232 * t4e8)) 
-        - 11.1 * Math.cos(deg2rad * (222.5657 - 441199.8173 * t - 91.506 * t2e4 
-        - 14.307 * t3e6 + 6.797 * t4e8)) 
-        - 10.2 * Math.cos(deg2rad * (269.9268 + 954397.7353 * t + 179.941 * t2e4 
-        + 28.695 * t3e6 - 13.594 * t4e8)) 
-        + 9.7 * Math.cos(deg2rad * (145.6272 + 1844931.9583 * t + 147.340 * t2e4 
-        + 32.359 * t3e6 - 15.363 * t4e8)) 
-        + 9.6 * Math.cos(deg2rad * (240.6422 + 818536.1225 * t - 29.529 * t2e4 
-        + 3.582 * t3e6 - 1.769 * t4e8)) 
-        + 8.0 * Math.cos(deg2rad * (297.8502 + 445267.1115 * t - 16.300 * t2e4 
-        + 1.832 * t3e6 - 0.884 * t4e8)) 
-        - 6.2 * Math.cos(deg2rad * (132.4925 + 513197.9179 * t + 88.434 * t2e4 
-        + 14.388 * t3e6 - 6.797 * t4e8)) 
-        + 6.0 * Math.cos(deg2rad * (173.5506 + 1335801.3346 * t - 48.901 * t2e4 
-        + 5.496 * t3e6 - 2.653 * t4e8)) 
-        + 3.7 * Math.cos(deg2rad * (113.8717 + 1745069.3958 * t - 63.665 * t2e4 
-        + 7.287 * t3e6 - 3.538 * t4e8)) 
-        + 3.6 * Math.cos(deg2rad * (338.9083 + 1267870.5281 * t - 153.636 * t2e4 
-        - 7.061 * t3e6 + 3.259 * t4e8)) 
-        + 3.2 * Math.cos(deg2rad * (246.3642 + 2258267.3137 * t + 24.769 * t2e4 
-        + 21.675 * t3e6 - 10.335 * t4e8)) 
-        - 3.0 * Math.cos(deg2rad * (8.1929 + 1403732.1410 * t + 55.834 * t2e4 
-        + 18.052 * t3e6 - 8.566 * t4e8)) 
-        + 2.3 * Math.cos(deg2rad * (98.2661 + 449334.4057 * t - 124.107 * t2e4 
-        - 10.643 * t3e6 + 5.028 * t4e8)) 
-        - 2.2 * Math.cos(deg2rad * (357.5291 + 35999.0503 * t - 1.536 * t2e4 
-        + 0.041 * t3e6 + 0.000 * t4e8)) 
-        - 2.0 * Math.cos(deg2rad * (38.5872 + 858602.4669 * t - 138.871 * t2e4 
-        - 8.852 * t3e6 + 4.144 * t4e8)) 
-        - 1.8 * Math.cos(deg2rad * (105.6788 + 341337.2548 * t - 119.499 * t2e4 
-        - 10.765 * t3e6 + 5.028 * t4e8)) 
-        - 1.7 * Math.cos(deg2rad * (201.4740 + 826670.7108 * t - 245.142 * t2e4 
-        - 21.367 * t3e6 + 10.057 * t4e8)) 
-        + 1.6 * Math.cos(deg2rad * (184.1196 + 401329.0556 * t + 125.428 * t2e4 
-        + 18.579 * t3e6 - 8.798 * t4e8)) 
-        - 1.4 * Math.cos(deg2rad * (308.4192 - 489205.1674 * t + 158.029 * t2e4 
-        + 14.915 * t3e6 - 7.029 * t4e8)) 
-        + 1.3 * Math.cos(deg2rad * (325.7736 - 63863.5122 * t - 212.541 * t2e4 
+    var sa = 3400.4 * Math.cos(deg2rad * (235.7004 + 890534.2230 * t - 32.601 * t2e4
+        + 3.664 * t3e6 - 1.769 * t4e8))
+        - 635.6 * Math.cos(deg2rad * (100.7370 + 413335.3554 * t - 122.571 * t2e4
+        - 10.684 * t3e6 + 5.028 * t4e8))
+        - 235.6 * Math.cos(deg2rad * (134.9634 + 477198.8676 * t + 89.970 * t2e4
+        + 14.348 * t3e6 - 6.797 * t4e8))
+        + 218.1 * Math.cos(deg2rad * (238.1713 +  854535.1727 * t - 31.065 * t2e4
+        + 3.623 * t3e6  - 1.769 * t4e8))
+        + 181.0 * Math.cos(deg2rad * (10.6638 + 1367733.0907 * t + 57.370 * t2e4
+        + 18.011 * t3e6 - 8.566 * t4e8))
+        - 39.9 * Math.cos(deg2rad * (103.2079 + 377336.3051 * t - 121.035 * t2e4
+        - 10.724 * t3e6 + 5.028 * t4e8))
+        - 38.4 * Math.cos(deg2rad * (233.2295 + 926533.2733 * t - 34.136 * t2e4
+        + 3.705 * t3e6 - 1.769 * t4e8))
+        + 33.8 * Math.cos(deg2rad * (336.4374 + 1303869.5784 * t - 155.171 * t2e4
+        - 7.020 * t3e6 + 3.259 * t4e8))
+        + 28.8 * Math.cos(deg2rad * (111.4008 + 1781068.4461 * t - 65.201 * t2e4
+        + 7.328 * t3e6 - 3.538 * t4e8))
+        + 12.6 * Math.cos(deg2rad * (13.1347 + 1331734.0404 * t + 58.906 * t2e4
+        + 17.971 * t3e6 - 8.566 * t4e8))
+        + 11.4 * Math.cos(deg2rad * (186.5442 + 966404.0351 * t - 68.058 * t2e4
+        - 0.567 * t3e6 + 0.232 * t4e8))
+        - 11.1 * Math.cos(deg2rad * (222.5657 - 441199.8173 * t - 91.506 * t2e4
+        - 14.307 * t3e6 + 6.797 * t4e8))
+        - 10.2 * Math.cos(deg2rad * (269.9268 + 954397.7353 * t + 179.941 * t2e4
+        + 28.695 * t3e6 - 13.594 * t4e8))
+        + 9.7 * Math.cos(deg2rad * (145.6272 + 1844931.9583 * t + 147.340 * t2e4
+        + 32.359 * t3e6 - 15.363 * t4e8))
+        + 9.6 * Math.cos(deg2rad * (240.6422 + 818536.1225 * t - 29.529 * t2e4
+        + 3.582 * t3e6 - 1.769 * t4e8))
+        + 8.0 * Math.cos(deg2rad * (297.8502 + 445267.1115 * t - 16.300 * t2e4
+        + 1.832 * t3e6 - 0.884 * t4e8))
+        - 6.2 * Math.cos(deg2rad * (132.4925 + 513197.9179 * t + 88.434 * t2e4
+        + 14.388 * t3e6 - 6.797 * t4e8))
+        + 6.0 * Math.cos(deg2rad * (173.5506 + 1335801.3346 * t - 48.901 * t2e4
+        + 5.496 * t3e6 - 2.653 * t4e8))
+        + 3.7 * Math.cos(deg2rad * (113.8717 + 1745069.3958 * t - 63.665 * t2e4
+        + 7.287 * t3e6 - 3.538 * t4e8))
+        + 3.6 * Math.cos(deg2rad * (338.9083 + 1267870.5281 * t - 153.636 * t2e4
+        - 7.061 * t3e6 + 3.259 * t4e8))
+        + 3.2 * Math.cos(deg2rad * (246.3642 + 2258267.3137 * t + 24.769 * t2e4
+        + 21.675 * t3e6 - 10.335 * t4e8))
+        - 3.0 * Math.cos(deg2rad * (8.1929 + 1403732.1410 * t + 55.834 * t2e4
+        + 18.052 * t3e6 - 8.566 * t4e8))
+        + 2.3 * Math.cos(deg2rad * (98.2661 + 449334.4057 * t - 124.107 * t2e4
+        - 10.643 * t3e6 + 5.028 * t4e8))
+        - 2.2 * Math.cos(deg2rad * (357.5291 + 35999.0503 * t - 1.536 * t2e4
+        + 0.041 * t3e6 + 0.000 * t4e8))
+        - 2.0 * Math.cos(deg2rad * (38.5872 + 858602.4669 * t - 138.871 * t2e4
+        - 8.852 * t3e6 + 4.144 * t4e8))
+        - 1.8 * Math.cos(deg2rad * (105.6788 + 341337.2548 * t - 119.499 * t2e4
+        - 10.765 * t3e6 + 5.028 * t4e8))
+        - 1.7 * Math.cos(deg2rad * (201.4740 + 826670.7108 * t - 245.142 * t2e4
+        - 21.367 * t3e6 + 10.057 * t4e8))
+        + 1.6 * Math.cos(deg2rad * (184.1196 + 401329.0556 * t + 125.428 * t2e4
+        + 18.579 * t3e6 - 8.798 * t4e8))
+        - 1.4 * Math.cos(deg2rad * (308.4192 - 489205.1674 * t + 158.029 * t2e4
+        + 14.915 * t3e6 - 7.029 * t4e8))
+        + 1.3 * Math.cos(deg2rad * (325.7736 - 63863.5122 * t - 212.541 * t2e4
         - 25.031 * t3e6 + 11.826 * t4e8));
 
-    var sapp = - 0.55 * Math.cos(deg2rad * (238.2 + 854535.2 * t)) 
-        + 0.10 * Math.cos(deg2rad * (103.2 + 377336.3 * t)) 
+    var sapp = - 0.55 * Math.cos(deg2rad * (238.2 + 854535.2 * t))
+        + 0.10 * Math.cos(deg2rad * (103.2 + 377336.3 * t))
         + 0.10 * Math.cos(deg2rad * (233.2 + 926533.3 * t));
 
     var sma = 383397.6 + sa + sapp * t;
 
     // orbital eccentricity
 
-    var se = 0.014217 * Math.cos(deg2rad * (100.7370 + 413335.3554 * t - 122.571 * t2e4 
-        - 10.684 * t3e6 + 5.028 * t4e8)) 
-        + 0.008551 * Math.cos(deg2rad * (325.7736 - 63863.5122 * t - 212.541 * t2e4 
-        - 25.031 * t3e6 + 11.826 * t4e8)) 
-        - 0.001383 * Math.cos(deg2rad * (134.9634 + 477198.8676 * t + 89.970 * t2e4 
-        + 14.348 * t3e6 - 6.797 * t4e8)) 
-        + 0.001353 * Math.cos(deg2rad * (10.6638 + 1367733.0907 * t + 57.370 * t2e4 
-        + 18.011 * t3e6 - 8.566 * t4e8)) 
-        - 0.001146 * Math.cos(deg2rad * (66.5106 + 349471.8432 * t - 335.112 * t2e4 
-        - 35.715 * t3e6 + 16.854 * t4e8)) 
-        - 0.000915 * Math.cos(deg2rad * (201.4740 + 826670.7108 * t - 245.142 * t2e4 
-        - 21.367 * t3e6 + 10.057 * t4e8)) 
-        + 0.000869 * Math.cos(deg2rad * (103.2079 + 377336.3051 * t - 121.035 * t2e4 
-        - 10.724 * t3e6 + 5.028 * t4e8)) 
-        - 0.000628 * Math.cos(deg2rad * (235.7004 + 890534.2230 * t - 32.601 * t2e4 
-        + 3.664 * t3e6  - 1.769 * t4e8)) 
-        - 0.000393 * Math.cos(deg2rad * (291.5472 - 127727.0245 * t - 425.082 * t2e4 
-        - 50.062 * t3e6 + 23.651 * t4e8)) 
-        + 0.000284 * Math.cos(deg2rad * (328.2445 - 99862.5625 * t - 211.005 * t2e4 
-        - 25.072 * t3e6 + 11.826 * t4e8)) 
-        - 0.000278 * Math.cos(deg2rad * (162.8868 - 31931.7561 * t - 106.271 * t2e4 
-        - 12.516 * t3e6 + 5.913 * t4e8)) 
-        - 0.000240 * Math.cos(deg2rad * (269.9268 + 954397.7353 * t + 179.941 * t2e4 
-        + 28.695 * t3e6 - 13.594 * t4e8)) 
-        + 0.000230 * Math.cos(deg2rad * (111.4008 + 1781068.4461 * t - 65.201 * t2e4 
-        + 7.328 * t3e6  - 3.538 * t4e8)) 
-        + 0.000229 * Math.cos(deg2rad * (167.2476 + 762807.1986 * t - 457.683 * t2e4 
-        - 46.398 * t3e6 + 21.882 * t4e8)) 
-        - 0.000202 * Math.cos(deg2rad * ( 83.3826 - 12006.2998 * t + 247.999 * t2e4 
-        + 29.262 * t3e6 - 13.826 * t4e8)) 
-        + 0.000190 * Math.cos(deg2rad * (190.8102 - 541062.3799 * t - 302.511 * t2e4 
-        - 39.379 * t3e6 + 18.623 * t4e8)) 
-        + 0.000177 * Math.cos(deg2rad * (357.5291 + 35999.0503 * t - 1.536 * t2e4 
-        + 0.041 * t3e6 + 0.000 * t4e8)) 
-        + 0.000153 * Math.cos(deg2rad * (32.2842 + 285608.3309 * t - 547.653 * t2e4 
-        - 60.746 * t3e6 + 28.679 * t4e8)) 
-        - 0.000137 * Math.cos(deg2rad * (44.8902 + 1431596.6029 * t + 269.911 * t2e4 
-        + 43.043 * t3e6 - 20.392 * t4e8)) 
-        + 0.000122 * Math.cos(deg2rad * (145.6272 + 1844931.9583 * t + 147.340 * t2e4 
-        + 32.359 * t3e6 - 15.363 * t4e8)) 
-        + 0.000116 * Math.cos(deg2rad * (302.2110 + 1240006.0662 * t - 367.713 * t2e4 
-        - 32.051 * t3e6 + 15.085 * t4e8)) 
-        - 0.000111 * Math.cos(deg2rad * (203.9449 + 790671.6605 * t - 243.606 * t2e4 
-        - 21.408 * t3e6 + 10.057 * t4e8)) 
-        - 0.000108 * Math.cos(deg2rad * (68.9815 + 313472.7929 * t - 333.576 * t2e4 
-        - 35.756 * t3e6 + 16.854 * t4e8)) 
-        + 0.000096 * Math.cos(deg2rad * (336.4374 + 1303869.5784 * t - 155.171 * t2e4 
-        - 7.020 * t3e6 + 3.259 * t4e8)) 
-        - 0.000090 * Math.cos(deg2rad * (98.2661 + 449334.4057 * t - 124.107 * t2e4 
-        - 10.643 * t3e6 + 5.028 * t4e8)) 
-        + 0.000090 * Math.cos(deg2rad * (13.1347 + 1331734.0404 * t + 58.906 * t2e4 
-        + 17.971 * t3e6 - 8.566 * t4e8)) 
-        + 0.000056 * Math.cos(deg2rad * (55.8468 - 1018261.2475 * t - 392.482 * t2e4 
-        - 53.726 * t3e6 + 25.420 * t4e8)) 
-        - 0.000056 * Math.cos(deg2rad * (238.1713 + 854535.1727 * t - 31.065 * t2e4 
-        + 3.623 * t3e6 - 1.769 * t4e8)) 
-        + 0.000052 * Math.cos(deg2rad * (308.4192 - 489205.1674 * t + 158.029 * t2e4 
-        + 14.915 * t3e6 - 7.029 * t4e8)) 
-        - 0.000050 * Math.cos(deg2rad * (133.0212 + 698943.6863 * t - 670.224 * t2e4 
-        - 71.429 * t3e6 + 33.708 * t4e8)) 
-        - 0.000049 * Math.cos(deg2rad * (267.9846 + 1176142.5540 * t - 580.254 * t2e4 
-        - 57.082 * t3e6 + 26.911 * t4e8)) 
-        - 0.000049 * Math.cos(deg2rad * (184.1196 + 401329.0556 * t + 125.428 * t2e4 
-        + 18.579 * t3e6 - 8.798 * t4e8)) 
-        - 0.000045 * Math.cos(deg2rad * (49.1562 - 75869.8120 * t + 35.458 * t2e4 
-        + 4.231 * t3e6 - 2.001 * t4e8)) 
-        + 0.000044 * Math.cos(deg2rad * (257.3208 - 191590.5367 * t - 637.623 * t2e4 
-        - 75.093 * t3e6 + 35.477 * t4e8)) 
-        + 0.000042 * Math.cos(deg2rad * (105.6788 + 341337.2548 * t - 119.499 * t2e4 
-        - 10.765 * t3e6 + 5.028 * t4e8)) 
-        + 0.000042 * Math.cos(deg2rad * (160.4159 + 4067.2942 * t - 107.806 * t2e4 
-        - 12.475 * t3e6 + 5.913 * t4e8)) 
-        + 0.000040 * Math.cos(deg2rad * (246.3642 + 2258267.3137 * t + 24.769 * t2e4 
-        + 21.675 * t3e6 - 10.335 * t4e8)) 
-        - 0.000040 * Math.cos(deg2rad * (156.5838 - 604925.8921 * t - 515.053 * t2e4 
-        - 64.410 * t3e6 + 30.448 * t4e8)) 
-        + 0.000036 * Math.cos(deg2rad * (169.7185 + 726808.1483 * t - 456.147 * t2e4 
-        - 46.439 * t3e6 + 21.882 * t4e8)) 
-        + 0.000029 * Math.cos(deg2rad * (113.8717 + 1745069.3958 * t - 63.665 * t2e4 
-        + 7.287 * t3e6 - 3.538 * t4e8)) 
-        - 0.000029 * Math.cos(deg2rad * (297.8502 + 445267.1115 * t - 16.300 * t2e4 
-        + 1.832 * t3e6 - 0.884 * t4e8)) 
-        - 0.000028 * Math.cos(deg2rad * (294.0181 - 163726.0747 * t - 423.546 * t2e4 
-        - 50.103 * t3e6 + 23.651 * t4e8)) 
-        + 0.000027 * Math.cos(deg2rad * (263.6238 + 381403.5993 * t - 228.841 * t2e4 
-        - 23.199 * t3e6 + 10.941 * t4e8)) 
-        - 0.000026 * Math.cos(deg2rad * (358.0578 + 221744.8187 * t - 760.194 * t2e4 
-        - 85.777 * t3e6 + 40.505 * t4e8)) 
-        - 0.000026 * Math.cos(deg2rad * (8.1929 + 1403732.1410 * t + 55.834 * t2e4 
+    var se = 0.014217 * Math.cos(deg2rad * (100.7370 + 413335.3554 * t - 122.571 * t2e4
+        - 10.684 * t3e6 + 5.028 * t4e8))
+        + 0.008551 * Math.cos(deg2rad * (325.7736 - 63863.5122 * t - 212.541 * t2e4
+        - 25.031 * t3e6 + 11.826 * t4e8))
+        - 0.001383 * Math.cos(deg2rad * (134.9634 + 477198.8676 * t + 89.970 * t2e4
+        + 14.348 * t3e6 - 6.797 * t4e8))
+        + 0.001353 * Math.cos(deg2rad * (10.6638 + 1367733.0907 * t + 57.370 * t2e4
+        + 18.011 * t3e6 - 8.566 * t4e8))
+        - 0.001146 * Math.cos(deg2rad * (66.5106 + 349471.8432 * t - 335.112 * t2e4
+        - 35.715 * t3e6 + 16.854 * t4e8))
+        - 0.000915 * Math.cos(deg2rad * (201.4740 + 826670.7108 * t - 245.142 * t2e4
+        - 21.367 * t3e6 + 10.057 * t4e8))
+        + 0.000869 * Math.cos(deg2rad * (103.2079 + 377336.3051 * t - 121.035 * t2e4
+        - 10.724 * t3e6 + 5.028 * t4e8))
+        - 0.000628 * Math.cos(deg2rad * (235.7004 + 890534.2230 * t - 32.601 * t2e4
+        + 3.664 * t3e6  - 1.769 * t4e8))
+        - 0.000393 * Math.cos(deg2rad * (291.5472 - 127727.0245 * t - 425.082 * t2e4
+        - 50.062 * t3e6 + 23.651 * t4e8))
+        + 0.000284 * Math.cos(deg2rad * (328.2445 - 99862.5625 * t - 211.005 * t2e4
+        - 25.072 * t3e6 + 11.826 * t4e8))
+        - 0.000278 * Math.cos(deg2rad * (162.8868 - 31931.7561 * t - 106.271 * t2e4
+        - 12.516 * t3e6 + 5.913 * t4e8))
+        - 0.000240 * Math.cos(deg2rad * (269.9268 + 954397.7353 * t + 179.941 * t2e4
+        + 28.695 * t3e6 - 13.594 * t4e8))
+        + 0.000230 * Math.cos(deg2rad * (111.4008 + 1781068.4461 * t - 65.201 * t2e4
+        + 7.328 * t3e6  - 3.538 * t4e8))
+        + 0.000229 * Math.cos(deg2rad * (167.2476 + 762807.1986 * t - 457.683 * t2e4
+        - 46.398 * t3e6 + 21.882 * t4e8))
+        - 0.000202 * Math.cos(deg2rad * ( 83.3826 - 12006.2998 * t + 247.999 * t2e4
+        + 29.262 * t3e6 - 13.826 * t4e8))
+        + 0.000190 * Math.cos(deg2rad * (190.8102 - 541062.3799 * t - 302.511 * t2e4
+        - 39.379 * t3e6 + 18.623 * t4e8))
+        + 0.000177 * Math.cos(deg2rad * (357.5291 + 35999.0503 * t - 1.536 * t2e4
+        + 0.041 * t3e6 + 0.000 * t4e8))
+        + 0.000153 * Math.cos(deg2rad * (32.2842 + 285608.3309 * t - 547.653 * t2e4
+        - 60.746 * t3e6 + 28.679 * t4e8))
+        - 0.000137 * Math.cos(deg2rad * (44.8902 + 1431596.6029 * t + 269.911 * t2e4
+        + 43.043 * t3e6 - 20.392 * t4e8))
+        + 0.000122 * Math.cos(deg2rad * (145.6272 + 1844931.9583 * t + 147.340 * t2e4
+        + 32.359 * t3e6 - 15.363 * t4e8))
+        + 0.000116 * Math.cos(deg2rad * (302.2110 + 1240006.0662 * t - 367.713 * t2e4
+        - 32.051 * t3e6 + 15.085 * t4e8))
+        - 0.000111 * Math.cos(deg2rad * (203.9449 + 790671.6605 * t - 243.606 * t2e4
+        - 21.408 * t3e6 + 10.057 * t4e8))
+        - 0.000108 * Math.cos(deg2rad * (68.9815 + 313472.7929 * t - 333.576 * t2e4
+        - 35.756 * t3e6 + 16.854 * t4e8))
+        + 0.000096 * Math.cos(deg2rad * (336.4374 + 1303869.5784 * t - 155.171 * t2e4
+        - 7.020 * t3e6 + 3.259 * t4e8))
+        - 0.000090 * Math.cos(deg2rad * (98.2661 + 449334.4057 * t - 124.107 * t2e4
+        - 10.643 * t3e6 + 5.028 * t4e8))
+        + 0.000090 * Math.cos(deg2rad * (13.1347 + 1331734.0404 * t + 58.906 * t2e4
+        + 17.971 * t3e6 - 8.566 * t4e8))
+        + 0.000056 * Math.cos(deg2rad * (55.8468 - 1018261.2475 * t - 392.482 * t2e4
+        - 53.726 * t3e6 + 25.420 * t4e8))
+        - 0.000056 * Math.cos(deg2rad * (238.1713 + 854535.1727 * t - 31.065 * t2e4
+        + 3.623 * t3e6 - 1.769 * t4e8))
+        + 0.000052 * Math.cos(deg2rad * (308.4192 - 489205.1674 * t + 158.029 * t2e4
+        + 14.915 * t3e6 - 7.029 * t4e8))
+        - 0.000050 * Math.cos(deg2rad * (133.0212 + 698943.6863 * t - 670.224 * t2e4
+        - 71.429 * t3e6 + 33.708 * t4e8))
+        - 0.000049 * Math.cos(deg2rad * (267.9846 + 1176142.5540 * t - 580.254 * t2e4
+        - 57.082 * t3e6 + 26.911 * t4e8))
+        - 0.000049 * Math.cos(deg2rad * (184.1196 + 401329.0556 * t + 125.428 * t2e4
+        + 18.579 * t3e6 - 8.798 * t4e8))
+        - 0.000045 * Math.cos(deg2rad * (49.1562 - 75869.8120 * t + 35.458 * t2e4
+        + 4.231 * t3e6 - 2.001 * t4e8))
+        + 0.000044 * Math.cos(deg2rad * (257.3208 - 191590.5367 * t - 637.623 * t2e4
+        - 75.093 * t3e6 + 35.477 * t4e8))
+        + 0.000042 * Math.cos(deg2rad * (105.6788 + 341337.2548 * t - 119.499 * t2e4
+        - 10.765 * t3e6 + 5.028 * t4e8))
+        + 0.000042 * Math.cos(deg2rad * (160.4159 + 4067.2942 * t - 107.806 * t2e4
+        - 12.475 * t3e6 + 5.913 * t4e8))
+        + 0.000040 * Math.cos(deg2rad * (246.3642 + 2258267.3137 * t + 24.769 * t2e4
+        + 21.675 * t3e6 - 10.335 * t4e8))
+        - 0.000040 * Math.cos(deg2rad * (156.5838 - 604925.8921 * t - 515.053 * t2e4
+        - 64.410 * t3e6 + 30.448 * t4e8))
+        + 0.000036 * Math.cos(deg2rad * (169.7185 + 726808.1483 * t - 456.147 * t2e4
+        - 46.439 * t3e6 + 21.882 * t4e8))
+        + 0.000029 * Math.cos(deg2rad * (113.8717 + 1745069.3958 * t - 63.665 * t2e4
+        + 7.287 * t3e6 - 3.538 * t4e8))
+        - 0.000029 * Math.cos(deg2rad * (297.8502 + 445267.1115 * t - 16.300 * t2e4
+        + 1.832 * t3e6 - 0.884 * t4e8))
+        - 0.000028 * Math.cos(deg2rad * (294.0181 - 163726.0747 * t - 423.546 * t2e4
+        - 50.103 * t3e6 + 23.651 * t4e8))
+        + 0.000027 * Math.cos(deg2rad * (263.6238 + 381403.5993 * t - 228.841 * t2e4
+        - 23.199 * t3e6 + 10.941 * t4e8))
+        - 0.000026 * Math.cos(deg2rad * (358.0578 + 221744.8187 * t - 760.194 * t2e4
+        - 85.777 * t3e6 + 40.505 * t4e8))
+        - 0.000026 * Math.cos(deg2rad * (8.1929 + 1403732.1410 * t + 55.834 * t2e4
         + 18.052 * t3e6 - 8.566 * t4e8));
 
     var sedp = -0.0022 * Math.cos(deg2rad * (103.2 + 377336.3 * t));
@@ -3091,321 +3126,321 @@ var Moon = {
 
     // sine of half the inclination
 
-    var sg = 0.0011776 * Math.cos(deg2rad * (49.1562 - 75869.8120 * t + 35.458 * t2e4 
-        + 4.231 * t3e6 - 2.001 * t4e8)) 
-        - 0.0000971 * Math.cos(deg2rad * (235.7004 + 890534.2230 * t - 32.601 * t2e4 
-        + 3.664 * t3e6 - 1.769 * t4e8)) 
-        + 0.0000908 * Math.cos(deg2rad * (186.5442 + 966404.0351 * t - 68.058 * t2e4 
-        - 0.567 * t3e6 + 0.232 * t4e8)) 
-        + 0.0000623 * Math.cos(deg2rad * (83.3826 - 12006.2998 * t + 247.999 * t2e4 
-        + 29.262 * t3e6 - 13.826 * t4e8)) 
-        + 0.0000483 * Math.cos(deg2rad * (51.6271 - 111868.8623 * t + 36.994 * t2e4 
-        + 4.190 * t3e6 - 2.001 * t4e8)) 
-        + 0.0000348 * Math.cos(deg2rad * (100.7370 + 413335.3554 * t - 122.571 * t2e4 
-        - 10.684 * t3e6 + 5.028 * t4e8)) 
-        - 0.0000316 * Math.cos(deg2rad * (308.4192 - 489205.1674 * t + 158.029 * t2e4 
-        + 14.915 * t3e6 - 7.029 * t4e8)) 
-        - 0.0000253 * Math.cos(deg2rad * (46.6853 - 39870.7617 * t + 33.922 * t2e4 
-        + 4.272 * t3e6 - 2.001 * t4e8)) 
-        - 0.0000141 * Math.cos(deg2rad * (274.1928 - 553068.6797 * t - 54.513 * t2e4 
-        - 10.116 * t3e6 + 4.797 * t4e8)) 
-        + 0.0000127 * Math.cos(deg2rad * (325.7736 - 63863.5122 * t - 212.541 * t2e4 
-        - 25.031 * t3e6 + 11.826 * t4e8)) 
-        + 0.0000117 * Math.cos(deg2rad * (184.1196 + 401329.0556 * t + 125.428 * t2e4 
-        + 18.579 * t3e6 - 8.798 * t4e8)) 
-        - 0.0000078 * Math.cos(deg2rad * (98.3124 - 151739.6240 * t + 70.916 * t2e4 
-        + 8.462 * t3e6 - 4.001 * t4e8)) 
-        - 0.0000063 * Math.cos(deg2rad * (238.1713 + 854535.1727 * t - 31.065 * t2e4 
-        + 3.623 * t3e6 - 1.769 * t4e8)) 
-        + 0.0000063 * Math.cos(deg2rad * (134.9634 + 477198.8676 * t + 89.970 * t2e4 
-        + 14.348 * t3e6 - 6.797 * t4e8)) 
-        + 0.0000036 * Math.cos(deg2rad * (321.5076 + 1443602.9027 * t + 21.912 * t2e4 
-        + 13.780 * t3e6 - 6.566 * t4e8)) 
-        - 0.0000035 * Math.cos(deg2rad * (10.6638 + 1367733.0907 * t + 57.370 * t2e4 
-        + 18.011 * t3e6 - 8.566 * t4e8)) 
-        + 0.0000024 * Math.cos(deg2rad * (149.8932 + 337465.5434 * t - 87.113 * t2e4 
-        - 6.453 * t3e6 + 3.028 * t4e8)) 
-        + 0.0000024 * Math.cos(deg2rad * (170.9849 - 930404.9848 * t + 66.523 * t2e4 
+    var sg = 0.0011776 * Math.cos(deg2rad * (49.1562 - 75869.8120 * t + 35.458 * t2e4
+        + 4.231 * t3e6 - 2.001 * t4e8))
+        - 0.0000971 * Math.cos(deg2rad * (235.7004 + 890534.2230 * t - 32.601 * t2e4
+        + 3.664 * t3e6 - 1.769 * t4e8))
+        + 0.0000908 * Math.cos(deg2rad * (186.5442 + 966404.0351 * t - 68.058 * t2e4
+        - 0.567 * t3e6 + 0.232 * t4e8))
+        + 0.0000623 * Math.cos(deg2rad * (83.3826 - 12006.2998 * t + 247.999 * t2e4
+        + 29.262 * t3e6 - 13.826 * t4e8))
+        + 0.0000483 * Math.cos(deg2rad * (51.6271 - 111868.8623 * t + 36.994 * t2e4
+        + 4.190 * t3e6 - 2.001 * t4e8))
+        + 0.0000348 * Math.cos(deg2rad * (100.7370 + 413335.3554 * t - 122.571 * t2e4
+        - 10.684 * t3e6 + 5.028 * t4e8))
+        - 0.0000316 * Math.cos(deg2rad * (308.4192 - 489205.1674 * t + 158.029 * t2e4
+        + 14.915 * t3e6 - 7.029 * t4e8))
+        - 0.0000253 * Math.cos(deg2rad * (46.6853 - 39870.7617 * t + 33.922 * t2e4
+        + 4.272 * t3e6 - 2.001 * t4e8))
+        - 0.0000141 * Math.cos(deg2rad * (274.1928 - 553068.6797 * t - 54.513 * t2e4
+        - 10.116 * t3e6 + 4.797 * t4e8))
+        + 0.0000127 * Math.cos(deg2rad * (325.7736 - 63863.5122 * t - 212.541 * t2e4
+        - 25.031 * t3e6 + 11.826 * t4e8))
+        + 0.0000117 * Math.cos(deg2rad * (184.1196 + 401329.0556 * t + 125.428 * t2e4
+        + 18.579 * t3e6 - 8.798 * t4e8))
+        - 0.0000078 * Math.cos(deg2rad * (98.3124 - 151739.6240 * t + 70.916 * t2e4
+        + 8.462 * t3e6 - 4.001 * t4e8))
+        - 0.0000063 * Math.cos(deg2rad * (238.1713 + 854535.1727 * t - 31.065 * t2e4
+        + 3.623 * t3e6 - 1.769 * t4e8))
+        + 0.0000063 * Math.cos(deg2rad * (134.9634 + 477198.8676 * t + 89.970 * t2e4
+        + 14.348 * t3e6 - 6.797 * t4e8))
+        + 0.0000036 * Math.cos(deg2rad * (321.5076 + 1443602.9027 * t + 21.912 * t2e4
+        + 13.780 * t3e6 - 6.566 * t4e8))
+        - 0.0000035 * Math.cos(deg2rad * (10.6638 + 1367733.0907 * t + 57.370 * t2e4
+        + 18.011 * t3e6 - 8.566 * t4e8))
+        + 0.0000024 * Math.cos(deg2rad * (149.8932 + 337465.5434 * t - 87.113 * t2e4
+        - 6.453 * t3e6 + 3.028 * t4e8))
+        + 0.0000024 * Math.cos(deg2rad * (170.9849 - 930404.9848 * t + 66.523 * t2e4
         + 0.608 * t3e6 - 0.232 * t4e8));
 
-    var sgp = - 0.0203 * Math.cos(deg2rad * (125.0 - 1934.1 * t)) 
+    var sgp = - 0.0203 * Math.cos(deg2rad * (125.0 - 1934.1 * t))
         + 0.0034 * Math.cos(deg2rad * (220.2 - 1935.5 * t));
 
     var gamma = 0.0449858 + sg + 1e-3 * sgp;
 
     // longitude of perigee
 
-    var sp = - 15.448 * Math.sin(deg2rad * (100.7370 + 413335.3554 * t - 122.571 * t2e4 
+    var sp = - 15.448 * Math.sin(deg2rad * (100.7370 + 413335.3554 * t - 122.571 * t2e4
         - 10.684 * t3e6 + 5.028 * t4e8))
-        - 9.642 * Math.sin(deg2rad * (325.7736 - 63863.5122 * t - 212.541 * t2e4 
-        - 25.031 * t3e6 + 11.826 * t4e8)) 
-        - 2.721 * Math.sin(deg2rad * (134.9634 + 477198.8676 * t + 89.970 * t2e4 
-        + 14.348 * t3e6 - 6.797 * t4e8)) 
-        + 2.607 * Math.sin(deg2rad * (66.5106 + 349471.8432 * t - 335.112 * t2e4 
-        - 35.715 * t3e6 + 16.854 * t4e8)) 
-        + 2.085 * Math.sin(deg2rad * (201.4740 + 826670.7108 * t - 245.142 * t2e4 
-        - 21.367 * t3e6 + 10.057 * t4e8)) 
-        + 1.477 * Math.sin(deg2rad * (10.6638 + 1367733.0907 * t + 57.370 * t2e4 
-        + 18.011 * t3e6 - 8.566 * t4e8)) 
-        + 0.968 * Math.sin(deg2rad * (291.5472 - 127727.0245 * t - 425.082 * t2e4 
-        - 50.062 * t3e6 + 23.651 * t4e8)) 
-        - 0.949 * Math.sin(deg2rad * (103.2079 + 377336.3051 * t - 121.035 * t2e4 
-        - 10.724 * t3e6 + 5.028 * t4e8)) 
-        - 0.703 * Math.sin(deg2rad * (167.2476 + 762807.1986 * t - 457.683 * t2e4 
-        - 46.398 * t3e6 + 21.882 * t4e8)) 
-        - 0.660 * Math.sin(deg2rad * (235.7004 + 890534.2230 * t - 32.601 * t2e4 
-        + 3.664 * t3e6 - 1.769 * t4e8)) 
-        - 0.577 * Math.sin(deg2rad * (190.8102 - 541062.3799 * t - 302.511 * t2e4 
-        - 39.379 * t3e6 + 18.623 * t4e8)) 
-        - 0.524 * Math.sin(deg2rad * (269.9268 + 954397.7353 * t + 179.941 * t2e4 
-        + 28.695 * t3e6 - 13.594 * t4e8)) 
-        - 0.482 * Math.sin(deg2rad * (32.2842 + 285608.3309 * t - 547.653 * t2e4 
-        - 60.746 * t3e6 + 28.679 * t4e8)) 
-        + 0.452 * Math.sin(deg2rad * (357.5291 + 35999.0503 * t - 1.536 * t2e4 
-        + 0.041 * t3e6 + 0.000 * t4e8)) 
-        - 0.381 * Math.sin(deg2rad * (302.2110 + 1240006.0662 * t - 367.713 * t2e4 
-        - 32.051 * t3e6 + 15.085 * t4e8)) 
-        - 0.342 * Math.sin(deg2rad * (328.2445 - 99862.5625 * t - 211.005 * t2e4 
-        - 25.072 * t3e6 + 11.826 * t4e8)) 
-        - 0.312 * Math.sin(deg2rad * (44.8902 + 1431596.6029 * t + 269.911 * t2e4 
-        + 43.043 * t3e6 - 20.392 * t4e8)) 
-        + 0.282 * Math.sin(deg2rad * (162.8868 - 31931.7561 * t - 106.271 * t2e4 
-        - 12.516 * t3e6 + 5.913 * t4e8)) 
-        + 0.255 * Math.sin(deg2rad * (203.9449 + 790671.6605 * t - 243.606 * t2e4 
-        - 21.408 * t3e6 + 10.057 * t4e8)) 
-        + 0.252 * Math.sin(deg2rad * (68.9815 + 313472.7929 * t - 333.576 * t2e4 
-        - 35.756 * t3e6 + 16.854 * t4e8)) 
-        - 0.211 * Math.sin(deg2rad * (83.3826 - 12006.2998 * t + 247.999 * t2e4 
-        + 29.262 * t3e6 - 13.826 * t4e8)) 
-        + 0.193 * Math.sin(deg2rad * (267.9846 + 1176142.5540 * t - 580.254 * t2e4 
-        - 57.082 * t3e6 + 26.911 * t4e8)) 
-        + 0.191 * Math.sin(deg2rad * (133.0212 + 698943.6863 * t - 670.224 * t2e4 
-        - 71.429 * t3e6 + 33.708 * t4e8)) 
-        - 0.184 * Math.sin(deg2rad * (55.8468 - 1018261.2475 * t - 392.482 * t2e4 
-        - 53.726 * t3e6 + 25.420 * t4e8)) 
-        + 0.182 * Math.sin(deg2rad * (145.6272 + 1844931.9583 * t + 147.340 * t2e4 
-        + 32.359 * t3e6 - 15.363 * t4e8)) 
-        - 0.158 * Math.sin(deg2rad * (257.3208 - 191590.5367 * t - 637.623 * t2e4 
-        - 75.093 * t3e6 + 35.477 * t4e8)) 
-        + 0.148 * Math.sin(deg2rad * (156.5838 - 604925.8921 * t - 515.053 * t2e4 
-        - 64.410 * t3e6 + 30.448 * t4e8)) 
-        - 0.111 * Math.sin(deg2rad * (169.7185 + 726808.1483 * t - 456.147 * t2e4 
-        - 46.439 * t3e6 + 21.882 * t4e8)) 
-        + 0.101 * Math.sin(deg2rad * (13.1347 + 1331734.0404 * t + 58.906 * t2e4 
-        + 17.971 * t3e6 - 8.566 * t4e8)) 
-        + 0.100 * Math.sin(deg2rad * (358.0578 + 221744.8187 * t - 760.194 * t2e4 
-        - 85.777 * t3e6 + 40.505 * t4e8)) 
-        + 0.087 * Math.sin(deg2rad * (98.2661 + 449334.4057 * t - 124.107 * t2e4 
-        - 10.643 * t3e6 + 5.028 * t4e8)) 
-        + 0.080 * Math.sin(deg2rad * (42.9480 + 1653341.4216 * t - 490.283 * t2e4 
-        - 42.734 * t3e6 + 20.113 * t4e8)) 
-        + 0.080 * Math.sin(deg2rad * (222.5657 - 441199.8173 * t - 91.506 * t2e4 
-        - 14.307 * t3e6 + 6.797 * t4e8)) 
-        + 0.077 * Math.sin(deg2rad * (294.0181 - 163726.0747 * t - 423.546 * t2e4 
-        - 50.103 * t3e6 + 23.651 * t4e8)) 
-        - 0.073 * Math.sin(deg2rad * (280.8834 - 1495460.1151 * t - 482.452 * t2e4 
-        - 68.074 * t3e6 + 32.217 * t4e8)) 
-        - 0.071 * Math.sin(deg2rad * (304.6819 + 1204007.0159 * t - 366.177 * t2e4 
-        - 32.092 * t3e6 + 15.085 * t4e8)) 
-        - 0.069 * Math.sin(deg2rad * (233.7582 + 1112279.0417 * t - 792.795 * t2e4 
-        - 82.113 * t3e6 + 38.736 * t4e8)) 
-        - 0.067 * Math.sin(deg2rad * (34.7551 + 249609.2807 * t - 546.117 * t2e4 
-        - 60.787 * t3e6 + 28.679 * t4e8)) 
-        - 0.067 * Math.sin(deg2rad * (263.6238 + 381403.5993 * t - 228.841 * t2e4 
-        - 23.199 * t3e6 + 10.941 * t4e8)) 
-        + 0.055 * Math.sin(deg2rad * (21.6203 - 1082124.7597 * t - 605.023 * t2e4 
-        - 78.757 * t3e6 + 37.246 * t4e8)) 
-        + 0.055 * Math.sin(deg2rad * (308.4192 - 489205.1674 * t + 158.029 * t2e4 
-        + 14.915 * t3e6 -7.029 * t4e8)) 
-        - 0.054 * Math.sin(deg2rad * (8.7216 + 1589477.9094 * t - 702.824 * t2e4 
-        - 67.766 * t3e6 + 31.939 * t4e8)) 
-        - 0.052 * Math.sin(deg2rad * (179.8536 + 1908795.4705 * t + 359.881 * t2e4 
-        + 57.390 * t3e6 - 27.189 * t4e8)) 
-        - 0.050 * Math.sin(deg2rad * (98.7948 + 635080.1741 * t - 882.765 * t2e4 
-        - 96.461 * t3e6 + 45.533 * t4e8)) 
-        - 0.049 * Math.sin(deg2rad * (128.6604 - 95795.2683 * t - 318.812 * t2e4 
-        - 37.547 * t3e6 + 17.738 * t4e8)) 
-        - 0.047 * Math.sin(deg2rad * (17.3544 + 425341.6552 * t - 370.570 * t2e4 
-        - 39.946 * t3e6 + 18.854 * t4e8)) 
-        - 0.044 * Math.sin(deg2rad * (160.4159 + 4067.2942 * t - 107.806 * t2e4 
-        - 12.475 * t3e6 + 5.913 * t4e8)) 
-        - 0.043 * Math.sin(deg2rad * (238.1713 + 854535.1727 * t - 31.065 * t2e4 
-        + 3.623 * t3e6 - 1.769 * t4e8)) 
-        + 0.042 * Math.sin(deg2rad * (270.4555 + 1140143.5037 * t - 578.718 * t2e4 
-        - 57.123 * t3e6 + 26.911 * t4e8)) 
-        - 0.042 * Math.sin(deg2rad * (132.4925 + 513197.9179 * t + 88.434 * t2e4 
-        + 14.388 * t3e6 - 6.797 * t4e8)) 
-        - 0.041 * Math.sin(deg2rad * (122.3573 - 668789.4043 * t - 727.594 * t2e4 
-        - 89.441 * t3e6 + 42.274 * t4e8)) 
-        - 0.040 * Math.sin(deg2rad * (105.6788 + 341337.2548 * t - 119.499 * t2e4 
-        - 10.765 * t3e6 + 5.028 * t4e8)) 
-        + 0.038 * Math.sin(deg2rad * (135.4921 + 662944.6361 * t - 668.688 * t2e4 
-        - 71.470 * t3e6 + 33.708 * t4e8)) 
-        - 0.037 * Math.sin(deg2rad * (242.3910 - 51857.2124 * t - 460.540 * t2e4 
-        - 54.293 * t3e6 + 25.652 * t4e8)) 
-        + 0.036 * Math.sin(deg2rad * (336.4374 +  1303869.5784 * t - 155.171 * t2e4 
-        - 7.020 * t3e6 + 3.259 * t4e8)) 
-        + 0.035 * Math.sin(deg2rad * (223.0943 - 255454.0489 * t - 850.164 * t2e4 
-        - 100.124 * t3e6 + 47.302 * t4e8)) 
-        - 0.034 * Math.sin(deg2rad * (193.2811 - 577061.4302 * t - 300.976 * t2e4 
-        - 39.419 * t3e6 + 18.623 * t4e8)) 
-        + 0.031 * Math.sin(deg2rad * (87.6023 - 918398.6850 * t - 181.476 * t2e4 
+        - 9.642 * Math.sin(deg2rad * (325.7736 - 63863.5122 * t - 212.541 * t2e4
+        - 25.031 * t3e6 + 11.826 * t4e8))
+        - 2.721 * Math.sin(deg2rad * (134.9634 + 477198.8676 * t + 89.970 * t2e4
+        + 14.348 * t3e6 - 6.797 * t4e8))
+        + 2.607 * Math.sin(deg2rad * (66.5106 + 349471.8432 * t - 335.112 * t2e4
+        - 35.715 * t3e6 + 16.854 * t4e8))
+        + 2.085 * Math.sin(deg2rad * (201.4740 + 826670.7108 * t - 245.142 * t2e4
+        - 21.367 * t3e6 + 10.057 * t4e8))
+        + 1.477 * Math.sin(deg2rad * (10.6638 + 1367733.0907 * t + 57.370 * t2e4
+        + 18.011 * t3e6 - 8.566 * t4e8))
+        + 0.968 * Math.sin(deg2rad * (291.5472 - 127727.0245 * t - 425.082 * t2e4
+        - 50.062 * t3e6 + 23.651 * t4e8))
+        - 0.949 * Math.sin(deg2rad * (103.2079 + 377336.3051 * t - 121.035 * t2e4
+        - 10.724 * t3e6 + 5.028 * t4e8))
+        - 0.703 * Math.sin(deg2rad * (167.2476 + 762807.1986 * t - 457.683 * t2e4
+        - 46.398 * t3e6 + 21.882 * t4e8))
+        - 0.660 * Math.sin(deg2rad * (235.7004 + 890534.2230 * t - 32.601 * t2e4
+        + 3.664 * t3e6 - 1.769 * t4e8))
+        - 0.577 * Math.sin(deg2rad * (190.8102 - 541062.3799 * t - 302.511 * t2e4
+        - 39.379 * t3e6 + 18.623 * t4e8))
+        - 0.524 * Math.sin(deg2rad * (269.9268 + 954397.7353 * t + 179.941 * t2e4
+        + 28.695 * t3e6 - 13.594 * t4e8))
+        - 0.482 * Math.sin(deg2rad * (32.2842 + 285608.3309 * t - 547.653 * t2e4
+        - 60.746 * t3e6 + 28.679 * t4e8))
+        + 0.452 * Math.sin(deg2rad * (357.5291 + 35999.0503 * t - 1.536 * t2e4
+        + 0.041 * t3e6 + 0.000 * t4e8))
+        - 0.381 * Math.sin(deg2rad * (302.2110 + 1240006.0662 * t - 367.713 * t2e4
+        - 32.051 * t3e6 + 15.085 * t4e8))
+        - 0.342 * Math.sin(deg2rad * (328.2445 - 99862.5625 * t - 211.005 * t2e4
+        - 25.072 * t3e6 + 11.826 * t4e8))
+        - 0.312 * Math.sin(deg2rad * (44.8902 + 1431596.6029 * t + 269.911 * t2e4
+        + 43.043 * t3e6 - 20.392 * t4e8))
+        + 0.282 * Math.sin(deg2rad * (162.8868 - 31931.7561 * t - 106.271 * t2e4
+        - 12.516 * t3e6 + 5.913 * t4e8))
+        + 0.255 * Math.sin(deg2rad * (203.9449 + 790671.6605 * t - 243.606 * t2e4
+        - 21.408 * t3e6 + 10.057 * t4e8))
+        + 0.252 * Math.sin(deg2rad * (68.9815 + 313472.7929 * t - 333.576 * t2e4
+        - 35.756 * t3e6 + 16.854 * t4e8))
+        - 0.211 * Math.sin(deg2rad * (83.3826 - 12006.2998 * t + 247.999 * t2e4
+        + 29.262 * t3e6 - 13.826 * t4e8))
+        + 0.193 * Math.sin(deg2rad * (267.9846 + 1176142.5540 * t - 580.254 * t2e4
+        - 57.082 * t3e6 + 26.911 * t4e8))
+        + 0.191 * Math.sin(deg2rad * (133.0212 + 698943.6863 * t - 670.224 * t2e4
+        - 71.429 * t3e6 + 33.708 * t4e8))
+        - 0.184 * Math.sin(deg2rad * (55.8468 - 1018261.2475 * t - 392.482 * t2e4
+        - 53.726 * t3e6 + 25.420 * t4e8))
+        + 0.182 * Math.sin(deg2rad * (145.6272 + 1844931.9583 * t + 147.340 * t2e4
+        + 32.359 * t3e6 - 15.363 * t4e8))
+        - 0.158 * Math.sin(deg2rad * (257.3208 - 191590.5367 * t - 637.623 * t2e4
+        - 75.093 * t3e6 + 35.477 * t4e8))
+        + 0.148 * Math.sin(deg2rad * (156.5838 - 604925.8921 * t - 515.053 * t2e4
+        - 64.410 * t3e6 + 30.448 * t4e8))
+        - 0.111 * Math.sin(deg2rad * (169.7185 + 726808.1483 * t - 456.147 * t2e4
+        - 46.439 * t3e6 + 21.882 * t4e8))
+        + 0.101 * Math.sin(deg2rad * (13.1347 + 1331734.0404 * t + 58.906 * t2e4
+        + 17.971 * t3e6 - 8.566 * t4e8))
+        + 0.100 * Math.sin(deg2rad * (358.0578 + 221744.8187 * t - 760.194 * t2e4
+        - 85.777 * t3e6 + 40.505 * t4e8))
+        + 0.087 * Math.sin(deg2rad * (98.2661 + 449334.4057 * t - 124.107 * t2e4
+        - 10.643 * t3e6 + 5.028 * t4e8))
+        + 0.080 * Math.sin(deg2rad * (42.9480 + 1653341.4216 * t - 490.283 * t2e4
+        - 42.734 * t3e6 + 20.113 * t4e8))
+        + 0.080 * Math.sin(deg2rad * (222.5657 - 441199.8173 * t - 91.506 * t2e4
+        - 14.307 * t3e6 + 6.797 * t4e8))
+        + 0.077 * Math.sin(deg2rad * (294.0181 - 163726.0747 * t - 423.546 * t2e4
+        - 50.103 * t3e6 + 23.651 * t4e8))
+        - 0.073 * Math.sin(deg2rad * (280.8834 - 1495460.1151 * t - 482.452 * t2e4
+        - 68.074 * t3e6 + 32.217 * t4e8))
+        - 0.071 * Math.sin(deg2rad * (304.6819 + 1204007.0159 * t - 366.177 * t2e4
+        - 32.092 * t3e6 + 15.085 * t4e8))
+        - 0.069 * Math.sin(deg2rad * (233.7582 + 1112279.0417 * t - 792.795 * t2e4
+        - 82.113 * t3e6 + 38.736 * t4e8))
+        - 0.067 * Math.sin(deg2rad * (34.7551 + 249609.2807 * t - 546.117 * t2e4
+        - 60.787 * t3e6 + 28.679 * t4e8))
+        - 0.067 * Math.sin(deg2rad * (263.6238 + 381403.5993 * t - 228.841 * t2e4
+        - 23.199 * t3e6 + 10.941 * t4e8))
+        + 0.055 * Math.sin(deg2rad * (21.6203 - 1082124.7597 * t - 605.023 * t2e4
+        - 78.757 * t3e6 + 37.246 * t4e8))
+        + 0.055 * Math.sin(deg2rad * (308.4192 - 489205.1674 * t + 158.029 * t2e4
+        + 14.915 * t3e6 -7.029 * t4e8))
+        - 0.054 * Math.sin(deg2rad * (8.7216 + 1589477.9094 * t - 702.824 * t2e4
+        - 67.766 * t3e6 + 31.939 * t4e8))
+        - 0.052 * Math.sin(deg2rad * (179.8536 + 1908795.4705 * t + 359.881 * t2e4
+        + 57.390 * t3e6 - 27.189 * t4e8))
+        - 0.050 * Math.sin(deg2rad * (98.7948 + 635080.1741 * t - 882.765 * t2e4
+        - 96.461 * t3e6 + 45.533 * t4e8))
+        - 0.049 * Math.sin(deg2rad * (128.6604 - 95795.2683 * t - 318.812 * t2e4
+        - 37.547 * t3e6 + 17.738 * t4e8))
+        - 0.047 * Math.sin(deg2rad * (17.3544 + 425341.6552 * t - 370.570 * t2e4
+        - 39.946 * t3e6 + 18.854 * t4e8))
+        - 0.044 * Math.sin(deg2rad * (160.4159 + 4067.2942 * t - 107.806 * t2e4
+        - 12.475 * t3e6 + 5.913 * t4e8))
+        - 0.043 * Math.sin(deg2rad * (238.1713 + 854535.1727 * t - 31.065 * t2e4
+        + 3.623 * t3e6 - 1.769 * t4e8))
+        + 0.042 * Math.sin(deg2rad * (270.4555 + 1140143.5037 * t - 578.718 * t2e4
+        - 57.123 * t3e6 + 26.911 * t4e8))
+        - 0.042 * Math.sin(deg2rad * (132.4925 + 513197.9179 * t + 88.434 * t2e4
+        + 14.388 * t3e6 - 6.797 * t4e8))
+        - 0.041 * Math.sin(deg2rad * (122.3573 - 668789.4043 * t - 727.594 * t2e4
+        - 89.441 * t3e6 + 42.274 * t4e8))
+        - 0.040 * Math.sin(deg2rad * (105.6788 + 341337.2548 * t - 119.499 * t2e4
+        - 10.765 * t3e6 + 5.028 * t4e8))
+        + 0.038 * Math.sin(deg2rad * (135.4921 + 662944.6361 * t - 668.688 * t2e4
+        - 71.470 * t3e6 + 33.708 * t4e8))
+        - 0.037 * Math.sin(deg2rad * (242.3910 - 51857.2124 * t - 460.540 * t2e4
+        - 54.293 * t3e6 + 25.652 * t4e8))
+        + 0.036 * Math.sin(deg2rad * (336.4374 +  1303869.5784 * t - 155.171 * t2e4
+        - 7.020 * t3e6 + 3.259 * t4e8))
+        + 0.035 * Math.sin(deg2rad * (223.0943 - 255454.0489 * t - 850.164 * t2e4
+        - 100.124 * t3e6 + 47.302 * t4e8))
+        - 0.034 * Math.sin(deg2rad * (193.2811 - 577061.4302 * t - 300.976 * t2e4
+        - 39.419 * t3e6 + 18.623 * t4e8))
+        + 0.031 * Math.sin(deg2rad * (87.6023 - 918398.6850 * t - 181.476 * t2e4
         - 28.654 * t3e6 + 13.594 * t4e8));
 
     var spp = 2.4 * Math.sin(deg2rad * (103.2 + 377336.3 * t));
 
-    var lp = 83.353 + 4069.0137 * t - 103.238 * t2e4 
+    var lp = 83.353 + 4069.0137 * t - 103.238 * t2e4
         - 12.492 * t3e6 + 5.263 * t4e8 + sp + 1e-3 * t * spp;
 
     // longitude of the ascending node
 
-    var sr = - 1.4979 * Math.sin(deg2rad * (49.1562 - 75869.8120 * t + 35.458 * t2e4 
-        + 4.231 * t3e6 - 2.001 * t4e8)) 
-        - 0.1500 * Math.sin(deg2rad * (357.5291 + 35999.0503 * t - 1.536 * t2e4 
-        + 0.041 * t3e6 + 0.000 * t4e8)) 
-        - 0.1226 * Math.sin(deg2rad * (235.7004 + 890534.2230 * t - 32.601 * t2e4 
-        + 3.664 * t3e6 - 1.769 * t4e8)) 
-        + 0.1176 * Math.sin(deg2rad * (186.5442 + 966404.0351 * t - 68.058 * t2e4 
-        - 0.567 * t3e6 + 0.232 * t4e8)) 
-        - 0.0801 * Math.sin(deg2rad * (83.3826 - 12006.2998 * t + 247.999 * t2e4 
-        + 29.262 * t3e6 - 13.826 * t4e8)) 
-        - 0.0616 * Math.sin(deg2rad * (51.6271 - 111868.8623 * t + 36.994 * t2e4 
-        + 4.190 * t3e6 - 2.001 * t4e8)) 
-        + 0.0490 * Math.sin(deg2rad * (100.7370 + 413335.3554 * t - 122.571 * t2e4 
-        - 10.684 * t3e6 + 5.028 * t4e8)) 
-        + 0.0409 * Math.sin(deg2rad * (308.4192 - 489205.1674 * t + 158.029 * t2e4 
-        + 14.915 * t3e6 - 7.029 * t4e8)) 
-        + 0.0327 * Math.sin(deg2rad * (134.9634 + 477198.8676 * t + 89.970 * t2e4 
-        + 14.348 * t3e6 - 6.797 * t4e8)) 
-        + 0.0324 * Math.sin(deg2rad * (46.6853 - 39870.7617 * t + 33.922 * t2e4 
-        + 4.272 * t3e6 - 2.001 * t4e8)) 
-        + 0.0196 * Math.sin(deg2rad * (98.3124 - 151739.6240 * t + 70.916 * t2e4 
-        + 8.462 * t3e6 - 4.001 * t4e8)) 
-        + 0.0180 * Math.sin(deg2rad * (274.1928 - 553068.6797 * t - 54.513 * t2e4 
-        - 10.116 * t3e6 + 4.797 * t4e8)) 
-        + 0.0150 * Math.sin(deg2rad * (325.7736 - 63863.5122 * t - 212.541 * t2e4 
-        - 25.031 * t3e6 + 11.826 * t4e8)) 
-        - 0.0150 * Math.sin(deg2rad * (184.1196 + 401329.0556 * t + 125.428 * t2e4 
-        + 18.579 * t3e6 - 8.798 * t4e8)) 
-        - 0.0078 * Math.sin(deg2rad * (238.1713 + 854535.1727 * t - 31.065 * t2e4 
-        + 3.623 * t3e6 - 1.769 * t4e8)) 
-        - 0.0045 * Math.sin(deg2rad * (10.6638 + 1367733.0907 * t + 57.370 * t2e4 
-        + 18.011 * t3e6 - 8.566 * t4e8)) 
-        + 0.0044 * Math.sin(deg2rad * (321.5076 + 1443602.9027 * t + 21.912 * t2e4 
-        + 13.780 * t3e6 - 6.566 * t4e8)) 
-        - 0.0042 * Math.sin(deg2rad * (162.8868 - 31931.7561 * t - 106.271 * t2e4 
-        - 12.516 * t3e6 + 5.913 * t4e8)) 
-        - 0.0031 * Math.sin(deg2rad * (170.9849 - 930404.9848 * t + 66.523 * t2e4 
-        + 0.608 * t3e6 - 0.232 * t4e8)) 
-        + 0.0031 * Math.sin(deg2rad * (103.2079 + 377336.3051 * t - 121.035 * t2e4 
-        - 10.724 * t3e6 + 5.028 * t4e8)) 
-        + 0.0029 * Math.sin(deg2rad * (222.6120 - 1042273.8471 * t + 103.516 * t2e4 
-        + 4.798 * t3e6 - 2.232 * t4e8)) 
-        + 0.0028 * Math.sin(deg2rad * (184.0733 + 1002403.0853 * t - 69.594 * t2e4 
+    var sr = - 1.4979 * Math.sin(deg2rad * (49.1562 - 75869.8120 * t + 35.458 * t2e4
+        + 4.231 * t3e6 - 2.001 * t4e8))
+        - 0.1500 * Math.sin(deg2rad * (357.5291 + 35999.0503 * t - 1.536 * t2e4
+        + 0.041 * t3e6 + 0.000 * t4e8))
+        - 0.1226 * Math.sin(deg2rad * (235.7004 + 890534.2230 * t - 32.601 * t2e4
+        + 3.664 * t3e6 - 1.769 * t4e8))
+        + 0.1176 * Math.sin(deg2rad * (186.5442 + 966404.0351 * t - 68.058 * t2e4
+        - 0.567 * t3e6 + 0.232 * t4e8))
+        - 0.0801 * Math.sin(deg2rad * (83.3826 - 12006.2998 * t + 247.999 * t2e4
+        + 29.262 * t3e6 - 13.826 * t4e8))
+        - 0.0616 * Math.sin(deg2rad * (51.6271 - 111868.8623 * t + 36.994 * t2e4
+        + 4.190 * t3e6 - 2.001 * t4e8))
+        + 0.0490 * Math.sin(deg2rad * (100.7370 + 413335.3554 * t - 122.571 * t2e4
+        - 10.684 * t3e6 + 5.028 * t4e8))
+        + 0.0409 * Math.sin(deg2rad * (308.4192 - 489205.1674 * t + 158.029 * t2e4
+        + 14.915 * t3e6 - 7.029 * t4e8))
+        + 0.0327 * Math.sin(deg2rad * (134.9634 + 477198.8676 * t + 89.970 * t2e4
+        + 14.348 * t3e6 - 6.797 * t4e8))
+        + 0.0324 * Math.sin(deg2rad * (46.6853 - 39870.7617 * t + 33.922 * t2e4
+        + 4.272 * t3e6 - 2.001 * t4e8))
+        + 0.0196 * Math.sin(deg2rad * (98.3124 - 151739.6240 * t + 70.916 * t2e4
+        + 8.462 * t3e6 - 4.001 * t4e8))
+        + 0.0180 * Math.sin(deg2rad * (274.1928 - 553068.6797 * t - 54.513 * t2e4
+        - 10.116 * t3e6 + 4.797 * t4e8))
+        + 0.0150 * Math.sin(deg2rad * (325.7736 - 63863.5122 * t - 212.541 * t2e4
+        - 25.031 * t3e6 + 11.826 * t4e8))
+        - 0.0150 * Math.sin(deg2rad * (184.1196 + 401329.0556 * t + 125.428 * t2e4
+        + 18.579 * t3e6 - 8.798 * t4e8))
+        - 0.0078 * Math.sin(deg2rad * (238.1713 + 854535.1727 * t - 31.065 * t2e4
+        + 3.623 * t3e6 - 1.769 * t4e8))
+        - 0.0045 * Math.sin(deg2rad * (10.6638 + 1367733.0907 * t + 57.370 * t2e4
+        + 18.011 * t3e6 - 8.566 * t4e8))
+        + 0.0044 * Math.sin(deg2rad * (321.5076 + 1443602.9027 * t + 21.912 * t2e4
+        + 13.780 * t3e6 - 6.566 * t4e8))
+        - 0.0042 * Math.sin(deg2rad * (162.8868 - 31931.7561 * t - 106.271 * t2e4
+        - 12.516 * t3e6 + 5.913 * t4e8))
+        - 0.0031 * Math.sin(deg2rad * (170.9849 - 930404.9848 * t + 66.523 * t2e4
+        + 0.608 * t3e6 - 0.232 * t4e8))
+        + 0.0031 * Math.sin(deg2rad * (103.2079 + 377336.3051 * t - 121.035 * t2e4
+        - 10.724 * t3e6 + 5.028 * t4e8))
+        + 0.0029 * Math.sin(deg2rad * (222.6120 - 1042273.8471 * t + 103.516 * t2e4
+        + 4.798 * t3e6 - 2.232 * t4e8))
+        + 0.0028 * Math.sin(deg2rad * (184.0733 + 1002403.0853 * t - 69.594 * t2e4
         - 0.526 * t3e6 + 0.232 * t4e8));
 
-    var srp = 25.9 * Math.sin(deg2rad * (125.0 - 1934.1 * t)) 
+    var srp = 25.9 * Math.sin(deg2rad * (125.0 - 1934.1 * t))
         - 4.3 * Math.sin(deg2rad * (220.2 - 1935.5 * t));
 
     var srpp = 0.38 * Math.sin(deg2rad * (357.5 + 35999.1 * t));
 
-    var raan = 125.0446 - 1934.13618 * t + 20.762 * t2e4 
-        + 2.139 * t3e6 - 1.650 * t4e8 + sr 
+    var raan = 125.0446 - 1934.13618 * t + 20.762 * t2e4
+        + 2.139 * t3e6 - 1.650 * t4e8 + sr
         + 1e-3 * (srp + srpp * t);
 
     // mean longitude
 
-    var sl = - 0.92581 * Math.sin(deg2rad * (235.7004 + 890534.2230 * t - 32.601 * t2e4 
-        + 3.664 * t3e6 - 1.769 * t4e8)) 
-        + 0.33262 * Math.sin(deg2rad * (100.7370 + 413335.3554 * t - 122.571 * t2e4 
-        - 10.684 * t3e6 + 5.028 * t4e8)) 
-        - 0.18402 * Math.sin(deg2rad * (357.5291 + 35999.0503 * t - 1.536 * t2e4 
-        + 0.041 * t3e6 + 0.000 * t4e8)) 
-        + 0.11007 * Math.sin(deg2rad * (134.9634 + 477198.8676 * t + 89.970 * t2e4 
-        + 14.348 * t3e6 - 6.797 * t4e8)) 
-        - 0.06055 * Math.sin(deg2rad * (238.1713 + 854535.1727 * t - 31.065 * t2e4 
-        + 3.623 * t3e6 - 1.769 * t4e8)) 
-        + 0.04741 * Math.sin(deg2rad * (325.7736 - 63863.5122 * t - 212.541 * t2e4 
-        - 25.031 * t3e6 + 11.826 * t4e8)) 
-        - 0.03086 * Math.sin(deg2rad * (10.6638 + 1367733.0907 * t + 57.370 * t2e4 
-        + 18.011 * t3e6 - 8.566 * t4e8)) 
-        + 0.02184 * Math.sin(deg2rad * (103.2079 + 377336.3051 * t - 121.035 * t2e4 
-        - 10.724 * t3e6 + 5.028 * t4e8)) 
-        + 0.01645 * Math.sin(deg2rad * (49.1562 - 75869.8120 * t + 35.458 * t2e4 
-        + 4.231 * t3e6 - 2.001 * t4e8)) 
-        + 0.01022 * Math.sin(deg2rad * (233.2295 + 926533.2733 * t - 34.136 * t2e4 
-        + 3.705 * t3e6 - 1.769 * t4e8)) 
-        - 0.00756 * Math.sin(deg2rad * (336.4374 + 1303869.5784 * t - 155.171 * t2e4 
-        - 7.020 * t3e6 + 3.259 * t4e8)) 
-        - 0.00530 * Math.sin(deg2rad * (222.5657 - 441199.8173 * t - 91.506 * t2e4 
-        - 14.307 * t3e6 + 6.797 * t4e8)) 
-        - 0.00496 * Math.sin(deg2rad * (162.8868 - 31931.7561 * t - 106.271 * t2e4 
-        - 12.516 * t3e6 + 5.913 * t4e8)) 
-        - 0.00472 * Math.sin(deg2rad * (297.8502 + 445267.1115 * t - 16.300 * t2e4 
-        + 1.832 * t3e6 - 0.884 * t4e8)) 
-        - 0.00271 * Math.sin(deg2rad * (240.6422 + 818536.1225 * t - 29.529 * t2e4 
-        + 3.582 * t3e6 - 1.769 * t4e8)) 
-        + 0.00264 * Math.sin(deg2rad * (132.4925 + 513197.9179 * t + 88.434 * t2e4 
-        + 14.388 * t3e6 - 6.797 * t4e8)) 
-        - 0.00254 * Math.sin(deg2rad * (186.5442 + 966404.0351 * t - 68.058 * t2e4 
-        - 0.567 * t3e6 + 0.232 * t4e8)) 
-        + 0.00234 * Math.sin(deg2rad * (269.9268 + 954397.7353 * t + 179.941 * t2e4 
-        + 28.695 * t3e6 - 13.594 * t4e8)) 
-        - 0.00220 * Math.sin(deg2rad * (13.1347 + 1331734.0404 * t + 58.906 * t2e4 
-        + 17.971 * t3e6 - 8.566 * t4e8)) 
-        - 0.00202 * Math.sin(deg2rad * (355.0582 + 71998.1006 * t - 3.072 * t2e4 
-        + 0.082 * t3e6 + 0.000 * t4e8)) 
-        + 0.00167 * Math.sin(deg2rad * (328.2445 - 99862.5625 * t - 211.005 * t2e4 
-        - 25.072 * t3e6 + 11.826 * t4e8)) 
-        - 0.00143 * Math.sin(deg2rad * (173.5506 + 1335801.3346 * t - 48.901 * t2e4 
-        + 5.496 * t3e6 - 2.653 * t4e8)) 
-        - 0.00121 * Math.sin(deg2rad * (98.2661 + 449334.4057 * t - 124.107 * t2e4 
-        - 10.643 * t3e6 + 5.028 * t4e8)) 
-        - 0.00116 * Math.sin(deg2rad * (145.6272 + 1844931.9583 * t + 147.340 * t2e4 
-        + 32.359 * t3e6 - 15.363 * t4e8)) 
-        + 0.00102 * Math.sin(deg2rad * (105.6788 + 341337.2548 * t - 119.499 * t2e4 
-        - 10.765 * t3e6 + 5.028 * t4e8)) 
-        - 0.00090 * Math.sin(deg2rad * (184.1196 + 401329.0556 * t + 125.428 * t2e4 
-        + 18.579 * t3e6 - 8.798 * t4e8)) 
-        - 0.00086 * Math.sin(deg2rad * (338.9083 + 1267870.5281 * t - 153.636 * t2e4 
-        - 7.061 * t3e6 + 3.259 * t4e8)) 
-        - 0.00078 * Math.sin(deg2rad * (111.4008 + 1781068.4461 * t - 65.201 * t2e4 
-        + 7.328 * t3e6 - 3.538 * t4e8)) 
-        + 0.00069 * Math.sin(deg2rad * (323.3027 - 27864.4619 * t - 214.077 * t2e4 
-        - 24.990 * t3e6 + 11.826 * t4e8)) 
-        + 0.00066 * Math.sin(deg2rad * (51.6271 - 111868.8623 * t + 36.994 * t2e4 
-        + 4.190 * t3e6 - 2.001 * t4e8)) 
-        + 0.00065 * Math.sin(deg2rad * (38.5872 + 858602.4669 * t - 138.871 * t2e4 
-        - 8.852 * t3e6 + 4.144 * t4e8)) 
-        - 0.00060 * Math.sin(deg2rad * (83.3826 - 12006.2998 * t + 247.999 * t2e4 
-        + 29.262 * t3e6 - 13.826 * t4e8)) 
-        + 0.00054 * Math.sin(deg2rad * (201.4740 + 826670.7108 * t - 245.142 * t2e4 
-        - 21.367 * t3e6 + 10.057 * t4e8)) 
-        - 0.00052 * Math.sin(deg2rad * (308.4192 - 489205.1674 * t + 158.029 * t2e4 
-        + 14.915 * t3e6 - 7.029 * t4e8)) 
-        + 0.00048 * Math.sin(deg2rad * (8.1929 + 1403732.1410 * t + 55.834 * t2e4 
-        + 18.052 * t3e6 - 8.566 * t4e8)) 
-        - 0.00041 * Math.sin(deg2rad * (46.6853 - 39870.7617 * t + 33.922 * t2e4 
-        + 4.272 * t3e6 - 2.001 * t4e8)) 
-        - 0.00033 * Math.sin(deg2rad * (274.1928 - 553068.6797 * t - 54.513 * t2e4 
-        - 10.116 * t3e6 + 4.797 * t4e8)) 
-        + 0.00030 * Math.sin(deg2rad * (160.4159 + 4067.2942 * t - 107.806 * t2e4 
+    var sl = - 0.92581 * Math.sin(deg2rad * (235.7004 + 890534.2230 * t - 32.601 * t2e4
+        + 3.664 * t3e6 - 1.769 * t4e8))
+        + 0.33262 * Math.sin(deg2rad * (100.7370 + 413335.3554 * t - 122.571 * t2e4
+        - 10.684 * t3e6 + 5.028 * t4e8))
+        - 0.18402 * Math.sin(deg2rad * (357.5291 + 35999.0503 * t - 1.536 * t2e4
+        + 0.041 * t3e6 + 0.000 * t4e8))
+        + 0.11007 * Math.sin(deg2rad * (134.9634 + 477198.8676 * t + 89.970 * t2e4
+        + 14.348 * t3e6 - 6.797 * t4e8))
+        - 0.06055 * Math.sin(deg2rad * (238.1713 + 854535.1727 * t - 31.065 * t2e4
+        + 3.623 * t3e6 - 1.769 * t4e8))
+        + 0.04741 * Math.sin(deg2rad * (325.7736 - 63863.5122 * t - 212.541 * t2e4
+        - 25.031 * t3e6 + 11.826 * t4e8))
+        - 0.03086 * Math.sin(deg2rad * (10.6638 + 1367733.0907 * t + 57.370 * t2e4
+        + 18.011 * t3e6 - 8.566 * t4e8))
+        + 0.02184 * Math.sin(deg2rad * (103.2079 + 377336.3051 * t - 121.035 * t2e4
+        - 10.724 * t3e6 + 5.028 * t4e8))
+        + 0.01645 * Math.sin(deg2rad * (49.1562 - 75869.8120 * t + 35.458 * t2e4
+        + 4.231 * t3e6 - 2.001 * t4e8))
+        + 0.01022 * Math.sin(deg2rad * (233.2295 + 926533.2733 * t - 34.136 * t2e4
+        + 3.705 * t3e6 - 1.769 * t4e8))
+        - 0.00756 * Math.sin(deg2rad * (336.4374 + 1303869.5784 * t - 155.171 * t2e4
+        - 7.020 * t3e6 + 3.259 * t4e8))
+        - 0.00530 * Math.sin(deg2rad * (222.5657 - 441199.8173 * t - 91.506 * t2e4
+        - 14.307 * t3e6 + 6.797 * t4e8))
+        - 0.00496 * Math.sin(deg2rad * (162.8868 - 31931.7561 * t - 106.271 * t2e4
+        - 12.516 * t3e6 + 5.913 * t4e8))
+        - 0.00472 * Math.sin(deg2rad * (297.8502 + 445267.1115 * t - 16.300 * t2e4
+        + 1.832 * t3e6 - 0.884 * t4e8))
+        - 0.00271 * Math.sin(deg2rad * (240.6422 + 818536.1225 * t - 29.529 * t2e4
+        + 3.582 * t3e6 - 1.769 * t4e8))
+        + 0.00264 * Math.sin(deg2rad * (132.4925 + 513197.9179 * t + 88.434 * t2e4
+        + 14.388 * t3e6 - 6.797 * t4e8))
+        - 0.00254 * Math.sin(deg2rad * (186.5442 + 966404.0351 * t - 68.058 * t2e4
+        - 0.567 * t3e6 + 0.232 * t4e8))
+        + 0.00234 * Math.sin(deg2rad * (269.9268 + 954397.7353 * t + 179.941 * t2e4
+        + 28.695 * t3e6 - 13.594 * t4e8))
+        - 0.00220 * Math.sin(deg2rad * (13.1347 + 1331734.0404 * t + 58.906 * t2e4
+        + 17.971 * t3e6 - 8.566 * t4e8))
+        - 0.00202 * Math.sin(deg2rad * (355.0582 + 71998.1006 * t - 3.072 * t2e4
+        + 0.082 * t3e6 + 0.000 * t4e8))
+        + 0.00167 * Math.sin(deg2rad * (328.2445 - 99862.5625 * t - 211.005 * t2e4
+        - 25.072 * t3e6 + 11.826 * t4e8))
+        - 0.00143 * Math.sin(deg2rad * (173.5506 + 1335801.3346 * t - 48.901 * t2e4
+        + 5.496 * t3e6 - 2.653 * t4e8))
+        - 0.00121 * Math.sin(deg2rad * (98.2661 + 449334.4057 * t - 124.107 * t2e4
+        - 10.643 * t3e6 + 5.028 * t4e8))
+        - 0.00116 * Math.sin(deg2rad * (145.6272 + 1844931.9583 * t + 147.340 * t2e4
+        + 32.359 * t3e6 - 15.363 * t4e8))
+        + 0.00102 * Math.sin(deg2rad * (105.6788 + 341337.2548 * t - 119.499 * t2e4
+        - 10.765 * t3e6 + 5.028 * t4e8))
+        - 0.00090 * Math.sin(deg2rad * (184.1196 + 401329.0556 * t + 125.428 * t2e4
+        + 18.579 * t3e6 - 8.798 * t4e8))
+        - 0.00086 * Math.sin(deg2rad * (338.9083 + 1267870.5281 * t - 153.636 * t2e4
+        - 7.061 * t3e6 + 3.259 * t4e8))
+        - 0.00078 * Math.sin(deg2rad * (111.4008 + 1781068.4461 * t - 65.201 * t2e4
+        + 7.328 * t3e6 - 3.538 * t4e8))
+        + 0.00069 * Math.sin(deg2rad * (323.3027 - 27864.4619 * t - 214.077 * t2e4
+        - 24.990 * t3e6 + 11.826 * t4e8))
+        + 0.00066 * Math.sin(deg2rad * (51.6271 - 111868.8623 * t + 36.994 * t2e4
+        + 4.190 * t3e6 - 2.001 * t4e8))
+        + 0.00065 * Math.sin(deg2rad * (38.5872 + 858602.4669 * t - 138.871 * t2e4
+        - 8.852 * t3e6 + 4.144 * t4e8))
+        - 0.00060 * Math.sin(deg2rad * (83.3826 - 12006.2998 * t + 247.999 * t2e4
+        + 29.262 * t3e6 - 13.826 * t4e8))
+        + 0.00054 * Math.sin(deg2rad * (201.4740 + 826670.7108 * t - 245.142 * t2e4
+        - 21.367 * t3e6 + 10.057 * t4e8))
+        - 0.00052 * Math.sin(deg2rad * (308.4192 - 489205.1674 * t + 158.029 * t2e4
+        + 14.915 * t3e6 - 7.029 * t4e8))
+        + 0.00048 * Math.sin(deg2rad * (8.1929 + 1403732.1410 * t + 55.834 * t2e4
+        + 18.052 * t3e6 - 8.566 * t4e8))
+        - 0.00041 * Math.sin(deg2rad * (46.6853 - 39870.7617 * t + 33.922 * t2e4
+        + 4.272 * t3e6 - 2.001 * t4e8))
+        - 0.00033 * Math.sin(deg2rad * (274.1928 - 553068.6797 * t - 54.513 * t2e4
+        - 10.116 * t3e6 + 4.797 * t4e8))
+        + 0.00030 * Math.sin(deg2rad * (160.4159 + 4067.2942 * t - 107.806 * t2e4
         - 12.475 * t3e6 + 5.913 * t4e8));
 
-    var slp = 3.96 * Math.sin(deg2rad * (119.7 + 131.8 * t)) 
+    var slp = 3.96 * Math.sin(deg2rad * (119.7 + 131.8 * t))
         + 1.96 * Math.sin(deg2rad * (125.0 - 1934.1 * t));
 
-    var slpp = 0.463 * Math.sin(deg2rad * (357.5 + 35999.1 * t)) 
-        + 0.152 * Math.sin(deg2rad * (238.2 + 854535.2 * t)) 
-        - 0.071 * Math.sin(deg2rad * (27.8 + 131.8 * t)) 
-        - 0.055 * Math.sin(deg2rad * (103.2 + 377336.3 * t)) 
+    var slpp = 0.463 * Math.sin(deg2rad * (357.5 + 35999.1 * t))
+        + 0.152 * Math.sin(deg2rad * (238.2 + 854535.2 * t))
+        - 0.071 * Math.sin(deg2rad * (27.8 + 131.8 * t))
+        - 0.055 * Math.sin(deg2rad * (103.2 + 377336.3 * t))
         - 0.026 * Math.sin(deg2rad * (233.2 + 926533.3 * t));
 
-    var slppp = 14 * Math.sin(deg2rad * (357.5 + 35999.1 * t)) 
+    var slppp = 14 * Math.sin(deg2rad * (357.5 + 35999.1 * t))
         + 5 * Math.sin(deg2rad * (238.2 + 854535.2 * t));
 
-    var lambda = 218.31665 + 481267.88134 * t - 13.268 * t2e4 
-        + 1.856 * t3e6 - 1.534 * t4e8 + sl 
+    var lambda = 218.31665 + 481267.88134 * t - 13.268 * t2e4
+        + 1.856 * t3e6 - 1.534 * t4e8 + sl
         + 1e-3 * (slp + slpp * t + slppp * t2e4);
 
      dat.a = sma;
@@ -3419,10 +3454,10 @@ var Moon = {
   corr: function(dat, sol) {
     var M = Trig.normalize(sol.M + Math.PI),
         w = Trig.normalize(sol.w + Math.PI),
-        L = dat.M + dat.w,     // Argument of latitude 
+        L = dat.M + dat.w,     // Argument of latitude
         E = L + dat.N - M - w; // Mean elongation
-    
-    var lon = 
+
+    var lon =
       -0.022234 * Math.sin(dat.M - 2*E) +  // Evection
        0.011494 * Math.sin(2*E) +          // Variation
       -0.003246 * Math.sin(M) +        // Yearly Equation
@@ -3431,7 +3466,7 @@ var Moon = {
        9.25025e-4 * Math.sin(dat.M + 2*E) +
        8.02851e-4 * Math.sin(2*E - M) +
        7.15585e-4 * Math.sin(dat.M - M) +
-      -6.10865e-4 * Math.sin(E) + 
+      -6.10865e-4 * Math.sin(E) +
       -5.41052e-4 * Math.sin(dat.M + M) +
       -2.61799e-4 * Math.sin(2*L - 2*E) +
        1.91986e-4 * Math.sin(dat.M - 4*E);
@@ -3441,10 +3476,10 @@ var Moon = {
       -9.59931e-4 * Math.sin(dat.M - L - 2*E) +
       -8.02851e-4 * Math.sin(dat.M + L - 2*E) +
        5.75958e-4 * Math.sin(L + 2*E) +
-       2.96706e-4 * Math.sin(2*dat.M + L);  
+       2.96706e-4 * Math.sin(2*dat.M + L);
     dat.dec += lat;
-  
-    dat.age = Trig.normalize(dat.l - sol.l + Math.PI);   
+
+    dat.age = Trig.normalize(dat.l - sol.l + Math.PI);
     dat.phase = 0.5 * (1 - Math.cos(dat.age));
 
     return dat;
@@ -3453,7 +3488,7 @@ var Moon = {
 };
 
 var datetimepicker = function(cfg, callback) {
-  var date = new Date(), 
+  var date = new Date(),
       tzFormat = d3.time.format("%Z"),
       tz = [{"−12:00":720}, {"−11:00":660}, {"−10:00":600}, {"−09:30":570}, {"−09:00":540}, {"−08:00":480}, {"−07:00":420}, {"−06:00":360}, {"−05:00":300}, {"−04:30":270}, {"−04:00":240}, {"−03:30":210}, {"−03:00":180}, {"−02:00":120}, {"−01:00":60}, {"±00:00":0}, {"+01:00":-60}, {"+02:00":-120}, {"+03:00":-180}, {"+03:30":-210}, {"+04:00":-240}, {"+04:30":-270}, {"+05:00":-300}, {"+05:30":-330}, {"+05:45":-345}, {"+06:00":-360}, {"+06:30":-390}, {"+07:00":-420}, {"+08:00":-480}, {"+08:30":-510}, {"+08:45":-525}, {"+09:00":-540}, {"+09:30":-570}, {"+10:00":-600}, {"+10:30":-630}, {"+11:00":-660}, {"+12:00":-720}, {"+12:45":-765}, {"+13:00":-780}, {"+14:00":-840}],
       months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
@@ -3461,38 +3496,38 @@ var datetimepicker = function(cfg, callback) {
       years = getYears(date),
       dateFormat = d3.time.format("%Y-%m-%d"),
       dtrange = cfg.daterange || [];
-    
+
   var picker = d3.select("#celestial-form").append("div").attr("id", "celestial-date");
   nav("left");
   monSel();
   yrSel();
   nav("right");
-  
+
   var cal = picker.append("div").attr("id", "cal");
 
   daySel();
-  
+
   timeSel();
   tzSel();
-  
+
   function daySel() {
     var mo = $("mon").value, yr = $("yr").value,
         curdt = new Date(yr, mo, 1),
         cal = d3.select("#cal"),
         today = new Date();
-    yr = parseInt(yr);   
-    mo = parseInt(mo);   
+    yr = parseInt(yr);
+    mo = parseInt(mo);
     curdt.setDate(curdt.getDate() - curdt.getDay());
     var nd = cal.node();
     while (nd.firstChild) nd.removeChild(nd.firstChild);
-    
+
     for (var i=0; i<7; i++) {
       cal.append("div").classed({"date": true, "weekday": true}).html(days[i]);
     }
     for (i=0; i<42; i++) {
       var curmon = curdt.getMonth(), curday = curdt.getDay(), curid = dateFormat(curdt);
       cal.append("div").classed({
-        "date": true, 
+        "date": true,
         "grey": curmon !== mo,
         "weekend": curmon === mo && (curday === 0 || curday === 6),
         "today": dateDiff(curdt, today) === 0,
@@ -3500,50 +3535,50 @@ var datetimepicker = function(cfg, callback) {
       }).attr("id", curid)
       .on("click", pick)
       .html(curdt.getDate().toString());
-      
+
       curdt.setDate(curdt.getDate()+1);
     }
   }
 
-  function yrSel() {     
-    picker.append("select").attr("title", "Year").attr("id", "yr").on("change", daySel);   
-    
+  function yrSel() {
+    picker.append("select").attr("title", "Year").attr("id", "yr").on("change", daySel);
+
     fillYrSel();
   }
 
-  function fillYrSel() { 
+  function fillYrSel() {
     var sel = d3.select("select#yr"),
         year = date.getFullYear(),
         selected = 0,
         years = getYears(date);
-        
-    sel.selectAll("*").remove();    
+
+    sel.selectAll("*").remove();
     sel.selectAll('option').data(years).enter().append('option')
-       .text(function (d, i) { 
-         if (d === year) selected = i; 
-         return d.toString(); 
+       .text(function (d, i) {
+         if (d === year) selected = i;
+         return d.toString();
        });
     sel.property("selectedIndex", selected);
   }
-  
-  function monSel() { 
+
+  function monSel() {
     var sel = picker.append("select").attr("title", "Month").attr("id", "mon").on("change", daySel),
         selected = 0,
         month = date.getMonth();
-    
+
     sel.selectAll('option').data(months).enter().append('option')
-       .attr("value", function (d, i) { 
-         if (i === month) selected = i; 
-         return i; 
+       .attr("value", function (d, i) {
+         if (i === month) selected = i;
+         return i;
        })
        .text(function (d) { return d; });
     sel.property("selectedIndex", selected);
   }
-  
+
   function nav(dir) {
     var lnk = picker.append("div").attr("id", dir).on("click", function () {
       var mon = $("mon"), yr = $("yr");
-      
+
       if (dir === "left") {
         if (mon.selectedIndex === 0) {
           mon.selectedIndex = 11;
@@ -3559,37 +3594,37 @@ var datetimepicker = function(cfg, callback) {
     });
   }
 
-  function timeSel() { 
+  function timeSel() {
     picker.append("input").attr("type", "number").attr("id", "hr").attr("title", "Hours").attr("max", "24").attr("min", "-1").attr("step", "1").attr("value", date.getHours()).on("change", function () { if (testNumber(this) === true) pick(); });
 
     picker.append("input").attr("type", "number").attr("id", "min").attr("title", "Minutes").attr("max", "60").attr("min", "-1").attr("step", "1").attr("value", date.getMinutes()).on("change", function () { if (testNumber(this) === true) pick(); });
-    
+
     picker.append("input").attr("type", "number").attr("id", "sec").attr("title", "Seconds").attr("max", "60").attr("min", "-1").attr("step", "1").attr("value", date.getSeconds()).on("change", function () { if (testNumber(this) === true) pick(); });
   }
-  
-  function tzSel() { 
+
+  function tzSel() {
     var sel = picker.append("select").attr("title", "Time zone offset from UTC").attr("id", "tz").on("change", pick),
         selected = 15,
         timezone = date.getTimezoneOffset();
     sel.selectAll('option').data(tz).enter().append('option')
-       .attr("value", function (d, i) { 
+       .attr("value", function (d, i) {
          var k = Object.keys(d)[0];
-         if (d[k] === timezone) selected = i; 
-         return d[k]; 
+         if (d[k] === timezone) selected = i;
+         return d[k];
        })
        .text(function (d) { return Object.keys(d)[0]; });
     sel.property("selectedIndex", selected);
   }
-  
+
   function getYears(dt) {
     var r = getDateRange(dt.getFullYear()), res = [];
     for (var i = r[0]; i <= r[1]; i++) res.push(i);
     return res;
-  }  
-  
+  }
+
   function getDateRange(yr) {
     if (!dtrange || dtrange.length < 1) return [yr - 10, yr + 10];
-    
+
     if (dtrange.length === 1 && isNumber(dtrange[0])) {
       if (dtrange[0] >= 100) return [dtrange[0] - 10, dtrange[0] + 10];
       else return [yr - dtrange[0], yr + dtrange[0]];
@@ -3597,7 +3632,7 @@ var datetimepicker = function(cfg, callback) {
     if (dtrange.length === 2 && isNumber(dtrange[0])&& isNumber(dtrange[1])) {
       if (dtrange[1] >= 100) return [dtrange[0], dtrange[1]];
       else return [dtrange[0] - dtrange[1], dtrange[0] + dtrange[1]];
-    }      
+    }
     return [yr - 10, yr + 10];
   }
 
@@ -3610,34 +3645,34 @@ var datetimepicker = function(cfg, callback) {
       }
     }
   }
-  
+
   function set(dt) {
      if (dt) date.setTime(dt.valueOf());
-     
+
      select("yr", date.getFullYear());
      select("mon", date.getMonth());
      daySel();
      $("hr").value = date.getHours();
      $("min").value = date.getMinutes();
      $("sec").value = date.getSeconds();
-  } 
-  
+  }
+
   this.show = function(dt) {
     var nd = $("celestial-date"),
         src = $("datepick"),
         left = src.offsetLeft + src.offsetWidth - nd.offsetWidth,
         top = src.offsetTop - nd.offsetHeight - 1;
-  
+
     if (nd.offsetTop === -9999) {
       date.setTime(dt.valueOf());
       set();
-      d3.select("#celestial-date").style({"top": px(top), "left": px(left), "opacity": 1});  
+      d3.select("#celestial-date").style({"top": px(top), "left": px(left), "opacity": 1});
       d3.select("#datepick").classed("active", true);
     } else {
       vanish();
     }
   };
-  
+
   this.isVisible = function () {
     return $("celestial-date").offsetTop !== -9999;
   };
@@ -3645,29 +3680,29 @@ var datetimepicker = function(cfg, callback) {
   this.hide = function () {
     vanish();
   };
-  
+
   function vanish() {
     d3.select("#celestial-date").style("opacity", 0);
-    d3.select("#error").style( {top:"-9999px", left:"-9999px", opacity:0} ); 
+    d3.select("#error").style( {top:"-9999px", left:"-9999px", opacity:0} );
     d3.select("#datepick").classed("active", false);
-    setTimeout(function () { $("celestial-date").style.top = px(-9999); }, 600);    
+    setTimeout(function () { $("celestial-date").style.top = px(-9999); }, 600);
   }
-  
+
   function pick() {
     var h = $("hr").value, m = $("min").value,
         s = $("sec").value, tz = $("tz").value;
-        
+
     if (this.id && this.id.search(/^\d/) !== -1) {
-      date = dateFormat.parse(this.id); 
+      date = dateFormat.parse(this.id);
     }
     fillYrSel();
-    
+
     date.setHours(h, m, s);
     set();
-    
+
     callback(date, tz);
-  } 
-  
+  }
+
 };
 // Copyright 2014, Jason Davies, http://www.jasondavies.com
 // See LICENSE.txt for details.
@@ -3733,14 +3768,14 @@ d3.geo.zoom = function() {
           dispatch = event.of(this, arguments),
           view1 = view,
           transition = d3.transition(g);
-     
+
       if (transition !== g) {
         transition
             .each("start.zoom", function() {
               if (this.__chart__) { // pre-transition state
                 view = this.__chart__;
                 if (!view.hasOwnProperty("r")) view.r = projection.rotate();
-              } 
+              }
               projection.rotate(view.r).scale(view.k);
               zoomstarted(dispatch);
             })

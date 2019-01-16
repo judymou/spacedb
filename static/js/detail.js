@@ -42,7 +42,9 @@ var config = {
       'ura': {symbol: '\u25cf Uranus', fill: '#66ccff'},
       'nep': {symbol: '\u25cf Neptune', fill: '#6666ff'},
       'plu': {symbol: '\u25cf Pluto', fill: '#aaaaaa'},
-      'eri': {symbol: '\u25cf Eris', fill: '#eeeeee'}
+      'eri': {symbol: '\u25cf Eris', fill: '#eeeeee'},
+
+      'added-planet': {symbol: '\u25cf Special Planet', fill: 'pink'},
     },
   },
   mw: {
@@ -94,6 +96,66 @@ const jsonSnr = {
   }
 ]};
 
+Celestial.add({type: 'planet', callback: function(error, json) {
+  console.log(error, json);
+
+  var kep = Celestial.Kepler().id('added-planet').elements({
+    L: -55.12002969,
+    N: 131.78422574,
+    W: 44.96476227,
+    a: 30.06992276,
+    dL: 218.45945325,
+    dN: -0.00508664,
+    dW: -0.32241464,
+    da: 0.00026291,
+    de: 0.00005105,
+    di: 0.00035372,
+    e: 0.00859048,
+    ep: "2000-01-01",
+    i: 1.77004347,
+  });
+
+  Celestial.container.selectAll(".planets")
+         .data([kep])
+         .enter().append("path")
+         .attr("class", "planet");
+  Celestial.redraw();
+}, redraw: function() {
+  // Select the added objects by class name as given previously
+  /*
+  Celestial.container.selectAll('.added-object').each(function(d) {
+    if (!Celestial.origin) {
+      return;
+    }
+    console.log(d.id())
+    var dt = Celestial.date();
+    var origin = Celestial.origin(dt).spherical();
+    var eqcoords = d(dt).equatorial(origin);
+    var pt = Celestial.mapProjection([eqcoords.ra, eqcoords.dec]);
+    var r = 25;
+
+    // draw on canvas
+    // Set object styles
+    Celestial.setStyle(pointStyle);
+    // Start the drawing path
+    Celestial.context.beginPath();
+    // Thats a circle in html5 canvas
+    Celestial.context.arc(pt[0], pt[1], r, 0, 2 * Math.PI);
+    // Finish the drawing path
+    Celestial.context.closePath();
+    // Draw a line along the path with the prevoiusly set stroke color and line width
+    Celestial.context.stroke();
+    // Fill the object path with the prevoiusly set fill color
+    Celestial.context.fill();
+    // Set text styles
+    Celestial.setTextStyle(textStyle);
+    // and draw text on canvas
+    Celestial.context.fillText('assss', pt[0]+r, pt[1]+r);
+  });
+ */
+}});
+
+/*
 Celestial.add({type:'star', callback: function(error, json) {
   if (error) return console.warn(error);
   // Load the geoJSON file and transform to correct coordinate system, if necessary
@@ -136,6 +198,7 @@ Celestial.add({type:'star', callback: function(error, json) {
     }
   });
 }});
+*/
 Celestial.display(config);
 
 // Load the rest of the page.
