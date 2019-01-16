@@ -18,5 +18,15 @@
   <script src="/static/dist/js/bundle.js"></script>
 
   {% block scripts %}{% endblock %}
+
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-54607101-2"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-54607101-2');
+  </script>
 </body>
 </html>
