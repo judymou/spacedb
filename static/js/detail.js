@@ -93,7 +93,7 @@ const jsonSnr = {
 ]};
 
 Celestial.add({type: 'planet', callback: function(error, json) {
-  const eph = new Spacekit.Ephem(window.EPHEMERIS[0]);
+  const eph = new Spacekit.Ephem(window.OBJECT_DEFINITIONS[0].ephem);
   const elements = {
     // https://github.com/ofrohn/d3-celestial/blob/master/src/kepler.js
     a: eph.get('a'),
