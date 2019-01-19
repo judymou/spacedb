@@ -10,7 +10,7 @@
 </head>
 <body>
   {% block header %}{% endblock %}
-  <div class="container">
+  <div class="{% block container_class %}container{% endblock %}">
     {% block content %}{% endblock %}
   </div>
   <footer>
