@@ -1,9 +1,5 @@
 (function() {
 var config = {
-  //container: 'celestial-map',
-  //projection: 'stereographic',
-  //projection: 'airy',
-  //projection: 'equirectangular',
   datapath: 'https://ofrohn.github.io/data/',
   location: true,
   dsos: {
