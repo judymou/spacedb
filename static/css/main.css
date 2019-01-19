@@ -179,7 +179,7 @@ ul.keyfacts li {
 /* Category page */
 .tile-list {
   padding:0;
-  max-height: 586px;
+  max-height: 531px;
   overflow-y: scroll;
 }
 
@@ -197,7 +197,7 @@ ul.keyfacts li {
 }
 
 .tile a:hover h5 {
-  text-decoration: underline; 
+  text-decoration: underline;
 }
 
 .tile-content {
