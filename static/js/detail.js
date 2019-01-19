@@ -1,6 +1,6 @@
 (function() {
 var config = {
-  container: 'celestial-map',
+  //container: 'celestial-map',
   //projection: 'stereographic',
   //projection: 'airy',
   //projection: 'equirectangular',
@@ -11,7 +11,7 @@ var config = {
   },
   stars: {
     show: true,
-    limit: 5.5,
+    limit: 5,
     names: false,
   },
   constellations: {
@@ -97,23 +97,19 @@ const jsonSnr = {
 ]};
 
 Celestial.add({type: 'planet', callback: function(error, json) {
-  console.log(error, json);
-
-  var kep = Celestial.Kepler().id('added-planet').elements({
-    L: -55.12002969,
-    N: 131.78422574,
-    W: 44.96476227,
-    a: 30.06992276,
-    dL: 218.45945325,
-    dN: -0.00508664,
-    dW: -0.32241464,
-    da: 0.00026291,
-    de: 0.00005105,
-    di: 0.00035372,
-    e: 0.00859048,
-    ep: "2000-01-01",
-    i: 1.77004347,
-  });
+  const eph = new Spacekit.Ephem(window.EPHEMERIS[0]);
+  const elements = {
+    // https://github.com/ofrohn/d3-celestial/blob/master/src/kepler.js
+    a: eph.get('a'),
+    e: eph.get('e'),
+    i: eph.get('i'),
+    M: eph.get('ma'),
+    ep: new Date((eph.get('epoch')-2440587.5)*86400000).toISOString().split("T")[0],
+    w: eph.get('w'),
+    N: eph.get('om'),
+    n: eph.get('n', 'deg'),
+  };
+  var kep = Celestial.Kepler().id('added-planet').elements(elements);
 
   Celestial.container.selectAll(".planets")
          .data([kep])

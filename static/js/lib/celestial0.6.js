@@ -556,8 +556,7 @@ Celestial.display = function(config) {
               align: 'left',
               baseline: 'bottom'
             };
-            const r = 10;
-            /*
+            const r = 5;
             setStyle(pointStyle);
             // Start the drawing path
             context.beginPath();
@@ -570,13 +569,9 @@ Celestial.display = function(config) {
             // Fill the object path with the prevoiusly set fill color
             context.fill();
             // Set text styles
-            setTextStyle(textStyle);
-            */
-
-            context.fillStyle = pointStyle.fill;
+            //setTextStyle(textStyle);
             // and draw text on canvas
-            setTextStyle(textStyle);
-            context.fillText('assss', pt[0]+r, pt[1]+r);
+            //context.fillText('assss', pt[0]+r, pt[1]+r);
           } else {
             setTextStyle(cfg.planets.style);
             context.fillStyle = sym.fill;
