@@ -191,6 +191,15 @@ class SpaceObject(models.Model):
           'fullname': self.fullname,
           'name': self.name,
           'slug': self.slug,
+          'ephem': {
+            'a': self.a,
+            'e': self.e,
+            'i': self.i,
+            'om': self.om,
+            'w': self.w,
+            'ma': self.ma,
+            'epoch': self.epoch,
+          }
         }
 
     def __str__(self):

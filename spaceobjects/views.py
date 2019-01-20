@@ -74,6 +74,9 @@ def category(request, category):
                 'objects': SpaceObject.objects.filter(orbit_class=orbit_class)[:20],
             })
 
+def solar_system(request):
+    return render(request, 'spaceobjects/solar_system.html', {})
+
 def search(request):
     search_str = request.GET.get('q')
     matches = SpaceObject.objects.filter(fullname__icontains=search_str)

@@ -21,6 +21,7 @@ function init3dVis() {
   viz.createObject('saturn', Spacekit.SpaceObjectPresets.SATURN);
   viz.createObject('uranus', Spacekit.SpaceObjectPresets.URANUS);
   viz.createObject('neptune', Spacekit.SpaceObjectPresets.NEPTUNE);
+  window.vizcontainer = viz;
 
   window.spaceobjects = {};
   window.OBJECT_DEFINITIONS.forEach(function(objDef) {
