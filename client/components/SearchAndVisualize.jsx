@@ -3,9 +3,11 @@ import PropTypes from 'react-proptypes';
 
 import AsyncSelect from 'react-select/lib/Async';
 
+const INPUT_LENGTH_MIN = 3;
+
 const loadOptions = (inputValue, callback) => {
   return new Promise(resolve => {
-    if (inputValue.length < 3) {
+    if (inputValue.length < INPUT_LENGTH_MIN) {
       resolve([]);
       return;
     }
@@ -40,7 +42,7 @@ class SearchAndVisualize extends React.Component {
     }
     this.state.selectedObjects.push(
       <div className="tile">
-        <a target="_blank" href="/asteroid/${inputValue.value}">
+        <a target="_blank" href={`/asteroid/${inputValue.value}`}>
           <h5>{inputValue.label}</h5>
         </a>
       </div>
@@ -58,10 +60,47 @@ class SearchAndVisualize extends React.Component {
           value={null}
           placeholder="Search for an asteroid or comet..."
           className="topnav__react-search__control"
+          noOptionsMessage={() => {
+            if (this.state.inputValue.length < INPUT_LENGTH_MIN) {
+              return null;
+            }
+            return "No matching objects"
+          }}
+          styles={{
+            input: base => ({
+              ...base,
+              color: "#fff"
+            }),
+            noOptionsMessage: base => ({
+              ...base,
+              color: "#ccc"
+            }),
+            loadingMessage: base => ({
+              ...base,
+              color: "#ccc"
+            }),
+          }}
+          theme={(theme) => ({
+            ...theme,
+            borderRadius: 0,
+            colors: {
+            ...theme.colors,
+              primary25: 'hotpink',
+              primary: 'black',
+              neutral0: '#000',
+              neutral5: '#000a',
+              neutral10: '#000b',
+              neutral20: '#000c',
+              neutral30: '#000d',
+              neutral40: '#000e',
+            },
+          })}
         />
-        <div className="item-container tile-list">
-          {this.state.selectedObjects}
-        </div>
+        {this.state.selectedObjects.length > 0 ? (
+          <div className="item-container tile-list">
+            {this.state.selectedObjects}
+          </div>
+        ): null}
       </div>
     );
   }

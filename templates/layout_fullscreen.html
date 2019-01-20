@@ -1,0 +1,28 @@
+{% load static %}
+
+<html>
+<head>
+  <title>{% block title %}{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="{% static "css/lib/bootstrap.min.css" %}" />
+  <link rel="stylesheet" href="{% static "css/main.css" %}" />
+  {% block css %}{% endblock %}
+</head>
+<body>
+  {% block header %}{% endblock %}
+  {% block content %}{% endblock %}
+  <script src="/static/dist/js/bundle.js"></script>
+
+  {% block scripts %}{% endblock %}
+
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-54607101-2"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-54607101-2');
+  </script>
+</body>
+</html>

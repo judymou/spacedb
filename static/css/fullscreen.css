@@ -1,0 +1,42 @@
+.vis-container {
+  width: 100%;
+  height: 100%;
+}
+
+.vis-controls {
+  top: 0;
+}
+
+.add-object-panel {
+  position: absolute;
+  top: 3em;
+  left: 0em;
+  z-index: 9999;
+  width: 100%;
+  max-width: 400px;
+  background-color: transparent;
+  color: #fff;
+  padding: 0 0 0.5em 1em;
+}
+
+.tile-list {
+  margin-top: 1em;
+  border: 1px solid #666;
+}
+
+.tile {
+  border: 1px solid transparent;
+  padding: 0 0.5em 0 1em;
+}
+
+.tile:hover {
+  background: inherit;
+}
+
+.tile a {
+  color: #fff;
+}
+
+.react-search-and-visualize {
+  color: #fff;
+}
