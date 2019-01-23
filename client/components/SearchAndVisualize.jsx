@@ -17,6 +17,7 @@ const loadOptions = (inputValue, callback) => {
       resolve(respJson.results.map(result => {
         return {
           label: result.fullname,
+          vizLabel: result.name,
           value: result.slug,
           ephem: result.ephem,
         };
@@ -36,8 +37,10 @@ class SearchAndVisualize extends React.Component {
 
   handleChange(inputValue) {
     if (window.vizcontainer) {
-      const spaceobject = window.vizcontainer.createObject('spaceobject', Object.assign(window.VIZ_OBJECT_OPTS, {
+      window.vizcontainer.createObject(`spaceobject${this.state.selectedObjects.length}`, Object.assign(window.VIZ_OBJECT_OPTS, {
         ephem: new Spacekit.Ephem(inputValue.ephem, 'deg'),
+        // Show short name
+        labelText: inputValue.vizLabel,
       }));
     }
     this.state.selectedObjects.push(
