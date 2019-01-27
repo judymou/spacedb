@@ -154,16 +154,6 @@ ul.keyfacts li {
   display: flex;
   align-content: stretch;
   flex-wrap: wrap;
-
-}
-
-.vis-selector {
-  cursor: pointer;
-  width: 33%;
-}
-
-.vis-selector:hover {
-  /*box-shadow: 1px 1px 1px rgba(0, 0, 0, 1);*/
 }
 
 .skymap-container{
