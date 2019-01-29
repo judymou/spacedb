@@ -47,6 +47,8 @@ def process_shapes(f_in, refs):
         desig_with_parens = '(%s)' % row['asteroid designation']
         fullname = reconstructed_desig if row['asteroid name'] else desig_with_parens
 
+        logger.info('%d: %s' % (count, fullname))
+
         # Locate SpaceObject match
         space_object = spaceobject_lookup.get(fullname)
         if space_object:

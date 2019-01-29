@@ -3,7 +3,7 @@
 pushd $(dirname $0) &>/dev/null
 
 mkdir -p rawdata/shapes
-rm -rf rawdata/shapes/*
+#rm -rf rawdata/shapes/*
 cd rawdata/shapes
 
 echo 'Download complete flush from'
@@ -14,6 +14,7 @@ echo '...'
 # Decompress
 tar xzvf damit_flush_complete*
 # Put everything into one directory instead of breaking it up every thousand
-mv archive/*/* archive/
+# Use find instead of mv because on mac mv limits the number of arguments.
+find archive/ -name '*.*' -exec mv {} archive/. \;
 
 popd &>/dev/null

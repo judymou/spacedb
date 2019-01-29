@@ -228,7 +228,15 @@ const t = setInterval(function() {
       {% endif %}
       </p>
       <h3>Images and Observations</h3>
-      {{object.get_shorthand}}'s orbit is determined by observations dating back to {{object.get_firstobs_date | date}}.  It was last officially observed on {{object.get_lastobs_date | date}}.  The IAU Minor Planet Center records {{object.sbdb_entry.n_obs_used|intcomma}} observations used to determine its orbit.
+      <p>
+        {{object.get_shorthand}}'s orbit is determined by observations dating back to {{object.get_firstobs_date | date}}.  It was last officially observed on {{object.get_lastobs_date | date}}.  The IAU Minor Planet Center records {{object.sbdb_entry.n_obs_used|intcomma}} observations used to determine its orbit.
+      </p>
+      {% if shape_models|length %}
+        <p>
+          The renderings below were generated from inverted radar mappings of asteroids.
+        </p>
+        <img class="img-responsive" src="{% static shape_models.0.render_path %}" />
+      {% endif %}
       <h3>Accessibility and Exploration</h3>
       {% if object.nhatsobject_set.all|length %}
         {% with nhats=object.nhatsobject_set.all.0 %}

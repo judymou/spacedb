@@ -51,10 +51,12 @@ def detail(request, slug):
         return index(request)
 
     sentry_events = space_object.sentryevent_set.all().order_by('-prob')
+    shape_models = space_object.shapemodel_set.all().order_by('-quality')
 
     return render(request, 'spaceobjects/detail.html', {
                 'object': space_object,
                 'sentry_events': sentry_events,
+                'shape_models': shape_models,
             })
 
 def category(request, category):
