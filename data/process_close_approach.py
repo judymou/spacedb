@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
 import csv
-import django
 import json
 import logging
 import os
 import sys
 from datetime import datetime
 
+import django
 from django.db import transaction
 
 current_dir = os.path.dirname(__file__)

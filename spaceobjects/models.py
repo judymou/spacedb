@@ -259,8 +259,45 @@ class NhatsObject(models.Model):
     def __str__(self):
         return self.space_object.fullname
 
+class ShapeModel(models.Model):
+    space_object = models.ForeignKey(SpaceObject)
+
+    # Path to shapefile
+    shape_path = models.CharField(max_length=200)
+
+    # Path to image
+    render_path = models.CharField(max_length=200)
+
+    # Ecliptic lat/lng of the spin axis direction (beta and lambda
+    # respectively).
+    spin_latitude = models.FloatField()
+    spin_longitude = models.FloatField()
+    # Initial rotation angle (phi)
+    spin_angle = models.FloatField()
+
+    # Period in hours
+    period_hr = models.FloatField()
+
+    # Initial julian date
+    jd = models.FloatField()
+
+    # Linear change in the rotation rate (dω / dt) caused by the
+    # Yarkovsky-O'Keefe-Radzievskii-Paddack effect (rad / day2)
+    yorp = models.FloatField(null=True, blank=True)
+
+    # References string
+    # reference = models.CharField(max_length=1000)
+
+    # Equivalent diameter - diameter of sphere that has the same volume as
+    # model.
+    equiv_diameter_km = models.FloatField(null=True, blank=True)
+
+    # Quality level
+    quality = models.FloatField()
+
 admin.site.register(SpaceObject)
 admin.site.register(CloseApproach)
 admin.site.register(SentryEvent)
 admin.site.register(NhatsObject)
 admin.site.register(OrbitClass)
+admin.site.register(ShapeModel)
