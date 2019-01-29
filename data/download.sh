@@ -16,6 +16,9 @@ echo 'Downloading sentry...'
 echo 'Downloading nhats...'
 ./download_nhats.sh
 
+echo 'Downloading damit...'
+./download_damit.sh
+
 echo 'Done.'
 
 popd &>/dev/null

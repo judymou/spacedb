@@ -92,6 +92,7 @@ def process_shapes(f_in, refs):
     logger.info('%d/%d objects matched' % (matched, count))
 
     logger.info('Creating...')
+    ShapeModel.objects.all().delete()
     ShapeModel.objects.bulk_create(newobjects)
     logger.info('Done.')
 
