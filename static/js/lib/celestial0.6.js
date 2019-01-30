@@ -128,7 +128,7 @@ Celestial.display = function(config) {
     //Milky way outline
     d3.json(path + "mw.json", function(error, json) {
       if (error) {
-        window.alert("Your Browser doesn't support local file loading or the file doesn't exist. See readme.md");
+        //window.alert("Your Browser doesn't support local file loading or the file doesn't exist. See readme.md");
         return console.warn(error);
       }
 
