@@ -29,6 +29,7 @@ services:
     volumes:
       - ./config/nginx/conf.d:/etc/nginx/conf.d
       - ./static:/var/www/static
+      - /var/spacedb/raw/shapes/archive:/var/www/static/data/shapefiles/damit
     ports:
       - 80:80
     networks:
