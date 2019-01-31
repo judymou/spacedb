@@ -6,6 +6,8 @@ function init3dVis() {
     startDate: Date.now(),
   }, window.VIZ_SIMULATION_OPTS));
 
+  viz.renderOnlyInViewport();
+
   // Create a skybox using NASA TYCHO artwork.
   viz.createSkybox(Spacekit.SkyboxPresets.NASA_TYCHO);
 
