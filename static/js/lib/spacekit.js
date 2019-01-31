@@ -1,40 +1,13 @@
 var Spacekit = (function (exports) {
   'use strict';
 
-  var julian = convert;
-  var toDate = convertToDate;
-
-  var toJulianDay_1 = toJulianDay;
-  var toMillisecondsInJulianDay_1 = toMillisecondsInJulianDay;
-  var fromJulianDayAndMilliseconds_1 = fromJulianDayAndMilliseconds;
-
-  var DAY = 86400000;
-  var HALF_DAY = DAY / 2;
-  var UNIX_EPOCH_JULIAN_DATE = 2440587.5;
-  var UNIX_EPOCH_JULIAN_DAY = 2440587;
-
-  function convert(date) {
-    return (toJulianDay(date) + (toMillisecondsInJulianDay(date) / DAY)).toFixed(6);
-  }
-  function convertToDate(julian) {
-    return new Date((Number(julian) - UNIX_EPOCH_JULIAN_DATE) * DAY);
-  }
-  function toJulianDay(date) {
-    return ~~((+date + HALF_DAY) / DAY) + UNIX_EPOCH_JULIAN_DAY;
-  }
-  function toMillisecondsInJulianDay(date) {
-    return (+date + HALF_DAY) % DAY;
-  }
-  function fromJulianDayAndMilliseconds(day, ms) {
-    return (day - UNIX_EPOCH_JULIAN_DATE) * DAY + ms;
-  }julian.toDate = toDate;
-  julian.toJulianDay = toJulianDay_1;
-  julian.toMillisecondsInJulianDay = toMillisecondsInJulianDay_1;
-  julian.fromJulianDayAndMilliseconds = fromJulianDayAndMilliseconds_1;
-
+  /**
+   * A simple wrapper for Three.js camera.
+   */
   class Camera {
-    // Simple wrapper for Three.js camera
-
+    /**
+     * @param {Object} context The simulation context
+     */
     constructor(context) {
       // TODO(ian): Accept either context or container
       this._context = context;
@@ -48,83 +21,16 @@ var Spacekit = (function (exports) {
       this._camera = new THREE.PerspectiveCamera(75, containerWidth / containerHeight, 1, 5000);
     }
 
+    /**
+     * @returns {Object} The THREE.js camera object.
+     */
     get3jsCamera() {
       return this._camera;
     }
   }
 
-  const DEFAULT_TEXTURE_URL = '{{assets}}/sprites/fuzzyparticle.png';
-
-  function getFullTextureUrl(template, assetPath) {
-    return (template || DEFAULT_TEXTURE_URL).replace('{{assets}}', assetPath);
-  }
-
-  class Skybox {
-    constructor(options, contextOrContainer) {
-      // TODO(ian): Support for actual box instead of sphere...
-      this._options = options;
-      this._id = `__skybox_${new Date().getTime()}`;
-
-      // if (contextOrContainer instanceOf Container) {
-      {
-        // User passed in Container
-        this._container = contextOrContainer;
-        this._context = contextOrContainer.getContext();
-      }
-
-      this._mesh = null;
-
-      this.init();
-    }
-
-    init() {
-      const geometry = new THREE.SphereBufferGeometry(4000);
-
-      const fullTextureUrl = getFullTextureUrl(this._options.textureUrl,
-        this._context.options.assetPath);
-      const texture = new THREE.TextureLoader().load(fullTextureUrl);
-
-      const material = new THREE.MeshBasicMaterial({
-        map: texture,
-        side: THREE.BackSide,
-      });
-
-      const sky = new THREE.Mesh(geometry, material);
-
-      // See this thread on orientation of milky way:
-      // https://www.physicsforums.com/threads/orientation-of-the-earth-sun-and-solar-system-in-the-milky-way.888643/
-      sky.rotation.x = 0;
-      sky.rotation.y = -1 / 12 * Math.PI;
-      sky.rotation.z = 8 / 5 * Math.PI;
-
-      // We're on the inside of the skybox, so invert it to correct it.
-      sky.scale.set(-1, 1, 1);
-
-      this._mesh = sky;
-
-      if (this._container) {
-        this._container.addObject(this, true /* noUpdate */);
-      }
-    }
-
-    get3jsObjects() {
-      return [this._mesh];
-    }
-
-    getId() {
-      return this._id;
-    }
-  }
-
-  const SkyboxPresets = {
-    ESO_GIGAGALAXY: {
-      textureUrl: '{{assets}}/skybox/eso_milkyway.jpg',
-    },
-    NASA_TYCHO: {
-      textureUrl: '{{assets}}/skybox/nasa_tycho.jpg',
-    },
-  };
-
+  // TODO(ian): Allow multiple valid attrs for a single quantity and map them
+  // internally to a single canonical attribute.
   const EPHEM_VALID_ATTRS = new Set([
     'a', // Semi-major axis
     'e', // Eccentricity
@@ -147,21 +53,55 @@ var Spacekit = (function (exports) {
     'i', 'ma', 'n', 'L', 'om', 'w', 'w_bar',
   ]);
 
+  /**
+   * A class representing Kepler ephemerides.
+   * @example
+   * const NEPTUNE = new Ephem({
+   *   epoch: 2458426.500000000,
+   *   a: 3.009622263428050E+01,
+   *   e: 7.362571187193770E-03,
+   *   i: 1.774569249829094E+00,
+   *   om: 1.318695882492132E+02,
+   *   w: 2.586226409499831E+02,
+   *   ma: 3.152804988924479E+02,
+   * }, 'deg'),
+   */
   class Ephem {
-    // Note that Ephem always takes values in RADIANS, not degrees
 
-    constructor(initialValues, degOrRad = 'rad') {
+    /**
+     * @param {Object} initialValues A dictionary of initial values. Not all values
+     * are required as some may be inferred from others.
+     * @param {Object} initialValues.a Semimajor axis
+     * @param {Object} initialValues.e Eccentricity
+     * @param {Object} initialValues.i Inclination
+     * @param {Object} initialValues.epoch Epoch in JED
+     * @param {Object} initialValues.period Period in days
+     * @param {Object} initialValues.ma Mean anomaly
+     * @param {Object} initialValues.n Mean motion
+     * @param {Object} initialValues.L Mean longitude
+     * @param {Object} initialValues.om Longitude of Ascending Node
+     * @param {Object} initialValues.w Argument of Perihelion
+     * @param {Object} initialValues.w_bar Longitude of Perihelion
+     * @param {'deg'|'rad'} units The unit of angles in the list of initial values.
+     */
+    constructor(initialValues, units = 'rad') {
       this._attrs = {};
 
       for (const attr in initialValues) {
         if (initialValues.hasOwnProperty(attr)) {
-          const units = ANGLE_UNITS.has(attr) ? degOrRad : null;
-          this.set(attr, initialValues[attr], units);
+          const actualUnits = ANGLE_UNITS.has(attr) ? units : null;
+          this.set(attr, initialValues[attr], actualUnits);
         }
       }
       this.fill();
     }
 
+    /**
+     * Sets an ephemerides attribute.
+     * @param {String} attr The name of the attribute (e.g. 'a')
+     * @param {Number} val The value of the attribute (e.g. 0.5)
+     * @param {'deg'|'rad'} units The unit of angle provided, if applicable.
+     */
     set(attr, val, units = 'rad') {
       if (!EPHEM_VALID_ATTRS.has(attr)) {
         console.warn(`Invalid ephem attr: ${attr}`);
@@ -176,6 +116,12 @@ var Spacekit = (function (exports) {
       return true;
     }
 
+    /**
+     * Gets an ephemerides attribute.
+     * @param {String} attr The name of the attribute (e.g. 'a')
+     * @param {'deg'|'rad'} units The unit of angle desired, if applicable. This
+     * input is ignored for values that are not angle measurements.
+     */
     get(attr, units = 'rad') {
       if (units === 'deg') {
         return this._attrs[attr] * 180 / Math.PI;
@@ -183,6 +129,11 @@ var Spacekit = (function (exports) {
       return this._attrs[attr];
     }
 
+    /**
+     * @private
+     * Infers values of some ephemerides attributes if the required information
+     * is available.
+     */
     fill() {
       // Longitude/Argument of Perihelion and Long. of Ascending Node
       let w = this.get('w');
@@ -226,6 +177,13 @@ var Spacekit = (function (exports) {
     }
   }
 
+  /**
+   * A dictionary containing ephemerides of planets and other well-known objects.
+   * @example
+   * const planet1 = viz.createObject('planet1', {
+   *   ephem: EphemPresets.MERCURY,
+   * });
+   */
   const EphemPresets = {
     MERCURY: new Ephem({
       epoch: 2458426.500000000,
@@ -301,18 +259,55 @@ var Spacekit = (function (exports) {
     }, 'deg'),
   };
 
+  /**
+   * A class that builds a visual representation of a Kepler orbit.
+   * @example
+   * const orbit = new Spacekit.Orbit({
+   *   ephem: new Spacekit.Ephem({...}),
+   *   options: {
+   *     color: 0xFFFFFF,
+   *     eclipticLineColor: 0xCCCCCC,
+   *   },
+   * });
+   */
   class Orbit {
+    /**
+     * @param {Ephem} ephem The ephemerides that define this orbit.
+     * @param {Object} options
+     * @param {Object} options.color The color of the orbital ellipse.
+     * @param {Object} options.eclipticLineColor The color of lines drawn
+     * perpendicular to the ecliptic in order to illustrate depth (defaults to
+     * 0x333333).
+     */
     constructor(ephem, options) {
+      /**
+       * Ephem object
+       * @type {Ephem}
+       */
       this._ephem = ephem;
+
+      /**
+       * Options (see class definition for details)
+       */
       this._options = options || {};
 
-      // Cached orbital points.
+      /**
+       * Cached orbital points.
+       * @type {Array.<THREE.Vector3>}
+       */
       this._points = null;
 
-      // Cached ellipse.
+      /**
+       * Cached ellipse.
+       * @type {THREE.Line}
+       */
       this._ellipse = null;
     }
 
+    /**
+     * @private
+     * @return {Array.<THREE.Vector3>} List of points
+     */
     getOrbitPoints() {
       if (this._points) {
         return this._points;
@@ -351,6 +346,11 @@ var Spacekit = (function (exports) {
       return this._points;
     }
 
+    /**
+     * Get heliocentric position of object at a given JED.
+     * @param {Number} jed Date value in JED.
+     * @return {Array.<Number>} [X, Y, Z] coordinates
+     */
     getPositionAtTime(jed) {
       const pi = Math.PI;
       const sin = Math.sin;
@@ -400,6 +400,9 @@ var Spacekit = (function (exports) {
       return [X, Y, Z];
     }
 
+    /**
+     * @return {THREE.Line} The ellipse object that represents this orbit.
+     */
     getEllipse() {
       if (!this._ellipse) {
         const pointGeometry = this.getOrbitPoints();
@@ -411,6 +414,13 @@ var Spacekit = (function (exports) {
       return this._ellipse;
     }
 
+    /**
+     * A geometry containing line segments that run between the orbit ellipse and
+     * the ecliptic plane of the solar system. This is a useful visual effect
+     * that makes it easy to tell when an orbit goes below or above the ecliptic
+     * plane.
+     * @return {THREE.Geometry} A geometry with many line segments.
+     */
     getLinesToEcliptic() {
       const points = this.getOrbitPoints();
       const geometry = new THREE.Geometry();
@@ -429,15 +439,192 @@ var Spacekit = (function (exports) {
       );
     }
 
+    /**
+     * Get the color of this orbit.
+     * @return {Number} The hexadecimal color of the orbital ellipse.
+     */
     getHexColor() {
       return this._ellipse.material.color.getHex();
     }
 
+    /**
+     * @param {Number} hexVal The hexadecimal color of the orbital ellipse.
+     */
     setHexColor(hexVal) {
       return this._ellipse.material.color = new THREE.Color(hexVal);
     }
+
+    /**
+     * Get the visibility of this orbit.
+     * @return {boolean} Whether the orbital ellipse is visible. Note that
+     * although the ellipse may not be visible, it is still present in the
+     * underlying Scene and Simultation.
+     */
+    getVisibility() {
+      return this._ellipse.visible;
+    }
+
+    /**
+     * Change the visibility of this orbit.
+     * @param {boolean} val Whether to show the orbital ellipse.
+     */
+    setVisibility(val) {
+      return this._ellipse.visible = val;
+    }
   }
 
+  var julian = convert;
+  var toDate = convertToDate;
+
+  var toJulianDay_1 = toJulianDay;
+  var toMillisecondsInJulianDay_1 = toMillisecondsInJulianDay;
+  var fromJulianDayAndMilliseconds_1 = fromJulianDayAndMilliseconds;
+
+  var DAY = 86400000;
+  var HALF_DAY = DAY / 2;
+  var UNIX_EPOCH_JULIAN_DATE = 2440587.5;
+  var UNIX_EPOCH_JULIAN_DAY = 2440587;
+
+  function convert(date) {
+    return (toJulianDay(date) + (toMillisecondsInJulianDay(date) / DAY)).toFixed(6);
+  }
+  function convertToDate(julian) {
+    return new Date((Number(julian) - UNIX_EPOCH_JULIAN_DATE) * DAY);
+  }
+  function toJulianDay(date) {
+    return ~~((+date + HALF_DAY) / DAY) + UNIX_EPOCH_JULIAN_DAY;
+  }
+  function toMillisecondsInJulianDay(date) {
+    return (+date + HALF_DAY) % DAY;
+  }
+  function fromJulianDayAndMilliseconds(day, ms) {
+    return (day - UNIX_EPOCH_JULIAN_DATE) * DAY + ms;
+  }julian.toDate = toDate;
+  julian.toJulianDay = toJulianDay_1;
+  julian.toMillisecondsInJulianDay = toMillisecondsInJulianDay_1;
+  julian.fromJulianDayAndMilliseconds = fromJulianDayAndMilliseconds_1;
+
+  /**
+   * @ignore
+   */
+  const DEFAULT_TEXTURE_URL = '{{assets}}/sprites/fuzzyparticle.png';
+
+  /**
+   * Returns the complete URL to a texture given a basepath and a template url.
+   * @param {String} template URL containing optional template parameters
+   * @param {String} assetPath Base path for assets.
+   * @example
+   * getFullTextureUrl('{{assets}}/images/mysprite.png', '/path/to/assets')
+   * => '/path/to/assets/images/mysprite.png'
+   */
+  function getFullTextureUrl(template, assetPath) {
+    return (template || DEFAULT_TEXTURE_URL).replace('{{assets}}', assetPath);
+  }
+
+  /**
+   * A class that adds a skybox (technically a skysphere) to a visualization.
+   */
+  class Skybox {
+    /**
+     * @param {Object} options Options
+     * @param {String} options.textureUrl Texture to use
+     * @param {String} options.assetPath Base path to assets
+     * @param {Object} contextOrSimulation Simulation context or simulation
+     * object
+     */
+    constructor(options, contextOrSimulation) {
+      // TODO(ian): Support for actual box instead of sphere...
+      this._options = options;
+      this._id = `__skybox_${new Date().getTime()}`;
+
+      // if (contextOrSimulation instanceOf Simulation) {
+      {
+        // User passed in Simulation
+        this._simulation = contextOrSimulation;
+        this._context = contextOrSimulation.getContext();
+      }
+
+      this._mesh = null;
+
+      this.init();
+    }
+
+    /**
+     * @private
+     */
+    init() {
+      const geometry = new THREE.SphereBufferGeometry(4000);
+
+      const fullTextureUrl = getFullTextureUrl(this._options.textureUrl,
+        this._context.options.assetPath);
+      const texture = new THREE.TextureLoader().load(fullTextureUrl);
+
+      const material = new THREE.MeshBasicMaterial({
+        map: texture,
+        side: THREE.BackSide,
+      });
+
+      const sky = new THREE.Mesh(geometry, material);
+
+      // See this thread on orientation of milky way:
+      // https://www.physicsforums.com/threads/orientation-of-the-earth-sun-and-solar-system-in-the-milky-way.888643/
+      sky.rotation.x = 0;
+      sky.rotation.y = -1 / 12 * Math.PI;
+      sky.rotation.z = 8 / 5 * Math.PI;
+
+      // We're on the inside of the skybox, so invert it to correct it.
+      sky.scale.set(-1, 1, 1);
+
+      this._mesh = sky;
+
+      if (this._simulation) {
+        this._simulation.addObject(this, true /* noUpdate */);
+      }
+    }
+
+    /**
+     * A list of THREE.js objects that are used to compose the skybox.
+     * @return {THREE.Object} Skybox mesh
+     */
+    get3jsObjects() {
+      return [this._mesh];
+    }
+
+    /**
+     * Get the unique ID of this object.
+     * @return {String} id
+     */
+    getId() {
+      return this._id;
+    }
+  }
+
+  /**
+   * Preset skybox objects that you can use to add a skybox to your
+   * visualization.
+   * @example
+   * const skybox = viz.createSkybox(Spacekit.SkyboxPresets.NASA_TYCHO);
+   */
+  const SkyboxPresets = {
+    ESO_GIGAGALAXY: {
+      textureUrl: '{{assets}}/skybox/eso_milkyway.jpg',
+    },
+    NASA_TYCHO: {
+      textureUrl: '{{assets}}/skybox/nasa_tycho.jpg',
+    },
+  };
+
+  /**
+   * @private
+   * Minimum number of degrees per day an object must move in order for its
+   * position to be updated in the visualization.
+   */
+  const MIN_DEG_MOVE_PER_DAY = 0.5;
+
+  /**
+   * @private
+   * Converts (X, Y, Z) position in visualization to pixel coordinates.
+   */
   function toScreenXY(position, camera, canvas) {
     const pos = new THREE.Vector3(position[0], position[1], position[2]);
     const projScreenMat = new THREE.Matrix4();
@@ -449,37 +636,84 @@ var Spacekit = (function (exports) {
     };
   }
 
+  /**
+   * An object that can be added to a visualization.
+   * @example
+   * const myObject = viz.addObject('planet1', {
+   *   position: [0, 0, 0],
+   *   scale: [1, 1, 1],
+   *   labelText: 'My object',
+   *   hideOrbit: false,
+   *   ephem: new Spacekit.Ephem({...}),
+   *   textureUrl: '/path/to/spriteTexture.png',
+   *   assetPath: '/base/assets',
+   *   ecliptic: {
+   *     lineColor: 0xCCCCCC,
+   *     displayLines: false,
+   *   },
+   *   theme: {
+   *     color: 0xFFFFFF,
+   *   },
+   * });
+   */
   class SpaceObject {
-    constructor(id, options, contextOrContainer) {
+    /**
+     * @param {String} id Unique id of this object
+     * @param {Object} options Options container
+     * @param {Array.<Number>} options.position [X, Y, Z] heliocentric coordinates of object. Defaults to [0, 0, 0]
+     * @param {Array.<Number>} options.scale Scale of object on each [X, Y, Z] axis. Defaults to [1, 1, 1]
+     * @param {String} options.labelText Text label to display above object (set undefined for no label)
+     * @param {boolean} options.hideOrbit If true, don't show an orbital ellipse. Defaults false.
+     * @param {Ephem} options.ephem Ephemerides for this orbit
+     * @param {String} options.textureUrl Texture for sprite
+     * @param {String} options.assetPath Base path for texture urls
+     * @param {Object} options.ecliptic Contains settings related to ecliptic
+     * @param {Number} options.ecliptic.lineColor Hex color of lines that run perpendicular to ecliptic. @see Orbit
+     * @param {boolean} options.ecliptic.displayLines Whether to show ecliptic lines. Defaults false.
+     * @param {Object} options.theme Contains settings related to appearance of orbit
+     * @param {Number} options.theme.color Hex color of the orbit
+     * @param {Object} contextOrSimulation Simulation context or simulation object
+     */
+    constructor(id, options, contextOrSimulation) {
       this._id = id;
       this._options = options || {};
 
-      // if (contextOrContainer instanceOf Container) {
+      // if (contextOrSimulation instanceOf Simulation) {
       {
-        // User passed in Container
-        this._container = contextOrContainer;
-        this._context = contextOrContainer.getContext();
+        // User passed in Simulation
+        this._simulation = contextOrSimulation;
+        this._context = contextOrSimulation.getContext();
       }
 
       this._label = null;
-      this._position = options.position || [0, 0, 0];
-      this._scale = options.scale || [1, 1, 1];
+      this._position = this._options.position || [0, 0, 0];
+      this._scale = this._options.scale || [1, 1, 1];
+
+      // Number of degrees moved per day. Used to limit the number of orbit
+      // updates for very slow moving objects.
+      this._degreesPerDay = this._options.ephem ? this._options.ephem.get('n', 'deg') : Number.MAX_VALUE;
 
       if (!this.init()) {
         console.warn(`SpaceObject ${id}: failed to initialize`);
       }
     }
 
+    /**
+     * @private
+     * Initializes label and three.js objects
+     */
     init() {
       if (this._options.labelText) {
-        this.createLabel();
+        const labelElt = this.createLabel();
+        this._simulation.getSimulationElement().appendChild(labelElt);
+        this._label = labelElt;
       }
       if (this.isStaticObject()) {
         // Create a stationary sprite.
         this._object3js = this.createSprite();
-        if (this._container) {
+        if (this._simulation) {
           // Add it all to visualization.
-          this._container.addObject(this, false /* noUpdate */);
+          this._simulation.addObject(this, false /* noUpdate */);
         }
       } else {
         if (!this._options.hideOrbit) {
@@ -487,9 +721,9 @@ var Spacekit = (function (exports) {
           // according to orbit.
           this._orbit = this.createOrbit();
 
-          if (this._container) {
+          if (this._simulation) {
             // Add it all to visualization.
-            this._container.addObject(this, false /* noUpdate */);
+            this._simulation.addObject(this, false /* noUpdate */);
           }
         }
 
@@ -502,6 +736,11 @@ var Spacekit = (function (exports) {
       return true;
     }
 
+    /**
+     * @private
+     * Builds the label div and adds it to the visualization
+     * @return {HTMLElement} A div that contains the label for this object
+     */
     createLabel() {
       const text = document.createElement('div');
       text.className = 'spacekit__object-label';
@@ -517,31 +756,14 @@ var Spacekit = (function (exports) {
       text.style.padding = '0px 1px';
       text.style.border = '1px solid #5f5f5f';
 
-      this._container.getContainerElement().appendChild(text);
-      this._label = text;
+      return text;
     }
 
-    setPosition(x, y, z) {
-      this._position[0] = x;
-      this._position[1] = y;
-      this._position[2] = z;
-    }
-
-    getPosition(jed) {
-      const pos = this._position;
-      if (!this._orbit) {
-        // Default implementation, a static object.
-        return pos;
-      }
-
-      const posModified = this._orbit.getPositionAtTime(jed);
-      return [
-        pos[0] + posModified[0],
-        pos[1] + posModified[1],
-        pos[2] + posModified[2],
-      ];
-    }
-
+    /**
+     * @private
+     * Builds the sprite for this object
+     * @return {THREE.Sprite} A sprite object
+     */
     createSprite() {
       const fullTextureUrl = getFullTextureUrl(
         this._options.textureUrl,
@@ -554,7 +776,7 @@ var Spacekit = (function (exports) {
         color: 0xffffff,
       }));
       sprite.scale.set.apply(this, this._scale);
-      const position = this.getPosition(this._container.getJed());
+      const position = this.getPosition(this._simulation.getJed());
       sprite.position.set(position[0], position[1], position[2]);
 
 
@@ -578,9 +800,14 @@ var Spacekit = (function (exports) {
      */
     }
 
+    /**
+     * @private
+     * Builds the {Orbit} for this object
+     * @return {Orbit} An orbit object
+     */
     createOrbit() {
       if (this._orbit) {
-        return;
+        return this._orbit;
       }
       return new Orbit(this._options.ephem, {
         color: this.getColor(),
@@ -588,24 +815,88 @@ var Spacekit = (function (exports) {
       });
     }
 
+    /**
+     * @private
+     * Determines whether to update the position of an update. Don't update if JED
+     * threshold is less than a certain amount.
+     * TODO(ian): This should also be a function of zoom level, because as you get
+     * closer the chopiness gets more noticeable.
+     * @param {Number} afterJed Next JED
+     * @return {boolean} Whether to update
+     */
+    shouldUpdateObjectPosition(afterJed) {
+      const degMove = this._degreesPerDay * (afterJed - this._lastJedUpdated);
+      if (degMove < MIN_DEG_MOVE_PER_DAY) {
+        return false;
+      }
+      return true;
+    }
+
+    /**
+     * Updates the position of this object. Applicable only if this object is a
+     * sprite and not a particle type.
+     * @param {Number} x X position
+     * @param {Number} y Y position
+     * @param {Number} z Z position
+     */
+    setPosition(x, y, z) {
+      this._position[0] = x;
+      this._position[1] = y;
+      this._position[2] = z;
+    }
+
+    /**
+     * Gets the visualization coordinates of this object at a given time.
+     * @param {Number} jed JED date
+     * @return {Array.<Number>} [X, Y,Z] coordinates
+     */
+    getPosition(jed) {
+      const pos = this._position;
+      if (!this._orbit) {
+        // Default implementation, a static object.
+        return pos;
+      }
+
+      const posModified = this._orbit.getPositionAtTime(jed);
+      return [
+        pos[0] + posModified[0],
+        pos[1] + posModified[1],
+        pos[2] + posModified[2],
+      ];
+    }
+
+    /**
+     * Updates the object and its label positions for a given time.
+     * @param {Number} jed JED date
+     */
     update(jed) {
-      let newpos;
+      if (this.isStaticObject()) {
+        return;
+      }
+
+      let newpos = undefined;
       if (this._object3js) {
+        if (!this.shouldUpdateObjectPosition(jed)) {
+          return;
+        }
         newpos = this.getPosition(jed);
         this._object3js.position.set(newpos[0], newpos[1], newpos[2]);
       }
       if (this._label) {
+        if (!this.shouldUpdateObjectPosition(jed)) {
+          return;
+        }
         if (!newpos) {
           newpos = this.getPosition(jed);
         }
         const label = this._label;
-        const containerElt = this._container.getContainerElement();
-        const pos = toScreenXY(newpos, this._container.getCamera(), containerElt);
+        const SimulationElt = this._simulation.getSimulationElement();
+        const pos = toScreenXY(newpos, this._simulation.getCamera(), SimulationElt);
         const loc = {
           left: pos.x - 30, top: pos.y - 25, right: pos.x + label.clientWidth - 20, bottom: pos.y + label.clientHeight,
         };
-        if (loc.left > 0 && loc.right < containerElt.clientWidth &&
-            loc.top > 0 && loc.bottom < containerElt.clientHeight) {
+        if (loc.left > 0 && loc.right < SimulationElt.clientWidth
+            && loc.top > 0 && loc.bottom < SimulationElt.clientHeight) {
           label.style.left = `${loc.left}px`;
           label.style.top = `${loc.top}px`;
           label.style.visibility = 'visible';
@@ -613,8 +904,13 @@ var Spacekit = (function (exports) {
           label.style.visibility = 'hidden';
         }
       }
+      this._lastJedUpdated = jed;
     }
 
+    /**
+     * Gets the THREE.js objects that represent this SpaceObject.
+     * @return {Array.<THREE.Object>} A list of THREE.js objects
+     */
     get3jsObjects() {
       const ret = [];
       if (this._object3js) {
@@ -629,6 +925,11 @@ var Spacekit = (function (exports) {
       return ret;
     }
 
+    /**
+     * Gets the color of this object. Usually this corresponds to the color of
+     * the dot representing the object as well as its orbit.
+     * @return {Number} A hexidecimal color value, e.g. 0xFFFFFF
+     */
     getColor() {
       if (this._options.theme) {
         return this._options.theme.color || 0xffffff;
@@ -636,14 +937,27 @@ var Spacekit = (function (exports) {
       return 0xffffff;
     }
 
+    /**
+     * Gets the {Orbit} object for this SpaceObject.
+     * @return {Orbit} Orbit object
+     */
     getOrbit() {
       return this._orbit;
     }
 
+    /**
+     * Gets the unique ID of this object.
+     * @return {String} Unique ID
+     */
     getId() {
       return this._id;
     }
 
+    /**
+     * Determines whether object is static (can't change its position) or whether
+     * its position can be updated (ie, it has ephemeris)
+     * @return {boolean} Whether this object can change its position.
+     */
     isStaticObject() {
       return !this._options.ephem;
     }
@@ -651,6 +965,11 @@ var Spacekit = (function (exports) {
 
   const DEFAULT_PLANET_TEXTURE_URL = '{{assets}}/sprites/smallparticle.png';
 
+  /**
+   * Useful presets for creating SpaceObjects.
+   * @example
+   * const myobject = viz.addObject('planet1', Spacekit.SpaceObjectPresets.MERCURY);
+   */
   const SpaceObjectPresets = {
     SUN: {
       textureUrl: '{{assets}}/sprites/sunsprite.png',
@@ -714,6 +1033,9 @@ var Spacekit = (function (exports) {
     },
   };
 
+  /**
+   * @ignore
+   */
   const ORBIT_SHADER_FRAGMENT = `
     varying vec3 vColor;
     uniform sampler2D texture;
@@ -724,6 +1046,9 @@ var Spacekit = (function (exports) {
     }
 `;
 
+  /**
+   * @ignore
+   */
   const ORBIT_SHADER_VERTEX = `
     uniform float jed;
 
@@ -817,20 +1142,33 @@ var Spacekit = (function (exports) {
 
   const DEFAULT_PARTICLE_COUNT = 1024;
 
+  /**
+   * An efficient way to render many objects in space with Kepler orbits.
+   * Primarily used by Simulation to render all non-static objects.
+   * @see Simulation
+   */
   class SpaceParticles {
-    constructor(options, contextOrContainer) {
+    /**
+     * @param {Object} options Options container
+     * @param {Object} options.textureUrl Template url for sprite
+     * @param {Object} options.assetPath Base path for assets
+     * @param {Number} options.jed JED date value
+     * @param {Number} options.maxNumParticles Maximum number of particles to display. Defaults to 1024
+     * @param {Object} contextOrSimulation Simulation context or object
+     */
+    constructor(options, contextOrSimulation) {
       this._options = options;
 
       this._id = `SpaceParticles__${SpaceParticles.instanceCount}`;
 
       // TODO(ian): Add to ctx
       {
-        // User passed in Container
-        this._container = contextOrContainer;
-        this._context = contextOrContainer.getContext();
+        // User passed in Simulation
+        this._simulation = contextOrSimulation;
+        this._context = contextOrSimulation.getContext();
       }
 
-      // Whether Points object has been added to the Container/Scene. This
+      // Whether Points object has been added to the Simulation/Scene. This
       // happens lazily when the first data point is added in order to prevent
       // WebGL render warnings.
       this._addedToScene = false;
@@ -847,10 +1185,16 @@ var Spacekit = (function (exports) {
       this.init();
     }
 
+    /**
+     * @private
+     */
     init() {
       this.createParticleSystem();
     }
 
+    /**
+     * @private
+     */
     createParticleSystem() {
       const fullTextureUrl = getFullTextureUrl(
         this._options.textureUrl,
@@ -903,6 +1247,13 @@ var Spacekit = (function (exports) {
       this._particleSystem = new THREE.Points(geometry, shader);
     }
 
+    /**
+     * Add a particle to this particle system.
+     * @param {Ephem} ephem Kepler ephemeris
+     * @param {Object} options Options container
+     * @param {Number} options.particleSize Size of particles
+     * @param {Number} options.color Color of particles
+     */
     addParticle(ephem, options = {}) {
       const attributes = this._attributes;
       const offset = this._particleCount++;
@@ -931,22 +1282,34 @@ var Spacekit = (function (exports) {
       this._geometry.setDrawRange(0, this._particleCount);
       this._geometry.needsUpdate = true;
 
-      if (!this._addedToScene && this._container) {
+      if (!this._addedToScene && this._simulation) {
         // This happens lazily when the first data point is added in order to
         // prevent WebGL render warnings.
-        this._container.addObject(this);
+        this._simulation.addObject(this);
         this._addedToScene = true;
       }
     }
 
+    /**
+     * Update the position for all particles
+     * @param {Number} jed JED date
+     */
     update(jed) {
       this._uniforms.jed.value = jed;
     }
 
+    /**
+     * Get THREE.js objects that comprise this point cloud
+     * @return {Array.<THREE.Object>} List of objects to add to THREE.js scene
+     */
     get3jsObjects() {
       return [this._particleSystem];
     }
 
+    /**
+     * Get unique id for this object.
+     * @return {String} Unique id
+     */
     getId() {
       return this._id;
     }
@@ -954,11 +1317,56 @@ var Spacekit = (function (exports) {
 
   SpaceParticles.instanceCount = 0;
 
-  class Container {
-    // Wraps scene and controls and skybox in an animated container
-
-    constructor(containerElt, options) {
-      this._containerElt = containerElt;
+  /**
+   * The main entrypoint of a visualization.
+   *
+   * This class wraps a THREE.js scene, controls, skybox, etc in an animated
+   * Simulation.
+   *
+   * @example
+   * const sim = new Spacekit.Simulation('my-container', {
+   *  startDate: Date.now(),
+   *  jed: 0.0,
+   *  jedDelta: 10.0,
+   *  jedPerSecond: 100.0,  // overrides jedDelta
+   *  startPaused: false,
+   *  maxNumParticles: 2**16,
+   *  enableCameraDrift: true,
+   *  debug: {
+   *    showAxesHelper: false,
+   *    showStats: false,
+   *  },
+   * });
+   */
+  class Simulation {
+    /**
+     * @param {HTMLElement} simulationElt The container for this simulation.
+     * @param {Object} options for simulation
+     * @param {Date} options.startDate The start date and time for this
+     * simulation.
+     * @param {Number} options.jed The JED date of this simulation.
+     * Defaults to 0
+     * @param {Number} options.jedDelta The number of JED to add every tick of
+     * the simulation.
+     * @param {Number} options.jedPerSecond The number of jed to add every
+     * second. Use this instead of `jedDelta` for constant motion that does not
+     * vary with framerate. Defaults to 100
+     * @param {boolean} options.startPaused Whether the simulation should start
+     * in a paused state.
+     * @param {Number} options.maxNumParticles The maximum number of particles in
+     * the visualization. Try choosing a number that is larger than your
+     * particles, but not too much larger. It's usually good enough to choose the
+     * next highest power of 2. If you're not showing many particles (tens of
+     * thousands+), you don't need to worry about this.
+     * @param {boolean} options.enableCameraDrift Set true to have the camera
+     * float around slightly
+     * @param {Object} options.debug Options dictating debug state.
+     * @param {boolean} options.debug.showAxesHelper Show X, Y, and Z axes
+     * @param {boolean} options.debug.showStats Show FPS and other stats
+     * (requires stats.js).
+     */
+    constructor(simulationElt, options) {
+      this._simulationElt = simulationElt;
       this._options = options || {};
 
       this._jed = this._options.jed || julian.toJulianDay(this._options.startDate) || 0;
@@ -970,6 +1378,8 @@ var Spacekit = (function (exports) {
       this._scene = null;
       this._renderer = null;
 
+      this._enableCameraDrift = options.enableCameraDrift || true;
+      this._cameraDefaultPos = [0, -10, 5];
       this._camera = null;
       this._cameraControls = null;
 
@@ -985,6 +1395,9 @@ var Spacekit = (function (exports) {
       this.animate();
     }
 
+    /**
+     * @private
+     */
     init() {
       this.initRenderer();
 
@@ -993,13 +1406,22 @@ var Spacekit = (function (exports) {
 
       // Camera
       this._camera = new Camera(this.getContext()).get3jsCamera();
-      this._camera.position.set(0, -10, 5);
+      this._camera.position.set(this._cameraDefaultPos[0],
+                                this._cameraDefaultPos[1],
+                                this._cameraDefaultPos[2]);
       window.cam = this._camera;
 
       // Controls
-      this._cameraControls = new THREE.TrackballControls(this._camera, this._containerElt);
+      this._cameraControls = new THREE.TrackballControls(this._camera, this._simulationElt);
       this._cameraControls.userPanSpeed = 20;
       this._cameraControls.rotateSpeed = 2;
+
+      // Events
+      this._simulationElt.onmousedown = this._simulationElt.ontouchstart = () => {
+        // When user begins interacting with the visualization, disable camera
+        // drift.
+        this._enableCameraDrift = false;
+      };
 
       // Helper
       if (this._options.debug) {
@@ -1010,7 +1432,7 @@ var Spacekit = (function (exports) {
           this._stats = new Stats();
           this._stats.showPanel(0);
           window.sssss = this._stats;
-          this._containerElt.appendChild(this._stats.dom);
+          this._simulationElt.appendChild(this._stats.dom);
         }
       }
 
@@ -1022,6 +1444,46 @@ var Spacekit = (function (exports) {
       }, this);
     }
 
+    /**
+     * @private
+     */
+    initRenderer() {
+      const renderer = new THREE.WebGLRenderer({
+        antialias: true,
+      });
+      renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.setSize(this._simulationElt.offsetWidth, this._simulationElt.offsetHeight);
+
+      this._simulationElt.appendChild(renderer.domElement);
+
+      this._renderer = renderer;
+    }
+
+    /**
+     * @private
+     */
+    update() {
+      for (const objId in this._subscribedObjects) {
+        if (this._subscribedObjects.hasOwnProperty(objId)) {
+          this._subscribedObjects[objId].update(this._jed);
+        }
+      }
+    }
+
+    /**
+     * @private
+     */
+    doCameraDrift() {
+      // Follow floating path around
+      var timer = 0.00007 * Date.now();
+      this._camera.position.x = this._cameraDefaultPos[0] + Math.cos(timer);
+      this._camera.position.z = this._cameraDefaultPos[2] + Math.sin(timer);
+
+    }
+
+    /**
+     * @private
+     */
     animate() {
       window.requestAnimationFrame(this.animate.bind(this));
 
@@ -1042,8 +1504,15 @@ var Spacekit = (function (exports) {
         this._fps = (1 / timeDelta) || 1;
       }
 
+      // Update objects in this simulation
       this.update();
+      // Update camera drifting, if applicable
+      if (this._enableCameraDrift) {
+        this.doCameraDrift();
+      }
+      // Handle trackball movements
       this._cameraControls.update();
+      // Update three.js scene
       this._renderer.render(this._scene, this._camera);
 
       if (this.onTick) {
@@ -1055,18 +1524,13 @@ var Spacekit = (function (exports) {
       }
     }
 
-    initRenderer() {
-      const renderer = new THREE.WebGLRenderer({
-        antialias: true,
-      });
-      renderer.setPixelRatio(window.devicePixelRatio);
-      renderer.setSize(this._containerElt.offsetWidth, this._containerElt.offsetHeight);
-
-      this._containerElt.appendChild(renderer.domElement);
-
-      this._renderer = renderer;
-    }
-
+    /**
+     * Add a spacekit object (usually a SpaceObject) to the visualization.
+     * @see SpaceObject
+     * @param {Object} obj Object to add to visualization
+     * @param {boolean} noUpdate Set to true if object does not need to be
+     * animated.
+     */
     addObject(obj, noUpdate = false) {
       obj.get3jsObjects().map((x) => {
         this._scene.add(x);
@@ -1078,6 +1542,10 @@ var Spacekit = (function (exports) {
       }
     }
 
+    /**
+     * Removes an object from the visualization.
+     * @param {Object} obj Object to remove
+     */
     removeObject(obj) {
       // TODO(ian): test this and avoid memory leaks...
       obj.get3jsObjects().map((x) => {
@@ -1087,57 +1555,74 @@ var Spacekit = (function (exports) {
       delete this._subscribedObjects[obj.getId()];
     }
 
+    /**
+     * Shortcut for creating a new SpaceObject belonging to this visualization.
+     * Takes any SpaceObject arguments.
+     * @see SpaceObject
+     */
     createObject(...args) {
       return new SpaceObject(...args, this);
     }
 
-    createObjects(prefix, objects) {
-      objects.forEach((obj, idx) => {
-
-      });
-    }
-
+    /**
+     * Shortcut for creating a new Skybox belonging to this visualization. Takes
+     * any Skybox arguments.
+     * @see Skybox
+     */
     createSkybox(...args) {
       return new Skybox(...args, this);
     }
 
-    update() {
-      for (const objId in this._subscribedObjects) {
-        if (this._subscribedObjects.hasOwnProperty(objId)) {
-          this._subscribedObjects[objId].update(this._jed);
-        }
-      }
-    }
-
+    /**
+     * Start time
+     */
     start() {
       this._lastUpdatedTime = Date.now();
       this._isPaused = false;
     }
 
+    /**
+     * Stop time
+     */
     stop() {
       this._isPaused = true;
     }
 
+    /**
+     * Gets the current JED date of the simulation
+     * @return {Number} JED date
+     */
     getJed() {
       return this._jed;
     }
 
+    /**
+     * Sets the JED date of the simulation.
+     * @param {Number} val JED date
+     */
     setJed(val) {
       this._jed = val;
     }
 
+    /**
+     * Get a date object representing current date and time of the simulation.
+     * @return {Date} Date of simulation
+     */
     getDate() {
       return julian.toDate(this._jed);
     }
 
+    /**
+     * Set the date and time of the simulation.
+     * @param {Date} date Date of simulation
+     */
     setDate(date) {
       this.setJed(julian.toJulianDay(date));
     }
 
-    setJedDelta(delta) {
-      this._jedDelta = delta;
-    }
-
+    /**
+     * Get the JED per frame of the visualization.
+     */
     getJedDelta() {
       if (!this._jedDelta) {
         return this._jedPerSecond / this._fps;
@@ -1145,13 +1630,19 @@ var Spacekit = (function (exports) {
       return this._jedDelta;
     }
 
-    setJedPerSecond(x) {
-      // Delta overrides jed per second, so unset it.
-      this._jedDelta = undefined;
-
-      this._jedPerSecond = x;
+    /**
+     * Set the JED per frame of the visualization. This will override any
+     * existing "JED per second" setting.
+     * @param {Number} delta JED per frame
+     */
+    setJedDelta(delta) {
+      this._jedDelta = delta;
     }
 
+    /**
+     * Get the JED change per second of the visualization.
+     * @return {Number} JED per second
+     */
     getJedPerSecond() {
       if (this._jedDelta) {
         // Jed per second can vary
@@ -1160,6 +1651,21 @@ var Spacekit = (function (exports) {
       return this._jedPerSecond;
     }
 
+    /**
+     * Set the JED change per second of the visualization.
+     * @return {Number} x JED per second
+     */
+    setJedPerSecond(x) {
+      // Delta overrides jed per second, so unset it.
+      this._jedDelta = undefined;
+
+      this._jedPerSecond = x;
+    }
+
+    /**
+     * Get an object that contains useful context for this visualization
+     * @return {Object} Context object
+     */
     getContext() {
       return {
         options: this._options,
@@ -1167,31 +1673,47 @@ var Spacekit = (function (exports) {
           particles: this._particles,
         },
         container: {
-          width: this._containerElt.offsetWidth,
-          height: this._containerElt.offsetHeight,
+          width: this._simulationElt.offsetWidth,
+          height: this._simulationElt.offsetHeight,
         },
       };
     }
 
-    getContainerElement() {
-      return this._containerElt;
+    /**
+     * Get the element containing this simulation
+     * @return {HTMLElement} The html container of this simulation
+     */
+    getSimulationElement() {
+      return this._simulationElt;
     }
 
+    /**
+     * Get the three.js camera
+     * @return {THREE.Camera} The THREE.js camera object
+     */
     getCamera() {
       return this._camera;
     }
+
+    /**
+     * Enable or disable camera drift.
+     * @param {boolean} driftOn True if you want the camera to float around a bit
+     */
+    setCameraDrift(driftOn) {
+      this._enableCameraDrift = driftOn;
+    }
   }
 
-  exports.Container = Container;
+  exports.Camera = Camera;
   exports.Ephem = Ephem;
   exports.EphemPresets = EphemPresets;
   exports.Orbit = Orbit;
+  exports.Simulation = Simulation;
+  exports.Skybox = Skybox;
+  exports.SkyboxPresets = SkyboxPresets;
   exports.SpaceObject = SpaceObject;
   exports.SpaceObjectPresets = SpaceObjectPresets;
   exports.SpaceParticles = SpaceParticles;
-  exports.Skybox = Skybox;
-  exports.SkyboxPresets = SkyboxPresets;
-  exports.Camera = Camera;
 
   return exports;
 
