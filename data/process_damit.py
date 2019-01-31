@@ -20,6 +20,20 @@ from spaceobjects.models import SpaceObject, ShapeModel
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+def convert_shape_to_obj(inpath, outpath):
+    outlines = []
+    with open(inpath, 'r') as f:
+        count = int(f.readline().split()[0])
+        for x in xrange(count):
+            outlines.append('v %s' % (f.readline()))
+        line = f.readline()
+        while line:
+            outlines.append('f %s' % line)
+            line = f.readline()
+
+    with open(outpath, 'w') as f:
+        f.write(''.join(outlines))
+
 def process_references(f_in):
     reader = csv.DictReader(codecs.EncodedFile(f_in, 'utf8', 'utf-8-sig'), delimiter=',')
     ret = {}
@@ -70,7 +84,10 @@ def process_shapes(f_in, refs):
         ast_id = row['asteroid id']
         model_id = row['model id']
         filename = 'A%s.M%s' % (ast_id, model_id)
-        shape_path = '/data/shapefiles/damit/%s.shape.txt' % filename
+        convert_shape_to_obj('./rawdata/shapes/archive/%s.shape.txt' % filename,
+                             './rawdata/shapes/archive/%s.obj' % filename)
+        shape_path = '/data/shapefiles/damit/%s.obj' % filename
+
         render_path = '/data/shapefiles/damit/%s.shape.png' % filename
         yorp = float(row['yorp']) if row['yorp'] else None
         quality = float(row['quality flag']) if row['quality flag'] else -1
