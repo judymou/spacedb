@@ -39,6 +39,7 @@ function init3dVis() {
   });
   document.querySelectorAll('.vis-controls__faster').forEach(function(elt) {
     elt.onclick = function() {
+      viz.start();
       viz.setJedPerSecond(viz.getJedPerSecond() * 10.0);
     };
   });
