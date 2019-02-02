@@ -18,7 +18,7 @@ var Spacekit = (function (exports) {
     init() {
       const containerWidth = this._context.container.width;
       const containerHeight = this._context.container.height;
-      this._camera = new THREE.PerspectiveCamera(75, containerWidth / containerHeight, 0.1, 5000);
+      this._camera = new THREE.PerspectiveCamera(75, containerWidth / containerHeight, 0.1, 4000);
     }
 
     /**
@@ -67,7 +67,6 @@ var Spacekit = (function (exports) {
    * }, 'deg'),
    */
   class Ephem {
-
     /**
      * @param {Object} initialValues A dictionary of initial values. Not all values
      * are required as some may be inferred from others.
@@ -623,6 +622,12 @@ var Spacekit = (function (exports) {
 
   /**
    * @private
+   * Number of milliseconds between label position updates.
+   */
+  const LABEL_UPDATE_MS = 200;
+
+  /**
+   * @private
    * Converts (X, Y, Z) position in visualization to pixel coordinates.
    */
   function toScreenXY(position, camera, canvas) {
@@ -686,6 +691,8 @@ var Spacekit = (function (exports) {
       }
 
       this._label = null;
+      this._lastLabelUpdate = 0;
+
       this._position = this._options.position || [0, 0, 0];
       this._scale = this._options.scale || [1, 1, 1];
 
@@ -695,6 +702,7 @@ var Spacekit = (function (exports) {
 
       if (!this.init()) {
         console.warn(`SpaceObject ${id}: failed to initialize`);
+        return;
       }
     }
 
@@ -703,11 +711,6 @@ var Spacekit = (function (exports) {
      * Initializes label and three.js objects
      */
     init() {
-      if (this._options.labelText) {
-        const labelElt = this.createLabel();
-        this._simulation.getSimulationElement().appendChild(labelElt);
-        this._label = labelElt;
-      }
       if (this.isStaticObject()) {
         // Create a stationary sprite.
         this._object3js = this.createSprite();
@@ -733,6 +736,11 @@ var Spacekit = (function (exports) {
           color: this.getColor(),
         });
       }
+      if (this._options.labelText) {
+        const labelElt = this.createLabel();
+        this._simulation.getSimulationElement().appendChild(labelElt);
+        this._label = labelElt;
+      }
       return true;
     }
 
@@ -757,6 +765,29 @@ var Spacekit = (function (exports) {
       text.style.border = '1px solid #5f5f5f';
 
       return text;
+    }
+
+    /**
+     * @private
+     * Updates the label's position
+     * @param {Array.Number} newpos Position of the label in the visualization's
+     * coordinate system
+     */
+    updateLabelPosition(newpos) {
+      const label = this._label;
+      const simulationElt = this._simulation.getSimulationElement();
+      const pos = toScreenXY(newpos, this._simulation.getCamera(), simulationElt);
+      const loc = {
+        left: pos.x - 30, top: pos.y - 25, right: pos.x + label.clientWidth - 20, bottom: pos.y + label.clientHeight,
+      };
+      if (loc.left > 0 && loc.right < simulationElt.clientWidth
+          && loc.top > 0 && loc.bottom < simulationElt.clientHeight) {
+        label.style.left = `${loc.left}px`;
+        label.style.top = `${loc.top}px`;
+        label.style.visibility = 'visible';
+      } else {
+        label.style.visibility = 'hidden';
+      }
     }
 
     /**
@@ -874,35 +905,25 @@ var Spacekit = (function (exports) {
         return;
       }
 
-      let newpos = undefined;
-      if (this._object3js) {
-        if (!this.shouldUpdateObjectPosition(jed)) {
-          return;
-        }
+      let newpos;
+      let shouldUpdateObjectPosition = false;
+      if (this._object3js || this._label) {
+        shouldUpdateObjectPosition = this.shouldUpdateObjectPosition(jed);
+      }
+      if (this._object3js && shouldUpdateObjectPosition) {
         newpos = this.getPosition(jed);
         this._object3js.position.set(newpos[0], newpos[1], newpos[2]);
       }
-      if (this._label) {
-        if (!this.shouldUpdateObjectPosition(jed)) {
-          return;
-        }
+
+      // TODO(ian): Determine this based on orbit and camera position change.
+      const shouldUpdateLabelPos = +new Date() - this._lastLabelUpdate > LABEL_UPDATE_MS;
+      if (this._label && shouldUpdateLabelPos) {
+        console.log('update');
         if (!newpos) {
           newpos = this.getPosition(jed);
         }
-        const label = this._label;
-        const SimulationElt = this._simulation.getSimulationElement();
-        const pos = toScreenXY(newpos, this._simulation.getCamera(), SimulationElt);
-        const loc = {
-          left: pos.x - 30, top: pos.y - 25, right: pos.x + label.clientWidth - 20, bottom: pos.y + label.clientHeight,
-        };
-        if (loc.left > 0 && loc.right < SimulationElt.clientWidth
-            && loc.top > 0 && loc.bottom < SimulationElt.clientHeight) {
-          label.style.left = `${loc.left}px`;
-          label.style.top = `${loc.top}px`;
-          label.style.visibility = 'visible';
-        } else {
-          label.style.visibility = 'hidden';
-        }
+        this.updateLabelPosition(newpos);
+        this._lastLabelUpdate = +new Date();
       }
       this._lastJedUpdated = jed;
     }
@@ -1410,8 +1431,8 @@ var Spacekit = (function (exports) {
       // Camera
       this._camera = new Camera(this.getContext()).get3jsCamera();
       this._camera.position.set(this._cameraDefaultPos[0],
-                                this._cameraDefaultPos[1],
-                                this._cameraDefaultPos[2]);
+        this._cameraDefaultPos[1],
+        this._cameraDefaultPos[2]);
       window.cam = this._camera;
 
       // Controls
@@ -1477,11 +1498,10 @@ var Spacekit = (function (exports) {
      */
     doCameraDrift() {
       // Follow floating path around
-      var timer = 0.0001 * Date.now();
+      const timer = 0.0001 * Date.now();
       const pos = this._cameraDefaultPos;
-      this._camera.position.x = pos[0] + pos[0] * (Math.cos(timer) + 1)/3;
-      this._camera.position.z = pos[2] + pos[2] * (Math.sin(timer) + 1)/3;
-
+      this._camera.position.x = pos[0] + pos[0] * (Math.cos(timer) + 1) / 3;
+      this._camera.position.z = pos[2] + pos[2] * (Math.sin(timer) + 1) / 3;
     }
 
     /**
@@ -1640,13 +1660,13 @@ var Spacekit = (function (exports) {
       boundingBox.getSize(size);
 
       // Get the max side of the bounding box (fits to width OR height as needed)
-      const maxDim = Math.max( size.x, size.y, size.z );
-      const fov = camera.fov * ( Math.PI / 180 );
+      const maxDim = Math.max(size.x, size.y, size.z);
+      const fov = camera.fov * (Math.PI / 180);
       const cameraZ = Math.abs(maxDim / 2 * Math.tan(fov * 2)) * offset;
 
       const objectWorldPosition = new THREE.Vector3();
       obj.getWorldPosition(objectWorldPosition);
-      const directionVector = camera.position.sub(objectWorldPosition); 	//Get vector from camera to object
+      const directionVector = camera.position.sub(objectWorldPosition); 	// Get vector from camera to object
       const unitDirectionVector = directionVector.normalize(); // Convert to unit vector
 
       const newpos = unitDirectionVector.multiplyScalar(cameraZ);
@@ -1755,6 +1775,7 @@ var Spacekit = (function (exports) {
         options: this._options,
         objects: {
           particles: this._particles,
+          camera: this._camera,
         },
         container: {
           width: this._simulationElt.offsetWidth,
