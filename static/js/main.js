@@ -26,10 +26,15 @@ function init3dVis() {
   window.vizcontainer = viz;
 
   window.spaceobjects = {};
-  window.OBJECT_DEFINITIONS.forEach(function(objDef) {
+  window.OBJECT_DEFINITIONS.forEach(function(objDef, idx) {
     const spaceobject = viz.createObject('spaceobject', Object.assign(window.VIZ_OBJECT_OPTS, {
       ephem: new Spacekit.Ephem(objDef.ephem, 'deg'),
     }));
+
+    if (idx === 0) {
+      viz.zoomToFit(spaceobject);
+    }
+
     window.spaceobjects[objDef.slug] = spaceobject;
   });
 
