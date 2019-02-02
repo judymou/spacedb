@@ -1,5 +1,7 @@
 import gc
 
+from spaceobjects.models import ObjectType
+
 def get_normalized_full_name(raw):
     fullname = raw.strip()
     if fullname[0] == '(' and fullname[-1] == ')':
@@ -20,3 +22,4 @@ def queryset_iterator(qs, batchsize = 500, gc_collect = True):
             yield obj
         if gc_collect:
             gc.collect()
+

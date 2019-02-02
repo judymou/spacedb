@@ -2,6 +2,8 @@
 Helpers for building an asteroid description.
 '''
 
+COMET_CLASSES = set(['COM', 'CTc', 'ETc', 'HTC', 'HYP', 'JFc', 'JFC', 'PAR'])
+
 def get_diameter_comparison(roid):
     diameter = roid.get_diameter_estimate()
     if not diameter:

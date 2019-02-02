@@ -19,7 +19,7 @@ sys.path.insert(0, os.path.realpath(parent_dir))
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'spacedb.settings_pipeline')
 django.setup()
 
-from spaceobjects.models import SpaceObject, OrbitClass
+from spaceobjects.models import SpaceObject, OrbitClass, ObjectType
 from data.util import get_normalized_full_name, queryset_iterator
 
 logging.basicConfig(level=logging.INFO)
@@ -66,6 +66,7 @@ def process(reader):
                 is_neo = True if row['neo'] == 'Y' else False,
                 is_pha = True if row['pha'] == 'Y' else False,
                 orbit_class = OrbitClass.objects.get(abbrev__iexact=row['class']),
+                object_type = ObjectType.from_class(row['class']),
                 diameter = float(row['diameter'].decode('utf-8')) if row['diameter'] else None,
                 spec_B = row['spec_B'],
                 spec_T = row['spec_T'],

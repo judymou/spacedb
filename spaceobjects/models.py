@@ -3,12 +3,23 @@ from __future__ import unicode_literals
 
 import math
 from datetime import datetime
+from enum import Enum
 
 from django.db import models
 from django.contrib import admin
 from jsonfield import JSONField
 
-from spaceobjects.description import get_diameter_comparison, get_composition
+from spaceobjects.description import get_diameter_comparison, get_composition, COMET_CLASSES
+
+class ObjectType(Enum):
+    ASTEROID = 'ASTEROID'
+    COMET = 'COMET'
+
+    @classmethod
+    def from_class(self, classname):
+        if classname in COMET_CLASSES:
+            return self.COMET
+        return self.ASTEROID
 
 class OrbitClass(models.Model):
     name = models.CharField(max_length=200)
@@ -33,6 +44,8 @@ class SpaceObject(models.Model):
     slug = models.CharField(max_length=200)
 
     orbit_class = models.ForeignKey(OrbitClass)
+    object_type = models.CharField(max_length = 20,
+            choices=[(tag, tag.value) for tag in ObjectType])
 
     # Basic orbital elements
     a = models.FloatField()
@@ -209,6 +222,8 @@ class SpaceObject(models.Model):
         indexes = [
             models.Index(fields=['fullname']),
             models.Index(fields=['slug']),
+            models.Index(fields=['orbit_class']),
+            models.Index(fields=['object_type']),
         ]
 
 class CloseApproach(models.Model):
