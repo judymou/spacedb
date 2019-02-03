@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 import json
+from datetime import date
 from random import randint
 
 from django.core.exceptions import ObjectDoesNotExist
@@ -25,7 +26,8 @@ def index(request):
 
     close_approaches = []
     seen_approaches = set()
-    for event in CloseApproach.objects.order_by('date')[:25]:
+    for event in CloseApproach.objects.filter(date__gte=date.today()) \
+                                      .order_by('date')[:25]:
         if event.space_object.fullname in seen_approaches:
             continue
         close_approaches.append(event)
