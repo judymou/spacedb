@@ -41,7 +41,7 @@ def process(reader):
 
         if count % 30000 == 0:
             # Subdivide insertions - slower, but needed for low memory
-            # environments
+            # environments like production machine
             logger.info('Inserting...')
             insert_all(newobjects, delete=(not inserted_once))
             inserted_once = True

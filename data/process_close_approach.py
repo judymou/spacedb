@@ -23,12 +23,28 @@ from data.util import get_normalized_full_name
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+@transaction.atomic
+def insert_all(newobjects, delete=False):
+    if delete:
+        CloseApproach.objects.all().only('pk').delete()
+    CloseApproach.objects.bulk_create(newobjects, batch_size=499)
+
 def process(fields, data):
     CloseApproach.objects.all().delete()
     newobjects = []
+    inserted_once = False
     for count, row in enumerate(data, 1):
         if count % 100 == 0:
             logger.info(count)
+
+        if count % 20000 == 0:
+            # Subdivide insertions - slower, but needed for low memory
+            # environments like production machine
+            logger.info('Inserting...')
+            insert_all(newobjects, delete=(not inserted_once))
+            inserted_once = True
+            newobjects = []
+
         ca_raw = dict(zip(fields, row))
         fullname = get_normalized_full_name(ca_raw['fullname'])
 
@@ -50,7 +66,10 @@ def process(fields, data):
         except SpaceObject.DoesNotExist:
             logger.error('Cannot find space object %s' % fullname)
 
-    CloseApproach.objects.bulk_create(newobjects)
+    logger.info('Inserting final records...')
+    insert_all(newobjects, delete=(not inserted_once))
+
+    logger.info('Done.')
 
 
 if __name__ == '__main__':
