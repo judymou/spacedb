@@ -1,0 +1,104 @@
+{% extends 'layout.html' %}
+{% load humanize %}
+{% load static %}
+
+{% block title%}{{object.name}} Shape Model | Space Reference{% endblock %}
+
+{% block scripts %}
+<script>
+window.SHAPE_PATH = "{% static shape_models.0.shape_path %}";
+</script>
+<script src="{% static "js/lib/three.r98.min.js" %}"></script>
+<script src="{% static "js/lib/TrackballControls.js" %}"></script>
+<script src="{% static "js/lib/OBJLoader.js" %}"></script>
+<script src="{% static "js/lib/spacekit.js" %}"></script>
+<script src="{% static "js/shape.js" %}"></script>
+{% endblock %}
+
+{% block header %}
+<header class="site-header">
+  <div class="topnav">
+    <strong><a href="/" class="nav-link">Space Reference</a></strong>
+  </div>
+  <h1 class="mainheading">{{object.name}} Shape Model</h1>
+  <h2 class="subheading">
+    {% if object.fullname == object.name %}
+      {{object.get_size_adjective|capfirst}} {{object.orbit_class.name}}
+    {% else %}
+      {{object.fullname}}
+    {% endif %}
+    {% if object.is_neo %}
+      &nbsp;
+      <span class="label label-info">Near-Earth</span>
+    {% endif %}
+    {% if object.is_pha %}
+      <span class="label label-warning">Potentially Hazardous</span>
+    {% endif %}
+  </h2>
+  <div class="orbit-diagram"></div>
+</header>
+{% endblock %}
+
+{% block content %}
+<div>
+  <div class="item-container col-sm-4">
+    <p>
+      <a href="/asteroid/{{object.slug}}">&laquo; Back to {{object.name}}</a>
+    </p>
+    <p>
+      <h3>Orbital Elements</h3>
+      <ul class="keyfacts">
+        <li>Epoch: {{object.epoch}} JD</li>
+        <li>Semi-major axis: {{object.a}}</li>
+        <li>Eccentricity: {{object.e}}</li>
+        <li>Inclination: {{object.i}}</li>
+        <li>Longitude of Ascending Node: {{object.om}}</li>
+        <li>Argument of Periapsis: {{object.w}}</li>
+        <li>Mean Anomaly: {{object.ma}}</li>
+      </ul>
+    </p>
+    <p>
+      <h3>Physical Characteristics</h3>
+      <ul class="keyfacts">
+        {% if object.sbdb_entry.diameter %}
+          <li>Diameter: {{object.sbdb_entry.diameter | floatformat:5}} km</li>
+        {% elif object.get_diameter_estimate %}
+          <li>Diameter: ~{{object.get_diameter_estimate | floatformat:2}} km</li>
+        {% endif %}
+        {% if object.H %}
+          <li>Magnitude: {{object.sbdb_entry.H}}</li>
+        {% endif %}
+        {% if object.sbdb_entry.albedo %}
+          <li>Albedo: {{object.sbdb_entry.albedo}}</li>
+        {% endif %}
+        {% if object.sbdb_entry.spec_T %}
+          <li>Spectral type (Tholen): {{object.spec_T}}</li>
+        {% endif %}
+        {% if object.sbdb_entry.spec_B %}
+          <li>Spectral type (SMASS): {{object.spec_B}}</li>
+        {% endif %}
+      </ul>
+    </p>
+    <p>
+      <h3>Shape Model Characteristics</h3>
+      At {{shape_models.0.jd}} JD:
+      <ul class="keyfacts">
+        <li>Spin period in hours: {{shape_models.0.period_hr}}</li>
+        <li>Spin latitude: {{shape_models.0.spin_latitude}}</li>
+        <li>Spin longitude: {{shape_models.0.spin_longitude}}</li>
+        <li>Spin angle: {{shape_models.0.spin_angle}}</li>
+        <li>Quality level: {{shape_models.0.quality}}</li>
+      </ul>
+    </p>
+    <p>
+      This shape model of {{object.get_object_type}} {{object.name}} is provided by the <a href="http://astro.troja.mff.cuni.cz/projects/asteroids3D/web.php">DAMIT database</a> from The Astronomical Institute of the Charles University in Prague, Czechia.
+    </p>
+    <p>
+      Its rotation and spin angle are set to a constant for the purpose of this visualization and do not reflect.
+    </p>
+  </div>
+  <div class="item-container col-sm-8">
+    <div id="shape-container"></div>
+  </div>
+</div>
+{% endblock %}

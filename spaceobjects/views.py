@@ -61,6 +61,19 @@ def detail(request, slug):
                 'shape_models': shape_models,
             })
 
+def detail_shape(request, slug):
+    try:
+        space_object = SpaceObject.objects.get(slug=slug)
+    except SpaceObject.DoesNotExist:
+        return index(request)
+
+    shape_models = space_object.shapemodel_set.all().order_by('-quality')
+
+    return render(request, 'spaceobjects/shape_model.html', {
+                'object': space_object,
+                'shape_models': shape_models,
+            })
+
 def category(request, category):
     try:
         orbit_class = OrbitClass.objects.get(slug=category)

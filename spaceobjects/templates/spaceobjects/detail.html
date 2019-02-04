@@ -236,7 +236,14 @@ const t = setInterval(function() {
         <p>
           The renderings below were generated from inverted radar mappings of asteroids.
         </p>
-        <img class="img-responsive" src="{% static shape_models.0.render_path %}" />
+        <p>
+          <a href="/asteroid/{{object.slug}}/shape"><img class="img-responsive" src="{% static shape_models.0.render_path %}" /></a>
+        </p>
+        <p>
+          This object was mapped by radar and scientists have been able to determine its shape.
+          <br>
+          <strong>View <a href="/asteroid/{{object.slug}}/shape">{{object.get_object_type}} {{object.name}} in 3D</a>.</strong>
+        </p>
       {% endif %}
       <h3>Accessibility and Exploration</h3>
       {% if object.nhatsobject_set.all|length %}
