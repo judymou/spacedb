@@ -6,6 +6,7 @@ from datetime import date
 from random import randint
 
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Count
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
 from spaceobjects.models import SpaceObject, SentryEvent, CloseApproach, NhatsObject, OrbitClass, ObjectType
@@ -82,6 +83,8 @@ def category(request, category):
     elif category == 'comets':
         # All comets
         objects = SpaceObject.objects.filter(object_type=ObjectType.COMET)
+    elif category == 'asteroid-shapes':
+        objects = SpaceObject.objects.annotate(num_shapes=Count('shapemodel')).filter(num_shapes__gt=0)
     else:
         try:
             orbit_class = OrbitClass.objects.get(slug=category)
