@@ -18,5 +18,5 @@
       enableRotation: true,
     },
   });
-  //viz.zoomToFit(obj);
+  viz.zoomToFit(obj, 5 /* offset */);
 })();
