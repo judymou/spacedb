@@ -4,8 +4,8 @@
   pk: 1
   fields:
     abbrev: COM
-    name: Comet
-    slug: comet
+    name: Unclassified Comet
+    slug: unclassified-comet
     desc: Comets whose orbits do not match any defined orbit class
     orbit_sentence: whose orbit does not match any defined comet orbit class
 

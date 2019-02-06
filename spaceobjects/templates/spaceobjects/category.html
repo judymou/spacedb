@@ -74,20 +74,19 @@ init3dVis();
 
 {% block content %}
 <div>
-  <!--
-  <div class="item-container item-container__rightside col-sm-12">
+  <div class="item-container col-sm-12">
+    {% if orbit_class %}
+      <h1 class="mainheading">{{orbit_class.name}}s</h1>
+      {{orbit_class.name}}s ({{orbit_class.abbrev}}) are objects {{orbit_class.orbit_sentence}}.  There are {{count|intcomma}} {{orbit_class.name|capfirst}}s in this database out of {{total_count|intcomma}} total, accounting for {{population_pct|floatformat:1}}% of objects.
+    {% else %}
+      There are {{count|intcomma}} objects in this database of type XX out of {{total_count|intcomma}} total, accounting for {{population_pct|floatformat:1}}% of objects.
+    {% endif %}
+  </div>
+  <div class="item-container col-sm-4">
     <div class="item-container__inner">
       <h3>Search</h3>
       <div class="react-search"></div>
-      &nbsp;&nbsp; or view a <a rel="nofollow" href="/asteroid/random">random</a> object
     </div>
-  </div>
-  -->
-  <div class="item-container col-sm-12">
-    <h1 class="mainheading">{{orbit_class.name}}s</h1>
-    {{orbit_class.name}}s ({{orbit_class.abbrev}}) are objects {{orbit_class.orbit_sentence}}.  There are {{count|intcomma}} {{orbit_class.name|capfirst}}s in this database out of {{total_count|intcomma}} total, accounting for {{population_pct|floatformat:1}}% of objects.
-  </div>
-  <div class="item-container col-sm-4">
     <div class="item-container__inner tile-list">
       {% for object in objects %}
         <div class="tile" data-slug="{{object.slug}}" onmouseover="if (typeof selectOrbit !== 'undefined') selectOrbit(this)"
@@ -122,7 +121,7 @@ init3dVis();
           <button class="vis-controls__set-date">Set Date</button>
           <span class="vis-status"></span>
         </div>
-        <div id="orbit-sim" class="vis-container vis-container__detail"></div>
+        <div id="orbit-sim" class="vis-container vis-container__category"></div>
       </div>
     </div>
   </div>

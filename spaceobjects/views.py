@@ -8,7 +8,7 @@ from random import randint
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
-from spaceobjects.models import SpaceObject, SentryEvent, CloseApproach, NhatsObject, OrbitClass
+from spaceobjects.models import SpaceObject, SentryEvent, CloseApproach, NhatsObject, OrbitClass, ObjectType
 
 def index(request):
     # TODO(ian): order by pdes
@@ -75,12 +75,22 @@ def detail_shape(request, slug):
             })
 
 def category(request, category):
-    try:
-        orbit_class = OrbitClass.objects.get(slug=category)
-    except ObjectDoesNotExist:
-        return HttpResponse('unknown category')
+    orbit_class = None
+    if category == 'asteroids':
+        # All asteroids
+        objects = SpaceObject.objects.filter(object_type=ObjectType.ASTEROID)
+    elif category == 'comets':
+        # All comets
+        objects = SpaceObject.objects.filter(object_type=ObjectType.COMET)
+    else:
+        try:
+            orbit_class = OrbitClass.objects.get(slug=category)
+        except ObjectDoesNotExist:
+            return HttpResponse('unknown category')
 
-    count = SpaceObject.objects.filter(orbit_class=orbit_class).count()
+        objects = SpaceObject.objects.filter(orbit_class=orbit_class)
+
+    count = objects.count()
     total_count = SpaceObject.objects.all().count()
     population_pct = count / float(total_count) * 100.0
     return render(request, 'spaceobjects/category.html', {
@@ -88,7 +98,7 @@ def category(request, category):
                 'count': count,
                 'total_count': total_count,
                 'population_pct': population_pct,
-                'objects': SpaceObject.objects.filter(orbit_class=orbit_class)[:20],
+                'objects': objects[:20],
             })
 
 def solar_system(request):

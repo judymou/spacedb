@@ -136,18 +136,21 @@ ul.keyfacts li {
 .vis-container {
   position: relative;
   background-color: #000;
+  width: 100%;
 }
 
 .vis-container__home {
-  width: 100%;
   height: 300px;
   margin-top: 1em;
   margin-bottom: 1em;
 }
 
 .vis-container__detail {
-  width: 100%;
   height: 500px;
+}
+
+.vis-container__category {
+  height: 650px;
 }
 
 .vis-selector-container {
