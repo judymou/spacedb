@@ -85,6 +85,12 @@ def category(request, category):
         objects = SpaceObject.objects.filter(object_type=ObjectType.COMET)
     elif category == 'asteroid-shapes':
         objects = SpaceObject.objects.annotate(num_shapes=Count('shapemodel')).filter(num_shapes__gt=0)
+    elif cateogry == 'near-earth-asteroids':
+        objects = SpaceObject.objects.filter(is_neo=True)
+    elif cateogry == 'potentially-hazardous-asteroids':
+        objects = SpaceObject.objects.filter(is_pha=True)
+    elif category.startswith('asteroid-type-'):
+        pass
     else:
         try:
             orbit_class = OrbitClass.objects.get(slug=category)
