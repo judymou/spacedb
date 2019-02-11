@@ -19,6 +19,7 @@
 window.OBJECT_DEFINITIONS = [
 {% for object in objects %}
 {
+  name: "{{object.name}}",
   slug: "{{object.slug}}",
   ephem : {
     a: {{object.a}},
