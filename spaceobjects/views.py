@@ -118,6 +118,15 @@ def search(request):
     matches = SpaceObject.objects.filter(fullname__icontains=search_str)
     return JsonResponse({'results': [roid.to_search_result() for roid in matches[:10]]})
 
+def get_objects(request):
+    search_term = request.GET.get('q').split(',');
+
+    results = [];
+    for search_str in search_term:
+      space_object = SpaceObject.objects.get(slug=search_str);
+      results.append(space_object.to_search_result());
+    return JsonResponse({'results': results})
+
 def random(request):
     count = SpaceObject.objects.all().count()
     random_index = randint(0, count - 1)

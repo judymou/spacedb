@@ -9,5 +9,6 @@ urlpatterns = [
   url('^category/(?P<category>[^/]+)$', views.category, name='category'),
   url('^solar-system$', views.solar_system, name='solar_system'),
   url('^api/asteroids$', views.search, name='search'),
+  url('^api/get-objects$', views.get_objects, name='get_objects'),
   url('^$', views.index, name='index'),
 ]

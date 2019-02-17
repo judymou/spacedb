@@ -35,6 +35,25 @@ class SearchAndVisualize extends React.Component {
     };
   }
 
+  componentDidMount() {
+    if (!location.hash) {
+      return;
+    }
+    var slugs = location.hash.split('ob=')[1].split('&')[0];
+    fetch(`/api/get-objects?q=${slugs}`).then(resp => {
+      return resp.json()
+    }).then(respJson => {
+      respJson.results.map(result => {
+        this.handleChange({
+          label: result.fullname,
+          vizLabel: result.name,
+          value: result.slug,
+          ephem: result.ephem,
+        });
+      });
+    });
+  }
+
   handleChange(inputValue) {
     if (window.vizcontainer) {
       window.vizcontainer.createObject(`spaceobject${this.state.selectedObjects.length}`, Object.assign(window.VIZ_OBJECT_OPTS, {
@@ -43,14 +62,21 @@ class SearchAndVisualize extends React.Component {
         labelText: inputValue.vizLabel,
       }));
     }
-    this.state.selectedObjects.push(
-      <div className="tile">
-        <a target="_blank" href={`/asteroid/${inputValue.value}`}>
-          <h5>{inputValue.label}</h5>
-        </a>
-      </div>
-    );
-    this.setState({selectedObjects: this.state.selectedObjects});
+    this.setState(prevState => ({ selectedObjects: [...prevState.selectedObjects, inputValue] }), () => {
+      window.location.hash = '#ob=' + this.state.selectedObjects.map(object => object.value).join(',');
+    });
+  }
+
+  getObjectList() {
+    return this.state.selectedObjects.map(object => {
+      return (
+        <div className="tile" key={`selectedObject-${object.value}`}>
+          <a target="_blank" href={`/asteroid/${object.value}`}>
+            <h5>{object.label}</h5>
+          </a>
+        </div>
+      );
+    });
   }
 
   render() {
@@ -101,7 +127,7 @@ class SearchAndVisualize extends React.Component {
         />
         {this.state.selectedObjects.length > 0 ? (
           <div className="item-container tile-list">
-            {this.state.selectedObjects}
+            {this.getObjectList()}
           </div>
         ): null}
       </div>
