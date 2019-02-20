@@ -27,7 +27,7 @@ function init3dVis() {
 
   window.spaceobjects = {};
   window.OBJECT_DEFINITIONS.forEach(function(objDef, idx) {
-    const spaceobject = viz.createObject('spaceobject', Object.assign(window.VIZ_OBJECT_OPTS, {
+    const spaceobject = viz.createObject(`spaceobject${idx}`, Object.assign(window.VIZ_OBJECT_OPTS, {
       ephem: new Spacekit.Ephem(objDef.ephem, 'deg'),
       labelText: objDef.name,
     }));
