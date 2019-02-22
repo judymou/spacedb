@@ -42,13 +42,13 @@ function init3dVis() {
   // Controls
   document.querySelectorAll('.vis-controls__slower').forEach(function(elt) {
     elt.onclick = function() {
-      viz.setJedPerSecond(viz.getJedPerSecond() * 0.1);
+      viz.setJdPerSecond(viz.getJdPerSecond() * 0.1);
     };
   });
   document.querySelectorAll('.vis-controls__faster').forEach(function(elt) {
     elt.onclick = function() {
       viz.start();
-      viz.setJedPerSecond(viz.getJedPerSecond() * 10.0);
+      viz.setJdPerSecond(viz.getJdPerSecond() * 10.0);
     };
   });
   document.querySelectorAll('.vis-controls__set-date').forEach(function(elt) {
