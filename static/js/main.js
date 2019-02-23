@@ -34,7 +34,7 @@ function init3dVis() {
     }));
 
     if (idx === 0) {
-      viz.zoomToFit(spaceobject);
+      viz.zoomToFit(spaceobject, 0.5);
     }
 
     window.spaceobjects[objDef.slug] = spaceobject;
