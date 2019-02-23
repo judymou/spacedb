@@ -65,3 +65,16 @@ function init3dVis() {
     });
   };
 }
+
+function initReferenceTables() {
+  document.querySelectorAll('.reference-table-gradient').forEach(function(elt) {
+    elt.onclick = function() {
+      // Hide gradient
+      elt.style.display = 'none';
+
+      // Show full table
+      elt.parentElement.children[0].style.overflow = 'visible';
+      elt.parentElement.children[0].style.maxHeight = 'none';
+    };
+  });
+}

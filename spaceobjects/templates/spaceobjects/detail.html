@@ -68,6 +68,7 @@ onPageReadyHandlers.push(() => {
 });
 
 onPageReadyHandlers.push(init3dVis);
+onPageReadyHandlers.push(initReferenceTables);
 
 function initMap() {
   onPageReadyHandlers.push(() => {
@@ -210,22 +211,66 @@ const t = setInterval(function() {
         <p>
           {{object.get_shorthand}} has {{object.closeapproach_set.all|length}} close approaches predicted in the coming decades:
         </p>
-        <ul>
-        {% for close_approach in object.closeapproach_set.all|dictsort:"date" %}
-          <li>On {{close_approach.date | date}}, {{object.get_shorthand}} will pass {{close_approach.get_dist_km|floatformat:0|intcomma}} kilometers from Earth, traveling at {{close_approach.v_rel|floatformat:3}} kilometers per second.</li>
-        {% endfor %}
-        </ul>
+        <div class="reference-table">
+          <div class="reference-table-content">
+            <table class="table table-striped table-hover table-condensed">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Distance from Earth (km)</th>
+                  <th>Velocity (km/s)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for close_approach in object.closeapproach_set.all|dictsort:"date" %}
+                  <tr>
+                    <td>{{close_approach.date | date}}</td>
+                    <td>{{close_approach.get_dist_km|floatformat:0|intcomma}}</td>
+                    <td>{{close_approach.v_rel|floatformat:3}}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% if object.closeapproach_set.all|length > 10 %}
+            <div class="reference-table-gradient"></div>
+          {% endif %}
+        </div>
       {% endif %}
       {% if sentry_events %}
         <p>
           <a href="https://cneos.jpl.nasa.gov/sentry/details.html#?des={{object.sbdb_entry.pdes}}">NASA Sentry</a> has assessed impact risk for {{sentry_events|length}} very close approach scenarios.  Here are the top scenarios ordered by probability of impact:
           <ul>
-          {% for event in sentry_events|slice:":5" %}
-            <li>
-              On {{event.date|date}}, {{object.get_shorthand}} is predicted to pass Earth at a distance of about {{event.dist_km|floatformat:2|intcomma}} (±{{event.dist_err|floatformat:2|intcomma}}) kilometers.  Its probability of impact is {{event.get_prob_percentage|floatformat:5}}%.  Its impact would release {{event.get_energy_with_units}} of energy.
-            </li>
-          {% endfor %}
           </ul>
+          <div class="reference-table">
+            <div class="reference-table-content">
+              <table class="table table-striped table-hover table-condensed">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Distance from Earth (km)</th>
+                    <th>Distance Error (km)</th>
+                    <th>Probability of Imapct (%)</th>
+                    <th>Impact Energy (Mt)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for event in sentry_events %}
+                    <tr>
+                      <td>{{event.date|date}}</td>
+                      <td>{{event.dist_km|floatformat:2|intcomma}}</td>
+                      <td>±{{event.dist_err|floatformat:2|intcomma}}</td>
+                      <td>{{event.get_prob_percentage|floatformat:5}}</td>
+                      <td>{{event.energy_mt}}</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+            {% if sentry_events|length > 10 %}
+              <div class="reference-table-gradient"></div>
+            {% endif %}
+          </div>
         </p>
       {% endif %}
       </p>
