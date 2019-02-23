@@ -1,8 +1,8 @@
 function init3dVis() {
   // Create the visualization and put it in our div.
   const viz = new Spacekit.Simulation(document.querySelector('.vis-container'), Object.assign({
-    //assetPath: 'http://localhost:8001/src/assets',
-    assetPath: '/static/spacekit',
+    //basePath: 'http://localhost:8001/src',
+    basePath: '/static/spacekit',
     startDate: Date.now(),
   }, window.VIZ_SIMULATION_OPTS));
 
