@@ -7,7 +7,7 @@ from random import randint
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Count
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, HttpResponseNotFound
 from django.shortcuts import render, redirect
 from spaceobjects.models import SpaceObject, SentryEvent, CloseApproach, NhatsObject, OrbitClass, ObjectType
 
@@ -51,7 +51,7 @@ def detail(request, slug):
     try:
         space_object = SpaceObject.objects.get(slug=slug)
     except SpaceObject.DoesNotExist:
-        return index(request)
+        return HttpResponseNotFound('Could not find object "%s"' % slug)
 
     sentry_events = space_object.sentryevent_set.all().order_by('-prob')
     shape_models = space_object.shapemodel_set.all().order_by('-quality')
@@ -66,7 +66,7 @@ def detail_shape(request, slug):
     try:
         space_object = SpaceObject.objects.get(slug=slug)
     except SpaceObject.DoesNotExist:
-        return index(request)
+        return HttpResponseNotFound('Could not find object "%s"' % slug)
 
     shape_models = space_object.shapemodel_set.all().order_by('-quality')
 
@@ -95,7 +95,7 @@ def category(request, category):
         try:
             orbit_class = OrbitClass.objects.get(slug=category)
         except ObjectDoesNotExist:
-            return HttpResponse('unknown category')
+            return HttpResponseNotFound('Unknown category "%s"' % category)
 
         objects = SpaceObject.objects.filter(orbit_class=orbit_class)
 
