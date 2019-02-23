@@ -101,7 +101,7 @@ const t = setInterval(function() {
     {% else %}
       {{object.fullname}}
     {% endif %}
-    {% if object.is_neo %}
+    {% if object.is_nea %}
       &nbsp;
       <span class="label label-info">Near-Earth</span>
     {% endif %}
@@ -130,7 +130,7 @@ const t = setInterval(function() {
             <li>Will pass within {{approach.get_dist_km|floatformat:0|intcomma}} km of Earth in {{approach.date|date:"Y"}}</li>
           {% endwith %}
         {% endif %}
-        {% if object.is_neo %}
+        {% if object.is_nea %}
         <li>Classified as a Near Earth Asteroid (NEA)</li>
         {% else %}
         <li>Not a Near Earth Asteroid (NEA)</li>
@@ -145,11 +145,11 @@ const t = setInterval(function() {
       <h3>Overview</h3>
       <p>
       {{object.name}} is a {{object.get_size_adjective}} {{object.get_object_type}} {{object.get_orbit_desc}}.  NASA JPL has
-      {% if object.is_pha and object.is_neo %}
+      {% if object.is_pha and object.is_nea %}
         classified {{object.get_shorthand}} as a "Potentially Hazardous Asteroid" due to its predicted close pass(es) with Earth.
-      {% elif not object.is_pha and object.is_neo %}
+      {% elif not object.is_pha and object.is_nea %}
         classified {{object.get_shorthand}} as a "Near Earth Asteroid" due to its orbit's proximity to Earth, but it is not considered potentially hazardous because computer simulations have not indicated any imminent likelihood of collision.
-      {% elif not object.is_pha and not object.is_neo %}
+      {% elif not object.is_pha and not object.is_nea %}
         not classified {{object.get_shorthand}} as potentially hazardous because its orbit does not bring it close to Earth.
       {% endif %}
       </p>

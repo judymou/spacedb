@@ -86,7 +86,7 @@ def category(request, category):
     elif category == 'asteroid-shapes':
         objects = SpaceObject.objects.annotate(num_shapes=Count('shapemodel')).filter(num_shapes__gt=0)
     elif category == 'near-earth-asteroids':
-        objects = SpaceObject.objects.filter(is_neo=True)
+        objects = SpaceObject.objects.filter(is_nea=True)
     elif category == 'potentially-hazardous-asteroids':
         objects = SpaceObject.objects.filter(is_pha=True)
     elif category.startswith('asteroid-type-'):

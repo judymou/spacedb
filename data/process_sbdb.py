@@ -63,7 +63,7 @@ def process(reader):
                 w = float(row['w']),
                 ma = float(row['ma']),
                 epoch = float(row['epoch']),
-                is_neo = True if row['neo'] == 'Y' else False,
+                is_nea = True if row['neo'] == 'Y' else False,
                 is_pha = True if row['pha'] == 'Y' else False,
                 orbit_class = OrbitClass.objects.get(abbrev__iexact=row['class']),
                 object_type = ObjectType.from_class(row['class']),

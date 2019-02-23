@@ -56,7 +56,7 @@ class SpaceObject(models.Model):
     ma = models.FloatField()
     epoch = models.FloatField()
 
-    is_neo = models.BooleanField()
+    is_nea = models.BooleanField()
     is_pha = models.BooleanField()
     spec_B = models.CharField(max_length=200)
     spec_T = models.CharField(max_length=200)
@@ -224,6 +224,8 @@ class SpaceObject(models.Model):
             models.Index(fields=['slug']),
             models.Index(fields=['orbit_class']),
             models.Index(fields=['object_type']),
+            models.Index(fields=['is_nea']),
+            models.Index(fields=['is_pha']),
         ]
 
 class CloseApproach(models.Model):
