@@ -121,6 +121,14 @@ h1.mainheading {
   color: #bbb;
 }
 
+.subheading a {
+  color: #fff;
+}
+
+.subheading a:hover {
+  color: #fff;
+}
+
 ul.keyfacts li {
   margin-left: -1em;
 }
