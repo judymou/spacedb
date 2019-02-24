@@ -7,6 +7,7 @@ from enum import Enum
 
 from django.db import models
 from django.contrib import admin
+from django.urls import reverse
 from jsonfield import JSONField
 
 from spaceobjects.description import get_diameter_comparison, get_composition, COMET_CLASSES
@@ -39,6 +40,9 @@ class OrbitClass(models.Model):
         ]
 
 class SpaceObject(models.Model):
+    # The index at which the object appears in the Small Body Database
+    sbdb_order_id = models.IntegerField()
+
     fullname = models.CharField(max_length=200)
     name = models.CharField(max_length=200)
     slug = models.CharField(max_length=200)
@@ -69,7 +73,7 @@ class SpaceObject(models.Model):
     sbdb_entry = JSONField()
 
     def get_absolute_url(self):
-        return '/asteroid/%s' % self.slug
+        return reverse('detail', args=[self.slug])
 
     def get_shorthand(self):
         if self.name.find('(') > -1:
@@ -220,6 +224,7 @@ class SpaceObject(models.Model):
 
     class Meta:
         indexes = [
+            models.Index(fields=['sbdb_order_id']),
             models.Index(fields=['fullname']),
             models.Index(fields=['slug']),
             models.Index(fields=['orbit_class']),
