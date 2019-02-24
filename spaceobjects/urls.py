@@ -2,10 +2,11 @@ from django.contrib.sitemaps.views import sitemap
 from django.conf.urls import url
 
 import spaceobjects.views as views
-from spaceobjects.sitemap import SpaceObjectSitemap
+from spaceobjects.sitemap import SpaceObjectSitemap, OrbitClassSitemap
 
 sitemaps = {
     'spaceobjects': SpaceObjectSitemap,
+    'orbitclass': OrbitClassSitemap,
 }
 
 urlpatterns = [

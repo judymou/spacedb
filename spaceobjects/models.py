@@ -30,6 +30,9 @@ class OrbitClass(models.Model):
     desc = models.CharField(max_length=500)
     orbit_sentence = models.CharField(max_length=500)
 
+    def get_absolute_url(self):
+        return reverse('category', args=[self.slug])
+
     def __str__(self):
         return self.abbrev
 
