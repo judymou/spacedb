@@ -91,13 +91,6 @@ const t = setInterval(function() {
 
 {% block header %}
 <header class="site-header">
-  <div class="topnav">
-    <strong><a href="/">Space Reference</a></strong>
-    &raquo;
-    <a href="/category/{{object.orbit_class.slug}}">{{object.orbit_class.name}}s</a>
-    &raquo;
-    {{object.name}}
-  </div>
   <h1 class="mainheading">{{object.name}}</h1>
   <h2 class="subheading">
     {% if object.fullname == object.name %}
@@ -119,6 +112,13 @@ const t = setInterval(function() {
 
 {% block content %}
 <div>
+  <div class="breadcrumbs">
+    <a href="/">Space Reference</a>
+    &raquo;
+    <a href="/category/{{object.orbit_class.slug}}">{{object.orbit_class.name}}s</a>
+    &raquo;
+    {{object.name}}
+  </div>
   <div class="item-container col-sm-8">
     <div class="item-container__inner">
       <h3>Key Facts</h3>

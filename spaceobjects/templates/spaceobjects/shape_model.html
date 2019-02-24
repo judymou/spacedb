@@ -17,15 +17,6 @@ window.SHAPE_PATH = "{% static shape_models.0.shape_path %}";
 
 {% block header %}
 <header class="site-header">
-  <div class="topnav">
-    <strong><a href="/">Space Reference</a></strong>
-    &raquo;
-    <a href="/category/{{object.orbit_class.slug}}">{{object.orbit_class.name}}s</a>
-    &raquo;
-    <a href="/asteroid/{{object.slug}}">{{object.name}}</a>
-    &raquo;
-    Shape Model
-  </div>
   <h1 class="mainheading">{{object.name}} Shape Model</h1>
   <h2 class="subheading">
     {% if object.fullname == object.name %}
@@ -47,10 +38,16 @@ window.SHAPE_PATH = "{% static shape_models.0.shape_path %}";
 
 {% block content %}
 <div>
+  <div class="breadcrumbs">
+    <a href="/">Space Reference</a>
+    &raquo;
+    <a href="/category/{{object.orbit_class.slug}}">{{object.orbit_class.name}}s</a>
+    &raquo;
+    <a href="/asteroid/{{object.slug}}">{{object.name}}</a>
+    &raquo;
+    Shape Model
+  </div>
   <div class="item-container col-sm-4">
-    <p>
-      <a href="/asteroid/{{object.slug}}">&laquo; Back to {{object.name}}</a>
-    </p>
     <p>
       <h3>Orbital Elements</h3>
       <ul class="keyfacts">
