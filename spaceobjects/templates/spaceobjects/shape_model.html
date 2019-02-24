@@ -18,7 +18,13 @@ window.SHAPE_PATH = "{% static shape_models.0.shape_path %}";
 {% block header %}
 <header class="site-header">
   <div class="topnav">
-    <strong><a href="/" class="nav-link">Space Reference</a></strong>
+    <strong><a href="/">Space Reference</a></strong>
+    &raquo;
+    <a href="/category/{{object.orbit_class.slug}}">{{object.orbit_class.name}}s</a>
+    &raquo;
+    <a href="/asteroid/{{object.slug}}">{{object.name}}</a>
+    &raquo;
+    Shape Model
   </div>
   <h1 class="mainheading">{{object.name}} Shape Model</h1>
   <h2 class="subheading">

@@ -92,7 +92,11 @@ const t = setInterval(function() {
 {% block header %}
 <header class="site-header">
   <div class="topnav">
-    <strong><a href="/" class="nav-link">Space Reference</a></strong>
+    <strong><a href="/">Space Reference</a></strong>
+    &raquo;
+    <a href="/category/{{object.orbit_class.slug}}">{{object.orbit_class.name}}s</a>
+    &raquo;
+    {{object.name}}
   </div>
   <h1 class="mainheading">{{object.name}}</h1>
   <h2 class="subheading">
