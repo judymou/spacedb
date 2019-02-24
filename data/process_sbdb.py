@@ -53,7 +53,6 @@ def process(reader):
         fullname = get_normalized_full_name(row['full_name'])
         try:
             space_object = SpaceObject(
-                sbdb_order_id = count,
                 fullname = fullname,
                 name = row['name'].strip() if row['name'] else fullname,
                 slug = slugify(fullname.replace('/',' ')),
