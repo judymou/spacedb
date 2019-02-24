@@ -67,7 +67,7 @@ init3dVis();
 
 {% block header %}
 <header class="site-header">
-  <h1 class="mainheading">{{orbit_class.name}}s</h1>
+  <h1 class="mainheading">{{page_name}}</h1>
 </header>
 {% endblock %}
 
@@ -76,13 +76,13 @@ init3dVis();
   <div class="breadcrumbs">
     <a href="/">Space Reference</a>
     &raquo;
-    {{orbit_class.name}}s
+    {{page_name}}
   </div>
   <div class="item-container col-sm-12">
     {% if orbit_class %}
       {{orbit_class.name}}s ({{orbit_class.abbrev}}) are objects {{orbit_class.orbit_sentence}}.  There are {{count|intcomma}} {{orbit_class.name|capfirst}}s in this database out of {{total_count|intcomma}} total, accounting for {{population_pct|floatformat:1}}% of objects.
     {% else %}
-      There are {{count|intcomma}} objects in this database of type XX out of {{total_count|intcomma}} total, accounting for {{population_pct|floatformat:1}}% of objects.
+      There are {{count|intcomma}} {{page_name|lower}} of this type in the database out of {{total_count|intcomma}} total, accounting for {{population_pct|floatformat:1}}% of objects.
     {% endif %}
   </div>
   <div class="item-container col-sm-4">

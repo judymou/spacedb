@@ -77,20 +77,26 @@ def detail_shape(request, slug):
 
 def category(request, category):
     orbit_class = None
+    page_name = None
     if category == 'asteroids':
         # All asteroids
         objects = SpaceObject.objects.filter(object_type=ObjectType.ASTEROID)
+        page_name = 'Asteroids'
     elif category == 'comets':
         # All comets
         objects = SpaceObject.objects.filter(object_type=ObjectType.COMET)
+        page_name = 'Comets'
     elif category == 'asteroid-shapes':
         objects = SpaceObject.objects.annotate(num_shapes=Count('shapemodel')).filter(num_shapes__gt=0)
+        page_name = 'Asteroids with Known Shapes'
     elif category == 'near-earth-asteroids':
         objects = SpaceObject.objects.filter(is_nea=True)
+        page_name = 'Near-Earth Asteroids'
     elif category == 'potentially-hazardous-asteroids':
+        page_name = 'Potentially Hazardous Asteroids'
         objects = SpaceObject.objects.filter(is_pha=True)
     elif category.startswith('asteroid-type-'):
-        pass
+        page_name = 'Type ? Asteroids'
     else:
         try:
             orbit_class = OrbitClass.objects.get(slug=category)
@@ -98,11 +104,13 @@ def category(request, category):
             return HttpResponseNotFound('Unknown category "%s"' % category)
 
         objects = SpaceObject.objects.filter(orbit_class=orbit_class)
+        page_name = '%ss' % orbit_class.name
 
     count = objects.count()
     total_count = SpaceObject.objects.all().count()
     population_pct = count / float(total_count) * 100.0
     return render(request, 'spaceobjects/category.html', {
+                'page_name': page_name,
                 'orbit_class': orbit_class,
                 'count': count,
                 'total_count': total_count,
