@@ -263,6 +263,7 @@ ul.keyfacts li {
   background-color: #000;
 }
 
+/*
 ::-webkit-scrollbar {
    -webkit-appearance: none;
    width: 7px;
@@ -272,4 +273,30 @@ ul.keyfacts li {
    border-radius: 4px;
    background-color: rgba(0,0,0,.3);
    -webkit-box-shadow: 0 0 1px rgba(255,255,255,.3);
+}
+*/
+
+/* Carousel */
+.carousel-flex-container {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  -ms-overflow-style: -ms-autohiding-scrollbar;
+}
+
+.carousel-flex-inner {
+  display: flex;
+  flex-wrap: nowrap;;
+}
+
+.carousel-item {
+  flex: 0 0 auto;
+  width:30%;
+}
+
+.sticky {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
 }

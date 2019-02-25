@@ -36,10 +36,30 @@ def index(request):
         if len(close_approaches) >= 5:
             break
 
+    named_after = []
+    named_after_slugs = ['2001-einstein-1973-eb', '7672-hawking-1995-uo2',
+      '2709-sagan-1982-fh', '6469-armstrong-1982-pc', '6471-collins-1983-eb1']
+    for named_after_slug in named_after_slugs:
+      named_after.append(SpaceObject.objects.get(slug=named_after_slug))
+    
     return render(request, 'spaceobjects/index.html',
           {
               'object_count': SpaceObject.objects.count(),
               'space_objects': space_objects,
+              'object_sets': [
+                {'name': 'Largest',
+                 'data': SpaceObject.objects.all().order_by('-diameter')[:5],
+                 'description': 'These are among the largest and earliest discovered asteroids in our solar system.'
+                },
+                {'name': 'Smallest',
+                 'data': SpaceObject.objects.all().order_by('diameter')[:5],
+                 'description': 'These are among the smallest asteroids in our solar system.'
+                },
+                {'name': 'In Honor Of...',
+                 'data': named_after, 
+                 'description': 'These objects are named after notable people.'
+                },
+              ],
               'potential_impactors': potential_impactors,
               'close_approaches': close_approaches,
               'nhats_objects': NhatsObject.objects.all().order_by('min_dv')[:5],
