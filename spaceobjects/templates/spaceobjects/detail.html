@@ -148,7 +148,7 @@ const t = setInterval(function() {
       </ul>
       <h3>Overview</h3>
       <p>
-      {{object.name}} is a {{object.get_size_adjective}} {{object.get_object_type}} {{object.get_orbit_desc}}.  NASA JPL has
+      {{object.name}} is a {{object.get_size_adjective}} {{object.get_object_type}} {{object.orbit_class.orbit_sentence}}.  NASA JPL has
       {% if object.is_pha and object.is_nea %}
         classified {{object.get_shorthand}} as a "Potentially Hazardous Asteroid" due to its predicted close pass(es) with Earth.
       {% elif not object.is_pha and object.is_nea %}
