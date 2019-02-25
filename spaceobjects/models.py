@@ -37,6 +37,7 @@ class OrbitClass(models.Model):
         return self.abbrev
 
     class Meta:
+        ordering = ['id']
         indexes = [
             models.Index(fields=['slug']),
             models.Index(fields=['abbrev']),
@@ -223,6 +224,7 @@ class SpaceObject(models.Model):
         return self.fullname
 
     class Meta:
+        ordering = ['id']
         indexes = [
             models.Index(fields=['fullname']),
             models.Index(fields=['slug']),
