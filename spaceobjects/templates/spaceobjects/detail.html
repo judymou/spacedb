@@ -149,7 +149,7 @@ const t = setInterval(function() {
       <h3>Overview</h3>
       <p>
       {% if object.is_dwarf_planet %}
-        {{object.name}} is a dwarf planet {{object.orbit_class.orbit_sentence}}.  NASA JPL has
+        {{object.name}} is a dwarf planet {{object.orbit_class.orbit_sentence}}.
       {% else %}
         {{object.name}} is a {{object.get_size_adjective}} {{object.get_object_type}} {{object.orbit_class.orbit_sentence}}.
       {% endif %}
@@ -321,14 +321,14 @@ const t = setInterval(function() {
   </div>
   <div class="item-container item-container__rightside col-sm-4">
     <div class="item-container__inner">
-      <h3>Search</h3>
+      <h4>Search</h4>
       <div class="react-search"></div>
       &nbsp;&nbsp; or view a <a rel="nofollow" href="/asteroid/random">random</a> object
     </div>
   </div>
   <div class="item-container item-container__rightside col-sm-4">
     <div class="item-container__inner">
-      <h3>Orbital Elements</h3>
+      <h4>Orbital Elements</h4>
       <ul class="keyfacts">
         <li>Epoch: {{object.epoch}} JD</li>
         <li>Semi-major axis: {{object.a}}</li>
@@ -342,7 +342,7 @@ const t = setInterval(function() {
   </div>
   <div class="item-container item-container__rightside col-sm-4">
     <div class="item-container__inner">
-      <h3>Physical Characteristics</h3>
+      <h4>Physical Characteristics</h4>
       <ul class="keyfacts">
         {% if object.sbdb_entry.diameter %}
           <li>Diameter: {{object.sbdb_entry.diameter | floatformat:5}} km</li>
@@ -366,7 +366,7 @@ const t = setInterval(function() {
   </div>
   <div class="item-container item-container__rightside col-sm-4">
     <div class="item-container__inner">
-      <h3>Derived Information</h3>
+      <h4>Derived Information</h4>
       <ul class="keyfacts">
         <li>Orbit Period: {{object.get_period_days|floatformat:0|intcomma}} days ({{object.get_period_years|floatformat:2|intcomma}} years)</li>
         {% if object.sbdb_entry.rot_per %}
@@ -380,7 +380,7 @@ const t = setInterval(function() {
   </div>
   <div class="item-container item-container__rightside col-sm-4">
     <div class="item-container__inner">
-      <h3>Size Comparison</h3>
+      <h4>Size Comparison</h4>
         <div id="size-comparison"></div>
     </div>
   </div>
