@@ -48,7 +48,7 @@ class SpaceObject(models.Model):
     name = models.CharField(max_length=200)
     slug = models.CharField(max_length=200)
 
-    orbit_class = models.ForeignKey(OrbitClass)
+    orbit_class = models.ForeignKey(OrbitClass, blank=True, null=True)
     object_type = models.CharField(max_length = 20,
             choices=[(tag, tag.value) for tag in ObjectType])
 
@@ -65,7 +65,7 @@ class SpaceObject(models.Model):
     is_pha = models.BooleanField()
     spec_B = models.CharField(max_length=200)
     spec_T = models.CharField(max_length=200)
-    H = models.FloatField()
+    H = models.FloatField(null=True, blank=True)
 
     # For now this is only SBDB diameter. See get_diameter_estimate below.
     diameter = models.FloatField(null=True, blank=True)

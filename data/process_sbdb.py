@@ -33,8 +33,8 @@ def insert_all(newobjects, delete=False):
 
 def process(reader):
     newobjects = []
-    failures_other = failures_ma = 0
     inserted_once = False
+    failures_ma = 0
     for count, row in enumerate(reader, 1):
         if count % 10000 == 0:
             logger.info(count)
@@ -48,41 +48,38 @@ def process(reader):
             newobjects = []
 
         if not row['ma']:
+            logger.warn('Missing mean anom: Failed to parse row %d (%s): %s' % \
+                            (count, row.get('full_name', '?'), json.dumps(row)))
             failures_ma += 1
             continue
         fullname = get_normalized_full_name(row['full_name'])
+
         try:
-            space_object = SpaceObject(
-                fullname = fullname,
-                name = row['name'].strip() if row['name'] else fullname,
-                slug = slugify(fullname.replace('/',' ')),
-                a = float(row['a']),
-                e = float(row['e']),
-                i = float(row['i']),
-                om = float(row['om']),
-                w = float(row['w']),
-                ma = float(row['ma']),
-                epoch = float(row['epoch']),
-                is_nea = True if row['neo'] == 'Y' else False,
-                is_pha = True if row['pha'] == 'Y' else False,
-                orbit_class = OrbitClass.objects.get(abbrev__iexact=row['class']),
-                object_type = ObjectType.from_class(row['class']),
-                diameter = float(row['diameter'].decode('utf-8')) if row['diameter'] else None,
-                spec_B = row['spec_B'],
-                spec_T = row['spec_T'],
-                H = float(row['H']),
-                sbdb_entry = row,
-                )
+            orbit_class = OrbitClass.objects.get(abbrev__iexact=row['class'])
         except ObjectDoesNotExist:
-            print 'ObjectDoesNotExist: Failed to parse row %d (%s): %s' % \
-                            (count, row.get('full_name', '?'), json.dumps(row))
-            failures_other += 1
-            continue
-        except ValueError:
-            #print 'Failed to parse row %d (%s): %s' % \
-            #                (count, row.get('full_name', '?'), json.dumps(row))
-            failures_other += 1
-            continue
+            orbit_class = None
+
+        space_object = SpaceObject(
+            fullname = fullname,
+            name = row['name'].strip() if row['name'] else fullname,
+            slug = slugify(fullname.replace('/',' ')),
+            a = float(row['a']),
+            e = float(row['e']),
+            i = float(row['i']),
+            om = float(row['om']),
+            w = float(row['w']),
+            ma = float(row['ma']),
+            epoch = float(row['epoch']),
+            is_nea = True if row['neo'] == 'Y' else False,
+            is_pha = True if row['pha'] == 'Y' else False,
+            orbit_class = orbit_class,
+            object_type = ObjectType.from_class(row['class']),
+            diameter = float(row['diameter'].decode('utf-8')) if row['diameter'] else None,
+            spec_B = row['spec_B'],
+            spec_T = row['spec_T'],
+            H = float(row['H']) if row['H'] else None,
+            sbdb_entry = row,
+            )
 
         newobjects.append(space_object)
 
@@ -90,7 +87,6 @@ def process(reader):
     insert_all(newobjects, delete=(not inserted_once))
 
     logger.warning('%d blank mean anomalies' % failures_ma)
-    logger.warning('%d other failures' % failures_other)
 
     logger.info('Done.')
 
