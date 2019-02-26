@@ -177,6 +177,9 @@ class SpaceObject(models.Model):
             return 'very large'
         return 'dwarf planet'
 
+    def is_dwarf_planet(self):
+        return self.get_size_adjective() == 'dwarf planet'
+
     def has_size_info(self):
         diam = self.sbdb_entry.get('diameter')
         return diam != '' and diam is not None
@@ -203,6 +206,12 @@ class SpaceObject(models.Model):
         a_range = [self.a - 0.01, self.a + 0.01]
         similar = SpaceObject.objects.filter(a__range=a_range).exclude(pk=self.pk)
         return similar[:n]
+
+    def get_period_days(self):
+        return float(self.sbdb_entry['per'])
+
+    def get_period_years(self):
+        return float(self.sbdb_entry['per']) / 365.25
 
     def to_search_result(self):
         return {

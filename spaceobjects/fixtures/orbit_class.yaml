@@ -187,3 +187,4 @@
     name: Trans-Neptunian Object
     slug: trans-neptunian-objects
     desc: Objects with orbits outside Neptune (a > 30.1 AU)
+    orbit_sentence: whose orbit extends beyond the orbit of Neptune
