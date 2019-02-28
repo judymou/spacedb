@@ -375,10 +375,12 @@ const t = setInterval(function() {
   </div>
   <div class="item-container item-container__rightside col-sm-4">
     <div class="item-container__inner">
-      <h4>Derived Information</h4>
+      <h4>Derived Characteristics</h4>
       <ul class="keyfacts">
         <li>Orbit Period: {{object.period_in_days|floatformat:0|intcomma}} days ({{object.period_in_years|floatformat:2|intcomma}} years)</li>
         <li>Avg. Orbit Speed: {{object.avg_orbital_speed|floatformat:2|intcomma}} km/s</li>
+        <li>Aphelion Distance: {{object.aphelion|floatformat:2}} AU</li>
+        <li>Perihelion Distance: {{object.perihelion|floatformat:2}} AU</li>
         {% if object.sbdb_entry.rot_per %}
           <li>Rotation Period: {{object.sbdb_entry.rot_per|floatformat:2|intcomma}} days</li>
         {% endif %}
