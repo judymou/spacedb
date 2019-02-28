@@ -192,7 +192,7 @@ const t = setInterval(function() {
         </p>
       {% endif %}
 
-      {% if object.close_approaches|length < 1 and object.sentry_events|length < 1 %}
+      {% if close_approaches|length < 1 and sentry_events|length < 1 %}
         <h3>No Close Approaches</h3>
       {% else %}
         <h3>Close Approaches</h3>
@@ -211,11 +211,11 @@ const t = setInterval(function() {
         </p>
       {% endif %}
       <p>
-      {% if object.close_approaches|length < 1 %}
+      {% if close_approaches|length < 1 %}
         Orbital simulations conducted by NASA JPL's CNEOS do not show any close approaches to Earth.
       {% else %}
         <p>
-          {{object.shorthand}} has {{object.close_approaches|length}} close approaches predicted in the coming decades:
+          {{object.shorthand}} has {{close_approaches|length}} close approaches predicted in the coming decades:
         </p>
         <div class="reference-table">
           <div class="reference-table-content">
@@ -228,7 +228,7 @@ const t = setInterval(function() {
                 </tr>
               </thead>
               <tbody>
-                {% for close_approach in object.close_approaches %}
+                {% for close_approach in close_approaches %}
                   <tr>
                     <td>{{close_approach.date | date}}</td>
                     <td>{{close_approach.dist_km|floatformat:0|intcomma}}</td>
@@ -238,7 +238,7 @@ const t = setInterval(function() {
               </tbody>
             </table>
           </div>
-          {% if object.close_approaches|length > 10 %}
+          {% if close_approaches|length > 10 %}
             <div class="reference-table-gradient"></div>
           {% endif %}
         </div>
