@@ -53,11 +53,13 @@ def detail(request, slug):
     except SpaceObject.DoesNotExist:
         return HttpResponseNotFound('Could not find object "%s"' % slug)
 
+    close_approaches = space_object.closeapproach_set.all().order_by('date')
     sentry_events = space_object.sentryevent_set.all().order_by('-prob')
     shape_models = space_object.shapemodel_set.all().order_by('-quality')
 
     return render(request, 'spaceobjects/detail.html', {
                 'object': space_object,
+                'close_approaches': close_approaches,
                 'sentry_events': sentry_events,
                 'shape_models': shape_models,
             })
