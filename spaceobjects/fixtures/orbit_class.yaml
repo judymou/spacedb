@@ -34,7 +34,7 @@
     name: Halley-type Comet
     slug: halley-type-comets
     desc: Halley-type comet, classical definition (20 y < P < 200 y)
-    orbit_sentence: with an orbit that has medium-length periods and is highly inclined with respect to the ecliptic plane of the solar system
+    orbit_sentence: with a medium-length orbit that is highly inclined to the ecliptic plane of the solar system
 
 - model: spaceobjects.OrbitClass
   pk: 5
