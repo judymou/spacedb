@@ -379,7 +379,7 @@ const t = setInterval(function() {
           <li>Rotation Period: {{object.sbdb_entry.rot_per|floatformat:2|intcomma}} days</li>
         {% endif %}
         {% if object.get_composition %}
-          <li>Composition: {% include 'spaceobjects/partials/composition.html' %}</li>
+          <li>Approx. Composition: {% include 'spaceobjects/partials/composition.html' %}</li>
         {% endif %}
       </ul>
     </div>
