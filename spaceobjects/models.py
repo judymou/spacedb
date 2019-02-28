@@ -177,6 +177,10 @@ class SpaceObject(models.Model):
             return 'very large'
         return 'dwarf planet'
 
+    def get_avg_orbital_speed(self):
+        # in km/s
+        return (2 * math.pi * self.a * 149597870.7) / (self.get_period_days() * 86400)
+
     def is_dwarf_planet(self):
         return self.get_size_adjective() == 'dwarf planet'
 

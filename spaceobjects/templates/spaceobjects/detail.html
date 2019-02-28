@@ -94,7 +94,10 @@ const t = setInterval(function() {
   <h1 class="mainheading">{{object.name}}</h1>
   <h2 class="subheading">
     {% if object.fullname == object.name %}
-      {{object.get_size_adjective|capfirst}} {{object.orbit_class.name}}
+      {% if object.has_size_info_estimate %}
+        {{object.get_size_adjective|capfirst}}
+      {% endif %}
+      {{object.orbit_class.name}}
     {% else %}
       {{object.fullname}}
     {% endif %}
@@ -150,8 +153,10 @@ const t = setInterval(function() {
       <p>
       {% if object.is_dwarf_planet %}
         {{object.name}} is a dwarf planet {{object.orbit_class.orbit_sentence}}.
-      {% else %}
+      {% elif object.has_size_info_estimate %}
         {{object.name}} is a {{object.get_size_adjective}} {{object.get_object_type}} {{object.orbit_class.orbit_sentence}}.
+      {% else %}
+        {{object.get_object_type}} {{object.name}} is an object {{object.orbit_class.orbit_sentence}}.
       {% endif %}
 
       {% if object.is_pha and object.is_nea %}
@@ -344,9 +349,9 @@ const t = setInterval(function() {
     <div class="item-container__inner">
       <h4>Physical Characteristics</h4>
       <ul class="keyfacts">
-        {% if object.sbdb_entry.diameter %}
+        {% if object.has_size_info %}
           <li>Diameter: {{object.sbdb_entry.diameter | floatformat:5}} km</li>
-        {% elif object.get_diameter_estimate %}
+        {% elif object.has_size_info_estimate %}
           <li>Diameter: ~{{object.get_diameter_estimate | floatformat:2}} km</li>
         {% endif %}
         {% if object.H %}
@@ -369,6 +374,7 @@ const t = setInterval(function() {
       <h4>Derived Information</h4>
       <ul class="keyfacts">
         <li>Orbit Period: {{object.get_period_days|floatformat:0|intcomma}} days ({{object.get_period_years|floatformat:2|intcomma}} years)</li>
+        <li>Avg. orbital speed: {{object.get_avg_orbital_speed|floatformat:2|intcomma}} km/s</li>
         {% if object.sbdb_entry.rot_per %}
           <li>Rotation Period: {{object.sbdb_entry.rot_per|floatformat:2|intcomma}} days</li>
         {% endif %}
