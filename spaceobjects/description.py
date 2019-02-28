@@ -299,7 +299,7 @@ SPECTRA_INDEX = {
     },
 }
 
-def get_composition(roid):
+def composition(roid):
     ret = []
     spec = roid.sbdb_entry.get('spec_B')
     if not spec:

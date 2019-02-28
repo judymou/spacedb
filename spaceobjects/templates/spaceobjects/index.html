@@ -152,7 +152,7 @@ init3dVis();
           <p>
             <ol>
             {% for event in potential_impactors %}
-              <li><a href="/asteroid/{{event.space_object.slug}}">{{event.space_object.name}}</a> - {{event.get_prob_percentage}}%, {{event.date | date}}</li>
+              <li><a href="/asteroid/{{event.space_object.slug}}">{{event.space_object.name}}</a> - {{event.prob_percentage}}%, {{event.date | date}}</li>
             {% endfor %}
             </ol>
           </p>
