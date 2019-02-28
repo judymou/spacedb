@@ -241,10 +241,22 @@ class SpaceObject(models.Model):
 
     def to_search_result(self):
         return {
-          'fullname': self.fullname,
-          'name': self.name,
-          'slug': self.slug,
-          'ephem': {
+            'fullname': self.fullname,
+            'name': self.name,
+            'slug': self.slug,
+            'ephem': {
+                'a': self.a,
+                'e': self.e,
+                'i': self.i,
+                'om': self.om,
+                'w': self.w,
+                'ma': self.ma,
+                'epoch': self.epoch,
+            }
+        }
+
+    def to_orbit_obj(self):
+        return {
             'a': self.a,
             'e': self.e,
             'i': self.i,
@@ -252,7 +264,6 @@ class SpaceObject(models.Model):
             'w': self.w,
             'ma': self.ma,
             'epoch': self.epoch,
-          }
         }
 
     def __str__(self):

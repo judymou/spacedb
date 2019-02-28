@@ -77,7 +77,10 @@ def detail_shape(request, slug):
                 'shape_models': shape_models,
             })
 
-def category(request, category):
+def get_category_info(category):
+    '''Given a category string, return objects belonging to that category and
+    other information.
+    '''
     orbit_class = None
     page_name = None
     if category == 'asteroids':
@@ -100,6 +103,7 @@ def category(request, category):
     elif category.startswith('asteroid-type-'):
         page_name = 'Type ? Asteroids'
     else:
+        # The default case: a category that maps directly to an orbit class.
         try:
             orbit_class = OrbitClass.objects.get(slug=category)
         except ObjectDoesNotExist:
@@ -108,17 +112,39 @@ def category(request, category):
         objects = SpaceObject.objects.filter(orbit_class=orbit_class)
         page_name = '%ss' % orbit_class.name
 
+    return {
+        'objects': objects,
+        'page_name': page_name,
+        'orbit_class': orbit_class,
+    }
+
+def category(request, category):
+    info = get_category_info(category)
+    objects = info['objects']
+
     count = objects.count()
     total_count = SpaceObject.objects.all().count()
     population_pct = count / float(total_count) * 100.0
     return render(request, 'spaceobjects/category.html', {
-                'page_name': page_name,
-                'orbit_class': orbit_class,
+                'category': category,
+                'page_name': info['page_name'],
+                'orbit_class': info['orbit_class'],
                 'count': count,
                 'total_count': total_count,
                 'population_pct': population_pct,
                 'objects': objects[:20],
             })
+
+def api_category_objects(request, category):
+    info = get_category_info(category)
+    objects = info['objects']
+
+    limit = request.GET.get('limit', 10)
+
+    return JsonResponse({
+        'success': True,
+        'data': [obj.to_orbit_obj() for obj in objects[:limit]],
+    })
 
 def solar_system(request):
     return render(request, 'spaceobjects/solar_system.html', {})

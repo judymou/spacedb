@@ -33,8 +33,11 @@ window.OBJECT_DEFINITIONS = [
 },
 {% endfor %}
 ];
+
+window.BACKGROUND_QUERY_URL = '/api/category/{{category}}/orbits';
+
 window.VIZ_SIMULATION_OPTS = {
-  jdPerSecond: 2,
+  jdPerSecond: 5,
 };
 window.VIZ_OBJECT_OPTS = {
   ecliptic: {
