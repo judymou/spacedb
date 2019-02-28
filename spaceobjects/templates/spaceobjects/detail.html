@@ -192,7 +192,11 @@ const t = setInterval(function() {
         </p>
       {% endif %}
 
-      <h3>Close Approaches</h3>
+      {% if object.closeapproach_set.all|length < 1 %}
+        <h3>No Close Approaches</h3>
+      {% else %}
+        <h3>Close Approaches</h3>
+      {% endif %}
       <p>
       {{object.get_shorthand}}'s orbit is {{object.get_moid | floatformat:5}} AU from Earth's orbit at its closest point.
       {% if object.get_moid > 0.01 %}
