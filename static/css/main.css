@@ -89,6 +89,7 @@ footer a {
   position: relative;
   margin-bottom: 3px;
 }
+
 .spacekit__object-label:after, .spacekit__object-label:before {
   top: 100%;
   left: 11px;
@@ -111,6 +112,10 @@ footer a {
   border-top-color: #c2e1f5;
   border-width: 4px;
   margin-left: -4px;
+}
+
+.spacekit__object-label a {
+  color: #fff;
 }
 
 h1.mainheading {

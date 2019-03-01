@@ -31,6 +31,7 @@ function init3dVis() {
     const spaceobject = viz.createObject(`spaceobject${idx}`, Object.assign(window.VIZ_OBJECT_OPTS, {
       ephem: new Spacekit.Ephem(objDef.ephem, 'deg'),
       labelText: objDef.name,
+      labelUrl: `/asteroid/${objDef.slug}`,
     }));
 
     if (idx === 0) {
