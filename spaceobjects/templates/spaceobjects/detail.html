@@ -156,7 +156,7 @@ const t = setInterval(function() {
       {% elif object.has_size_info_estimate %}
         {{object.name}} is a {{object.size_adjective}} {{object.get_object_type}} {{object.orbit_class.orbit_sentence}}.
       {% else %}
-        {{object.get_object_type}} {{object.name}} is an object {{object.orbit_class.orbit_sentence}}.
+        {{object.get_object_type|capfirst}} {{object.name}} is an object {{object.orbit_class.orbit_sentence}}.
       {% endif %}
 
       {% if object.is_pha and object.is_nea %}
