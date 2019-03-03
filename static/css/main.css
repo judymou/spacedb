@@ -213,7 +213,7 @@ ul.keyfacts li {
 }
 
 .vis-container__home {
-  height: 300px;;
+  height: 300px;
   margin-top: 1em;
   margin-bottom: 1em;
 }
@@ -304,7 +304,7 @@ ul.keyfacts li {
 
 .carousel-flex-inner {
   display: flex;
-  flex-wrap: nowrap;;
+  flex-wrap: nowrap;
 }
 
 .carousel-item {

@@ -42,13 +42,13 @@ window.VIZ_OBJECT_OPTS = {};
 function selectOrbit(domElement) {
   Object.keys(window.spaceobjects).forEach(function(key) {
     const ob = window.spaceobjects[key];
-    const ob_orbit = ob.getOrbit();
+    const obOrbit = ob.getOrbit();
     if (key === domElement.dataset.slug) {
-      ob_orbit.setVisibility(true);
-      ob_orbit.setHexColor(0xff0000);
+      obOrbit.setVisibility(true);
+      obOrbit.setHexColor(0xff0000);
       ob.setLabelVisibility(true);
     } else {
-      ob_orbit.setVisibility(false);
+      obOrbit.setVisibility(false);
       ob.setLabelVisibility(false);
     }
   });
@@ -110,11 +110,11 @@ init3dVis();
             {% for object in object_set.data %}
               <div class="tile carousel-item" data-slug="{{object.slug}}" onmouseover="if (typeof selectOrbit !== 'undefined') selectOrbit(this)"
                 onmouseout="if (typeof deselectOrbit !== 'undefined') deselectOrbit(this)">
-                <a href="/asteroid/{{object.slug}}">
+                <a href="{{object.get_absolute_url}}">
                   <div>
                     <h5>{{object.name}}</h5>
                     <div class="tile-content">
-                      <span class="label label-danger">{{object.get_size_adjective}}</span>
+                      <span class="label label-danger">{{object.size_adjective}}</span>
                       {% if object.is_pha %}
                         <span class="label label-warning">Potentially Hazardous</span>
                       {% else %}
