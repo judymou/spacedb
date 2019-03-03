@@ -15,7 +15,8 @@
 -->
 <script>
 window.OBJECT_DEFINITIONS= [
-{% for object in space_objects %}
+{% for object_set in object_sets %}
+  {% for object in object_set.data %}
 {
   name: "{{object.name}}",
   slug: "{{object.slug}}",
@@ -29,6 +30,7 @@ window.OBJECT_DEFINITIONS= [
     epoch: {{object.epoch}}
   }
 },
+  {% endfor %}
 {% endfor %}
 ];
 
@@ -36,6 +38,24 @@ window.VIZ_SIMULATION_OPTS = {
   jdPerSecond: 2,
 };
 window.VIZ_OBJECT_OPTS = {};
+
+function selectOrbit(domElement) {
+  Object.keys(window.spaceobjects).forEach(function(key) {
+    const ob = window.spaceobjects[key];
+    const obOrbit = ob.getOrbit();
+    if (key === domElement.dataset.slug) {
+      obOrbit.setVisibility(true);
+      obOrbit.setHexColor(0xff0000);
+      ob.setLabelVisibility(true);
+    } else {
+      obOrbit.setVisibility(false);
+      ob.setLabelVisibility(false);
+    }
+  });
+}
+function deselectOrbit(domElement) {
+  window.spaceobjects[domElement.dataset.slug].getOrbit().setHexColor(0xffffff);
+}
 </script>
 <script src="{% static "js/main.js" %}"></script>
 <script>
@@ -74,36 +94,47 @@ init3dVis();
 </div>
 <div class="row">
   <div class="item-container">
-    <div class="item-container__inner">
       <h2>Asteroids and Comets</h2>
-      <div>
-        <p>
-          We've organized hundreds of thousands celestial objects into these categories below for your perusal.
-        </p>
-      </div>
-      <div class="vis-container vis-container__home"></div>
-      <div class="vis-selector-container">
-        <div class="vis-selector col-md-4" data-showvis="LARGEST">
-          <h3>Largest</h3>
+      <p>
+        We've organized hundreds of thousands celestial objects into these categories below for your perusal.
+      </p>
+      <div class="sticky vis-container vis-container__home"></div>
+      {% for object_set in object_sets %}
+        <div class="vis-selector" data-showvis="{{object_set.name}}">
+          <h3>{{object_set.name}}</h3>
           <p>
-            These are among the largest and earliest discovered asteroids in our solar system.
+            {{object_set.description}}
           </p>
-          <p>
-            <ol>
-              <li><a href="/asteroid/1-ceres">1 Ceres</a></li>
-              <li><a href="/asteroid/4-vesta">4 Vesta</a></li>
-              <li><a href="/asteroid/2-pallas">2 Pallas</a></li>
-              <li><a href="/asteroid/10-hygiea">10 Hygiea</a></li>
-              <li><a href="/asteroid/704-interamnia-1910-ku">704 Interamnia</a></li>
-      <!--
-            {% for space_object in space_objects %}
-              <li><a href="/asteroid/{{space_object.slug}}">{{space_object.name}}</a></li>
+          <div class="carousel-flex-container">
+            <div class="carousel-flex-inner">
+            {% for object in object_set.data %}
+              <div class="tile carousel-item" data-slug="{{object.slug}}" onmouseover="if (typeof selectOrbit !== 'undefined') selectOrbit(this)"
+                onmouseout="if (typeof deselectOrbit !== 'undefined') deselectOrbit(this)">
+                <a href="{{object.get_absolute_url}}">
+                  <div>
+                    <h5>{{object.name}}</h5>
+                    <div class="tile-content">
+                      <span class="label label-danger">{{object.size_adjective}}</span>
+                      {% if object.is_pha %}
+                        <span class="label label-warning">Potentially Hazardous</span>
+                      {% else %}
+                        <span class="label label-info">Not Hazardous</span>
+                      {% endif %}
+                      <br>
+                      <div class="tile-desc">
+                      {{object.shorthand}} orbits the sun every {{object.sbdb_entry.per|floatformat:0|intcomma}} days, coming as close as {{object.perihelion|floatformat:2}} AU and reaching as far as {{object.aphelion|floatformat:2}} AU from the sun.
+                      </div>
+                    </div>
+                  </div>
+                </a>
+              </div>
             {% endfor %}
-      -->
-            </ol>
-          </p>
+            </div>
+          </div>
         </div>
-        <div class="vis-selector col-md-4" data-showvis="VISITED">
+      {% endfor %}
+      <!--  
+      <div class="vis-selector col-md-4" data-showvis="VISITED">
           <h3>Targets of Exploration</h3>
           <p>
             These objects have been visited by spacecraft.
@@ -118,85 +149,32 @@ init3dVis();
             </ol>
           </p>
         </div>
-        <div class="vis-selector col-md-4" data-showvis="APPROACHES">
-          <h3>Upcoming Approaches</h3>
-          <p>
-            These objects have upcoming fly-bys of Earth.
-          </p>
-          <p>
-            <ol>
-            {% for event in close_approaches %}
-              <li><a href="/asteroid/{{event.space_object.slug}}">{{event.space_object.name}}</a> - {{event.date | date}}</li>
-            {% endfor %}
-            </ol>
-          </p>
-        </div>
-        <div class="vis-selector col-md-4" data-showvis="POTENTIAL_EXPLORATION">
-          <h3>Potential for Exploration</h3>
-          <p>
-            It is relatively inexpensive to send a spacecraft to these objects in terms of propulsive cost (listed by delta-v).
-          </p>
-          <p>
-            <ol>
-            {% for nhats in nhats_objects %}
-              <li><a href="/asteroid/{{nhats.space_object.slug}}">{{nhats.space_object.name}}</a> - {{nhats.min_dv}} km/s</li>
-            {% endfor %}
-            </ol>
-          </p>
-        </div>
-        <div class="vis-selector col-md-4" data-showvis="SENTRY">
-          <h3>Potential Impactors</h3>
-          <p>
-            These objects have the potential to impact Earth (listed by probability of impact).
-          </p>
-          <p>
-            <ol>
-            {% for event in potential_impactors %}
-              <li><a href="/asteroid/{{event.space_object.slug}}">{{event.space_object.name}}</a> - {{event.prob_percentage}}%, {{event.date | date}}</li>
-            {% endfor %}
-            </ol>
-          </p>
-        </div>
-        <div class="vis-selector col-md-4" data-showvis="NAMED_AFTER">
-          <h3>In Honor Of...</h3>
-          <p>
-            These objects are named after notable people.
-          </p>
-          <p>
-            <ol>
-              <li><a href="/asteroid/2001-einstein-1973-eb">2001 Einstein</a></li>
-              <li><a href="/asteroid/7672-hawking-1995-uo2">7672 Hawking</a></li>
-              <li><a href="/asteroid/2709-sagan-1982-fh">2709 Sagan</a></li>
-              <li><a href="/asteroid/6469-armstrong-1982-pc">6469 Armstrong</a></li>
-              <li><a href="/asteroid/6471-collins-1983-eb1">6471 Collins</a></li>
-            </ol>
-          </p>
-        </div> <!-- end vis-selector -->
-      </div> <!-- end vis-selector-container -->
-    </div> <!-- end item-container__inner -->
+    -->
   </div> <!-- end item-container -->
 </div> <!-- end row -->
-<hr/>
 <div class="row">
-  <div class="col-sm-12">
-    <h2>Object Classifications</h2>
-    The two most noteworthy classifications for asteroids are "Near Earth Asteroid" (NEA) and "Potentially Hazardous Asteroid" (PHA).  Despite the names, neither classification indicates any direct danger to Earth.
-    <ul>
-      <li><a href="/category/near-earth-asteroids">Near Earth Asteroids</a> - asteroids whose orbit perihelion is less than 1.3 AU</li>
-      <li><a href="/category/potentially-hazardous-asteroids">Potentially Hazardous Asteroids</a> - near-Earth asteroids whose orbits passes within 0.05 AU of Earth's and whose absolute magnitude H is 22.0 or brighter</li>
-    </ul>
-    Learn more about various <a href="https://cneos.jpl.nasa.gov/about/neo_groups.html">NEO groups</a> here.
+  <div class="item-container">
+    <div class="item-container__inner">
+      <h2>Object Classifications</h2>
+      The two most noteworthy classifications for asteroids are "Near Earth Asteroid" (NEA) and "Potentially Hazardous Asteroid" (PHA).  Despite the names, neither classification indicates any direct danger to Earth.
+      <ul>
+        <li><a href="/category/near-earth-asteroids">Near Earth Asteroids</a> - asteroids whose orbit perihelion is less than 1.3 AU</li>
+        <li><a href="/category/potentially-hazardous-asteroids">Potentially Hazardous Asteroids</a> - near-Earth asteroids whose orbits passes within 0.05 AU of Earth's and whose absolute magnitude H is 22.0 or brighter</li>
+      </ul>
+      Learn more about various <a href="https://cneos.jpl.nasa.gov/about/neo_groups.html">NEO groups</a> here.
+    </div>
   </div>
 </div>
-<hr/>
 <div class="row">
-  <div class="col-sm-12">
-    <h2>Orbit Types</h2>
-    <ul>
-    {% for orbit_class in orbit_classes %}
-      <li><a href="/category/{{orbit_class.slug}}">{{orbit_class.name}}</a> - {{orbit_class.desc}}</li>
-    {% endfor %}
-    </ul>
+  <div class="item-container">
+    <div class="item-container__inner">
+      <h2>Orbit Types</h2>
+      <ul>
+      {% for orbit_class in orbit_classes %}
+        <li><a href="/category/{{orbit_class.slug}}">{{orbit_class.name}}</a> - {{orbit_class.desc}}</li>
+      {% endfor %}
+      </ul>
+    </div>
   </div>
 </div>
 {% endblock %}
