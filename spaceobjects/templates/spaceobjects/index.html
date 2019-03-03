@@ -127,7 +127,7 @@ Object.keys(window.spaceobjects).forEach(function(key) {
                     <h5>{{object.name}}</h5>
                     <div class="tile-content">
                       <span class="label label-default">{{object.size_adjective|title}}</span>
-                      {% if object.is_nea%}
+                      {% if object.is_nea %}
                         <span class="label label-info">Near-Earth</span>
                       {% endif %}
                       {% if object.is_pha %}
@@ -135,7 +135,7 @@ Object.keys(window.spaceobjects).forEach(function(key) {
                       {% endif %}
                       <br>
                       <div class="tile-desc">
-                      {{object.shorthand}} orbits the sun every {{object.sbdb_entry.per|floatformat:0|intcomma}} days, coming as close as {{object.perihelion|floatformat:2}} AU and reaching as far as {{object.aphelion|floatformat:2}} AU from the sun.
+                        {{object.shorthand}} orbits the sun every {{object.sbdb_entry.per|floatformat:0|intcomma}} days, coming as close as {{object.perihelion|floatformat:2}} AU and reaching as far as {{object.aphelion|floatformat:2}} AU from the sun.
                       </div>
                     </div>
                   </div>
@@ -146,23 +146,6 @@ Object.keys(window.spaceobjects).forEach(function(key) {
           </div>
         </div>
       {% endfor %}
-      <!--
-      <div class="vis-selector col-md-4" data-showvis="VISITED">
-          <h3>Targets of Exploration</h3>
-          <p>
-            These objects have been visited by spacecraft.
-          </p>
-          <p>
-            <ol>
-              <li><a href="/asteroid/101955-bennu-1999-rq36">Bennu</a> - visited by OSIRIS-Rex</li>
-              <li><a href="/asteroid/162173-ryugu-1999-ju3">Ryugu</a> - visited by Hayabusa 2</li>
-              <li><a href="/asteroid/2867-steins-1969-vc">Steins</a> - visited by Rosetta</li>
-              <li><a href="/asteroid/21-lutetia">Lutetia</a> - visited by Rosetta</li>
-              <li><a href="/asteroid/486958-2014-mu69">Ultima Thule</a> - visited by New Horizons</li>
-            </ol>
-          </p>
-        </div>
-    -->
   </div> <!-- end item-container -->
 </div> <!-- end row -->
 <div class="row">
