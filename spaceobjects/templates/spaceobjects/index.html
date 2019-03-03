@@ -41,12 +41,15 @@ window.VIZ_OBJECT_OPTS = {};
 
 function selectOrbit(domElement) {
   Object.keys(window.spaceobjects).forEach(function(key) {
-    const ob = window.spaceobjects[key].getOrbit();
+    const ob = window.spaceobjects[key];
+    const ob_orbit = ob.getOrbit();
     if (key === domElement.dataset.slug) {
-      ob.setVisibility(true);
-      ob.setHexColor(0xff0000);
+      ob_orbit.setVisibility(true);
+      ob_orbit.setHexColor(0xff0000);
+      ob.setLabelVisibility(true);
     } else {
-      ob.setVisibility(false);
+      ob_orbit.setVisibility(false);
+      ob.setLabelVisibility(false);
     }
   });
 }
@@ -119,7 +122,7 @@ init3dVis();
                       {% endif %}
                       <br>
                       <div class="tile-desc">
-                      {{object.get_shorthand}} was discovered in the year {{object.get_firstobs_date|date:"Y"}}.  It orbits the sun every {{object.sbdb_entry.per|floatformat:0|intcomma}} days, coming as close as {{object.get_perihelion|floatformat:2}} AU and reaching as far as {{object.get_aphelion|floatformat:2}} AU from the sun.
+                      {{object.shorthand}} orbits the sun every {{object.sbdb_entry.per|floatformat:0|intcomma}} days, coming as close as {{object.perihelion|floatformat:2}} AU and reaching as far as {{object.aphelion|floatformat:2}} AU from the sun.
                       </div>
                     </div>
                   </div>
@@ -143,45 +146,6 @@ init3dVis();
               <li><a href="/asteroid/2867-steins-1969-vc">Steins</a> - visited by Rosetta</li>
               <li><a href="/asteroid/21-lutetia">Lutetia</a> - visited by Rosetta</li>
               <li><a href="/asteroid/486958-2014-mu69">Ultima Thule</a> - visited by New Horizons</li>
-            </ol>
-          </p>
-        </div>
-        <div class="vis-selector col-md-4" data-showvis="APPROACHES">
-          <h3>Upcoming Approaches</h3>
-          <p>
-            These objects have upcoming fly-bys of Earth.
-          </p>
-          <p>
-            <ol>
-            {% for event in close_approaches %}
-              <li><a href="/asteroid/{{event.space_object.slug}}">{{event.space_object.name}}</a> - {{event.date | date}}</li>
-            {% endfor %}
-            </ol>
-          </p>
-        </div>
-        <div class="vis-selector col-md-4" data-showvis="POTENTIAL_EXPLORATION">
-          <h3>Potential for Exploration</h3>
-          <p>
-            It is relatively inexpensive to send a spacecraft to these objects in terms of propulsive cost (listed by delta-v).
-          </p>
-          <p>
-            <ol>
-            {% for nhats in nhats_objects %}
-              <li><a href="/asteroid/{{nhats.space_object.slug}}">{{nhats.space_object.name}}</a> - {{nhats.min_dv}} km/s</li>
-            {% endfor %}
-            </ol>
-          </p>
-        </div>
-        <div class="vis-selector col-md-4" data-showvis="SENTRY">
-          <h3>Potential Impactors</h3>
-          <p>
-            These objects have the potential to impact Earth (listed by probability of impact).
-          </p>
-          <p>
-            <ol>
-            {% for event in potential_impactors %}
-              <li><a href="/asteroid/{{event.space_object.slug}}">{{event.space_object.name}}</a> - {{event.prob_percentage}}%, {{event.date | date}}</li>
-            {% endfor %}
             </ol>
           </p>
         </div>

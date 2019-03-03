@@ -51,17 +51,19 @@ def index(request):
                  'data': SpaceObject.objects.all().order_by('-diameter')[:5],
                  'description': 'These are among the largest and earliest discovered asteroids in our solar system.'
                 },
-                {'name': 'Smallest',
-                 'data': SpaceObject.objects.all().order_by('diameter')[:5],
-                 'description': 'These are among the smallest asteroids in our solar system.'
-                },
                 {'name': 'In Honor Of...',
                  'data': named_after, 
                  'description': 'These objects are named after notable people.'
                 },
+                {'name': 'Upcoming Approaches',
+                 'data': close_approaches,
+                 'description': 'These objects have upcoming fly-bys of Earth'
+                },
+                {'name': 'Potential Impactors',
+                 'data': potential_impactors,
+                 'description': 'These objects have the potential to impact Earth (listed by probability of impact).'
+                }
               ],
-              'potential_impactors': potential_impactors,
-              'close_approaches': close_approaches,
               'nhats_objects': NhatsObject.objects.all().order_by('min_dv')[:5],
               'orbit_classes': OrbitClass.objects.all(),
               'hide_top_nav': True,
