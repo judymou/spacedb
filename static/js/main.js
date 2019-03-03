@@ -6,17 +6,17 @@ function init3dVis() {
     startDate: Date.now(),
     maxNumParticles: 4096,
   }, window.VIZ_SIMULATION_OPTS));
+  window.viz = viz;
 
   viz.renderOnlyInViewport();
 
-  // Create a skybox using NASA TYCHO artwork.
-  //viz.createSkybox(Spacekit.SkyboxPresets.NASA_TYCHO);
+  // Create background
   viz.createStars();
 
   // Create our first object - the sun - using a preset space object.
   viz.createObject('sun', Spacekit.SpaceObjectPresets.SUN);
 
-  // Then add some planets
+  // Add planets
   viz.createObject('mercury', Spacekit.SpaceObjectPresets.MERCURY);
   viz.createObject('venus', Spacekit.SpaceObjectPresets.VENUS);
   viz.createObject('earth', Object.assign(Spacekit.SpaceObjectPresets.EARTH, { labelText: 'Earth' }));
@@ -25,7 +25,6 @@ function init3dVis() {
   viz.createObject('saturn', Spacekit.SpaceObjectPresets.SATURN);
   viz.createObject('uranus', Spacekit.SpaceObjectPresets.URANUS);
   viz.createObject('neptune', Spacekit.SpaceObjectPresets.NEPTUNE);
-  window.vizcontainer = viz;
 
   window.spaceobjects = {};
   window.OBJECT_DEFINITIONS.forEach(function(objDef, idx) {

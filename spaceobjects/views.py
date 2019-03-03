@@ -11,65 +11,68 @@ from django.http import JsonResponse, HttpResponse, HttpResponseNotFound
 from django.shortcuts import render, redirect
 from spaceobjects.models import SpaceObject, SentryEvent, CloseApproach, NhatsObject, OrbitClass, ObjectType
 
-def index(request):
-    # TODO(ian): order by pdes
-    space_objects = SpaceObject.objects.all()[:5]
+HOMEPAGE_NUM_ITEMS_PER_LIST = 5
 
+def index(request):
     potential_impactors = []
     seen_impactors = set()
-    for event in SentryEvent.objects.order_by('-prob')[:25]:
+    for event in SentryEvent.objects.order_by('-prob')[:HOMEPAGE_NUM_ITEMS_PER_LIST*5]:
         if event.space_object.fullname in seen_impactors:
             continue
-        potential_impactors.append(event)
+        potential_impactors.append(event.space_object)
         seen_impactors.add(event.space_object.fullname)
-        if len(potential_impactors) >= 5:
+        if len(potential_impactors) >= HOMEPAGE_NUM_ITEMS_PER_LIST:
             break
 
     close_approaches = []
     seen_approaches = set()
     for event in CloseApproach.objects.filter(date__gte=date.today()) \
-                                      .order_by('date')[:25]:
+                                      .order_by('date')[:HOMEPAGE_NUM_ITEMS_PER_LIST*5]:
         if event.space_object.fullname in seen_approaches:
             continue
-        close_approaches.append(event)
+        close_approaches.append(event.space_object)
         seen_approaches.add(event.space_object.fullname)
-        if len(close_approaches) >= 5:
+        if len(close_approaches) >= HOMEPAGE_NUM_ITEMS_PER_LIST:
             break
 
     named_after = []
     named_after_slugs = ['2001-einstein-1973-eb', '7672-hawking-1995-uo2',
       '2709-sagan-1982-fh', '6469-armstrong-1982-pc', '6471-collins-1983-eb1']
     for named_after_slug in named_after_slugs:
-      named_after.append(SpaceObject.objects.get(slug=named_after_slug))
+        named_after.append(SpaceObject.objects.get(slug=named_after_slug))
 
     return render(request, 'spaceobjects/index.html',
           {
               'object_count': SpaceObject.objects.count(),
-              'space_objects': space_objects,
-              'object_sets': [
-                {'name': 'Largest',
-                 'data': SpaceObject.objects.all().order_by('-diameter')[:5],
-                 'description': 'These are among the largest and earliest discovered asteroids in our solar system.'
-                },
-                {'name': 'Upcoming Approaches',
-                 'data': close_approaches,
-                 'description': 'These objects have upcoming fly-bys of Earth'
-                },
-                {'name': 'Potential Impactors',
-                 'data': potential_impactors,
-                 'description': 'These objects have the potential to impact Earth (listed by probability of impact).'
-                },
-                {'name': 'Potential for Exploration',
-                 'data': NhatsObject.objects.all().order_by('min_dv')[:5],
-                 'description': 'It is relatively inexpensive to send a spacecraft to these objects in terms of propulsive cost (listed by delta-v). '
-                },
-                {'name': 'In Honor Of...',
-                 'data': named_after,
-                 'description': 'These objects are named after notable people.'
-                },
-              ],
               'orbit_classes': OrbitClass.objects.all(),
               'hide_top_nav': True,
+              'object_sets': [
+                {
+                    'name': 'Largest',
+                    'data': SpaceObject.objects.all().order_by('-diameter')[:HOMEPAGE_NUM_ITEMS_PER_LIST],
+                    'description': 'These are among the largest and earliest discovered asteroids in our solar system.'
+                },
+                {
+                    'name': 'Upcoming Approaches',
+                    'data': close_approaches,
+                    'description': 'These objects have upcoming fly-bys of Earth.'
+                },
+                {
+                    'name': 'Potential Impactors',
+                    'data': potential_impactors,
+                    'description': 'These objects have the potential to impact Earth (listed by probability of impact).'
+                },
+                {
+                    'name': 'Potential for Exploration',
+                    'data': [x.space_object for x in NhatsObject.objects.all().order_by('min_dv')[:HOMEPAGE_NUM_ITEMS_PER_LIST]],
+                    'description': 'It is relatively inexpensive to send a spacecraft to these objects in terms of propulsive cost (listed by delta-v). '
+                },
+                {
+                    'name': 'In Honor Of...',
+                    'data': named_after,
+                    'description': 'These objects are named after notable people.'
+                },
+              ],
           })
 
 def detail(request, slug):

@@ -37,7 +37,9 @@ window.OBJECT_DEFINITIONS= [
 window.VIZ_SIMULATION_OPTS = {
   jdPerSecond: 2,
 };
-window.VIZ_OBJECT_OPTS = {};
+window.VIZ_OBJECT_OPTS = {
+  particleSize: 10,
+};
 
 function selectOrbit(domElement) {
   Object.keys(window.spaceobjects).forEach(function(key) {
@@ -60,6 +62,13 @@ function deselectOrbit(domElement) {
 <script src="{% static "js/main.js" %}"></script>
 <script>
 init3dVis();
+Object.keys(window.spaceobjects).forEach(function(key) {
+  // TODO(ian): Until there is a better way to lazily create labels and orbits,
+  // we have to create them and then hide them...
+  const ob = window.spaceobjects[key];
+  ob.setLabelVisibility(false);
+  ob.getOrbit().setVisibility(false);
+});
 </script>
 {% endblock %}
 
@@ -99,11 +108,14 @@ init3dVis();
         We've organized hundreds of thousands celestial objects into these categories below for your perusal.
       </p>
       <div class="sticky vis-container vis-container__home"></div>
+      <p>
+        Mouseover objects in the lists below to highlight them in the orbit view. Click or tap to learn more about each object.
+      </p>
       {% for object_set in object_sets %}
         <div class="vis-selector" data-showvis="{{object_set.name}}">
           <h3>{{object_set.name}}</h3>
           <p>
-            {{object_set.description}}
+            {{object_set.description}} <!--<a href="/solar-system#cat={{object_set.category}}">See all</a>-->
           </p>
           <div class="carousel-flex-container">
             <div class="carousel-flex-inner">
@@ -114,11 +126,12 @@ init3dVis();
                   <div>
                     <h5>{{object.name}}</h5>
                     <div class="tile-content">
-                      <span class="label label-danger">{{object.size_adjective}}</span>
+                      <span class="label label-default">{{object.size_adjective|title}}</span>
+                      {% if object.is_nea%}
+                        <span class="label label-info">Near-Earth</span>
+                      {% endif %}
                       {% if object.is_pha %}
                         <span class="label label-warning">Potentially Hazardous</span>
-                      {% else %}
-                        <span class="label label-info">Not Hazardous</span>
                       {% endif %}
                       <br>
                       <div class="tile-desc">
@@ -133,7 +146,7 @@ init3dVis();
           </div>
         </div>
       {% endfor %}
-      <!--  
+      <!--
       <div class="vis-selector col-md-4" data-showvis="VISITED">
           <h3>Targets of Exploration</h3>
           <p>
