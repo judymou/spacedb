@@ -15,9 +15,10 @@ urlpatterns = [
     url('^asteroid/(?P<slug>[^/]+)/shape$', views.detail_shape, name='detail_shape'),
     url('^category/(?P<category>[^/]+)$', views.category, name='category'),
     url('^solar-system$', views.solar_system, name='solar_system'),
-    url('^api/asteroids$', views.search, name='search'),
-    url('^api/category/(?P<category>[^/]+)/orbits$', views.api_category_objects, name='api_category_objects'),
-    url('^api/get-objects$', views.get_objects, name='get_objects'),
+    url('^api/objects$', views.api_objects, name='api_objects'),
+    url('^api/objects/search$', views.api_objects_search, name='api_objects_search'),
+    url('^api/category/(?P<category>[^/]+)/orbits$', views.api_category_orbits, name='api_category_orbits'),
+    url('^api/category/(?P<category>[^/]+)$', views.api_category_objects, name='api_category_objects'),
     url('^$', views.index, name='index'),
 
     url(r'^sitemap\.xml$', sitemap, {'sitemaps': sitemaps},

@@ -148,7 +148,7 @@ def category(request, category):
     total_count = SpaceObject.objects.all().count()
     population_pct = count / float(total_count) * 100.0
     return render(request, 'spaceobjects/category.html', {
-                'category': category,
+                'category_slug': category,
                 'page_name': info['page_name'],
                 'orbit_class': info['orbit_class'],
                 'count': count,
@@ -157,7 +157,7 @@ def category(request, category):
                 'objects': objects[:20],
             })
 
-def api_category_objects(request, category):
+def api_category_orbits(request, category):
     info = get_category_info(category)
     objects = info['objects']
 
@@ -168,16 +168,27 @@ def api_category_objects(request, category):
         'data': [obj.to_orbit_obj() for obj in objects[:limit]],
     })
 
+def api_category_objects(request, category):
+    info = get_category_info(category)
+    objects = info['objects']
+
+    limit = request.GET.get('limit', 10)
+
+    return JsonResponse({
+        'success': True,
+        'data': [obj.to_search_result() for obj in objects[:limit]],
+    })
+
 def solar_system(request):
     return render(request, 'spaceobjects/solar_system.html', {})
 
-def search(request):
+def api_objects_search(request):
     search_str = request.GET.get('q')
     matches = SpaceObject.objects.filter(fullname__icontains=search_str)
     return JsonResponse({'results': [roid.to_search_result() for roid in matches[:10]]})
 
-def get_objects(request):
-    search_term = request.GET.get('q').split(',');
+def api_objects(request):
+    search_term = request.GET.get('slugs').split(',');
 
     results = [];
     for search_str in search_term:

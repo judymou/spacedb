@@ -175,6 +175,10 @@ ul.keyfacts li {
   z-index: 999;
 }
 
+.vis-controls a {
+  color: #eee;
+}
+
 .vis-controls button {
   background-color: #202020;
   cursor: pointer;

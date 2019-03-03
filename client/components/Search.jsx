@@ -9,7 +9,7 @@ const loadOptions = (inputValue, callback) => {
       resolve([]);
       return;
     }
-    fetch(`/api/asteroids?q=${inputValue}`).then(resp => {
+    fetch(`/api/objects/search?q=${inputValue}`).then(resp => {
       return resp.json()
     }).then(respJson => {
       resolve(respJson.results.map(result => {

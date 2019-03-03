@@ -3,6 +3,8 @@ import PropTypes from 'react-proptypes';
 
 import AsyncSelect from 'react-select/lib/Async';
 
+import { parseQuery } from '../util';
+
 const INPUT_LENGTH_MIN = 3;
 
 const loadOptions = (inputValue, callback) => {
@@ -11,7 +13,7 @@ const loadOptions = (inputValue, callback) => {
       resolve([]);
       return;
     }
-    fetch(`/api/asteroids?q=${inputValue}`).then(resp => {
+    fetch(`/api/objects/search?q=${inputValue}`).then(resp => {
       return resp.json()
     }).then(respJson => {
       resolve(respJson.results.map(result => {
@@ -29,6 +31,7 @@ const loadOptions = (inputValue, callback) => {
 class SearchAndVisualize extends React.Component {
   constructor(props) {
     super(props);
+    this._objCount = 0;
     this.state = {
       inputValue: '',
       selectedObjects: [],
@@ -36,34 +39,72 @@ class SearchAndVisualize extends React.Component {
   }
 
   componentDidMount() {
-    if (!location.hash) {
-      return;
-    }
-    var slugs = location.hash.split('ob=')[1].split('&')[0];
-    fetch(`/api/get-objects?q=${slugs}`).then(resp => {
-      return resp.json()
-    }).then(respJson => {
-      respJson.results.map(result => {
-        this.handleChange({
-          label: result.fullname,
-          vizLabel: result.name,
-          value: result.slug,
-          ephem: result.ephem,
+    const query = parseQuery(location.hash);
+    if (query.ob) {
+      fetch(`/api/objects?slugs=${query.ob}`).then(resp => {
+        return resp.json()
+      }).then(respJson => {
+        this.addMany(respJson.results.map(result => {
+          return {
+            label: result.fullname,
+            vizLabel: result.name,
+            value: result.slug,
+            ephem: result.ephem,
+          };
+        }), {
+          showLabel: true,
+          showOrbit: true,
+          updateHash: true,
         });
       });
+    }
+    if (query.cat) {
+      fetch(`/api/category/${query.cat}?limit=3000`).then(resp => {
+        return resp.json()
+      }).then(respJson => {
+        this.addMany(respJson.data.map(result => {
+          return {
+            label: result.fullname,
+            vizLabel: result.name,
+            value: result.slug,
+            ephem: result.ephem,
+          };
+        }), {
+          showLabel: false,
+          showOrbit: false,
+          updateHash: false,
+          particleSize: 8,
+        });
+      });
+
+    }
+  }
+
+  addMany(objs, opts) {
+    opts = opts || {};
+    objs.forEach(obj => {
+      const key = `spaceobject${this._objCount++}`;
+      window.vizcontainer.createObject(key, Object.assign(window.VIZ_OBJECT_OPTS, {
+        ephem: new Spacekit.Ephem(obj.ephem, 'deg'),
+        // Show short name
+        labelText: opts.showLabel ? obj.vizLabel : undefined,
+        hideOrbit: !opts.showOrbit,
+        particleSize: opts.particleSize,
+      }));
     });
+
+    if (opts.updateHash) {
+      this.setState(prevState => ({ selectedObjects: prevState.selectedObjects.concat(objs) }), () => {
+        window.location.hash = '#ob=' + this.state.selectedObjects.map(object => object.value).join(',');
+      });
+    }
   }
 
   handleChange(inputValue) {
-    if (window.vizcontainer) {
-      window.vizcontainer.createObject(`spaceobject${this.state.selectedObjects.length}`, Object.assign(window.VIZ_OBJECT_OPTS, {
-        ephem: new Spacekit.Ephem(inputValue.ephem, 'deg'),
-        // Show short name
-        labelText: inputValue.vizLabel,
-      }));
-    }
-    this.setState(prevState => ({ selectedObjects: [...prevState.selectedObjects, inputValue] }), () => {
-      window.location.hash = '#ob=' + this.state.selectedObjects.map(object => object.value).join(',');
+    this.addMany([inputValue], {
+      showLabel: true,
+      showOrbit: true,
+      updateHash: true,
     });
   }
 
@@ -114,12 +155,12 @@ class SearchAndVisualize extends React.Component {
             borderRadius: 0,
             colors: {
             ...theme.colors,
-              primary25: 'hotpink',
+              primary25: '#404040',
               primary: 'black',
-              neutral0: '#000',
+              neutral0: '#1d1d1d',
               neutral5: '#000a',
               neutral10: '#000b',
-              neutral20: '#000c',
+              neutral20: '#666',
               neutral30: '#000d',
               neutral40: '#000e',
             },

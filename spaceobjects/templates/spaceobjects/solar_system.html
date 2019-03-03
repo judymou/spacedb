@@ -1,7 +1,7 @@
 {% extends 'layout_fullscreen.html' %}
 {% load static %}
 
-{% block title%}Solar System| Space Reference{% endblock %}
+{% block title%}Solar System | Space Reference{% endblock %}
 
 {% block css %}
 <link rel="stylesheet" href="{% static "css/fullscreen.css" %}" />
@@ -43,11 +43,12 @@ init3dVis();
 
 {% block content %}
 <div class="add-object-panel">
-  <h3>Add an Object</h3>
+  <h4>Add Objects</h4>
   <div class="react-search-and-visualize"></div>
 </div>
 <div class="vis-panel">
   <div class="vis-controls">
+    <a href="/"><button>&laquo; Main Site</button></a>
     <button class="vis-controls__slower">Slower</button>
     <button class="vis-controls__faster">Faster</button>
     <button class="vis-controls__set-date">Set Date</button>
