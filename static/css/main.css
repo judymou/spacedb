@@ -89,6 +89,7 @@ footer a {
   position: relative;
   margin-bottom: 3px;
 }
+
 .spacekit__object-label:after, .spacekit__object-label:before {
   top: 100%;
   left: 11px;
@@ -111,6 +112,10 @@ footer a {
   border-top-color: #c2e1f5;
   border-width: 4px;
   margin-left: -4px;
+}
+
+.spacekit__object-label a {
+  color: #fff;
 }
 
 h1.mainheading {
@@ -165,6 +170,7 @@ ul.keyfacts li {
 
 .vis-controls {
   position: absolute;
+  width: 100%;
   padding: 0.5em 0 0 0.5em;
   z-index: 999;
 }
@@ -187,6 +193,17 @@ ul.keyfacts li {
 
 .vis-status {
   color: #ccc;
+}
+
+.vis-fullscreen-shortcut {
+  position: absolute;
+  top: 0.5em;
+  right: 1em;
+  font-weight: bold;
+}
+
+.vis-fullscreen-shortcut a {
+  color: #fff;
 }
 
 .vis-container {

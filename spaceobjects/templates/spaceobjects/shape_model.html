@@ -20,7 +20,7 @@ window.SHAPE_PATH = "{% static shape_models.0.shape_path %}";
   <h1 class="mainheading">{{object.name}} Shape Model</h1>
   <h2 class="subheading">
     {% if object.fullname == object.name %}
-      {{object.get_size_adjective|capfirst}} {{object.orbit_class.name}}
+      {{object.size_adjective|capfirst}} {{object.orbit_class.name}}
     {% else %}
       {{object.fullname}}
     {% endif %}

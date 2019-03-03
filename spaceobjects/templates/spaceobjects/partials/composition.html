@@ -1,0 +1,13 @@
+{% if object.composition|length == 1 %}
+  {{object.composition.0}}.
+{% elif object.composition|length == 2 %}
+  {{object.composition.0}} and {{object.composition.1}}.
+{% else %}
+  {% for material in object.composition %}
+    {% if forloop.last %}
+      and {{material}}.
+    {% else %}
+      {{material}},
+    {% endif %}
+  {% endfor %}
+{% endif %}

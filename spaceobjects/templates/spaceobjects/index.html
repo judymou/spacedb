@@ -91,7 +91,7 @@ init3dVis();
 </div>
 <div class="row">
   <div class="item-container">
-      <h2>Asteroids</h2>
+      <h2>Asteroids and Comets</h2>
       <p>
         We've organized hundreds of thousands celestial objects into these categories below for your perusal.
       </p>
@@ -180,7 +180,7 @@ init3dVis();
           <p>
             <ol>
             {% for event in potential_impactors %}
-              <li><a href="/asteroid/{{event.space_object.slug}}">{{event.space_object.name}}</a> - {{event.get_prob_percentage}}%, {{event.date | date}}</li>
+              <li><a href="/asteroid/{{event.space_object.slug}}">{{event.space_object.name}}</a> - {{event.prob_percentage}}%, {{event.date | date}}</li>
             {% endfor %}
             </ol>
           </p>

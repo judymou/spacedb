@@ -5,11 +5,13 @@ import math
 from datetime import datetime
 from enum import Enum
 
-from django.db import models
 from django.contrib import admin
+from django.db import models
+from django.urls import reverse
+from django.utils.functional import cached_property
 from jsonfield import JSONField
 
-from spaceobjects.description import get_diameter_comparison, get_composition, COMET_CLASSES
+from spaceobjects.description import get_diameter_comparison, composition, COMET_CLASSES
 
 class ObjectType(Enum):
     ASTEROID = 'ASTEROID'
@@ -29,10 +31,14 @@ class OrbitClass(models.Model):
     desc = models.CharField(max_length=500)
     orbit_sentence = models.CharField(max_length=500)
 
+    def get_absolute_url(self):
+        return reverse('category', args=[self.slug])
+
     def __str__(self):
         return self.abbrev
 
     class Meta:
+        ordering = ['id']
         indexes = [
             models.Index(fields=['slug']),
             models.Index(fields=['abbrev']),
@@ -43,7 +49,7 @@ class SpaceObject(models.Model):
     name = models.CharField(max_length=200)
     slug = models.CharField(max_length=200)
 
-    orbit_class = models.ForeignKey(OrbitClass)
+    orbit_class = models.ForeignKey(OrbitClass, blank=True, null=True)
     object_type = models.CharField(max_length = 20,
             choices=[(tag, tag.value) for tag in ObjectType])
 
@@ -60,7 +66,7 @@ class SpaceObject(models.Model):
     is_pha = models.BooleanField()
     spec_B = models.CharField(max_length=200)
     spec_T = models.CharField(max_length=200)
-    H = models.FloatField()
+    H = models.FloatField(null=True, blank=True)
 
     # For now this is only SBDB diameter. See get_diameter_estimate below.
     diameter = models.FloatField(null=True, blank=True)
@@ -69,16 +75,19 @@ class SpaceObject(models.Model):
     sbdb_entry = JSONField()
 
     def get_absolute_url(self):
-        return '/asteroid/%s' % self.slug
+        return reverse('detail', args=[self.slug])
 
-    def get_shorthand(self):
+    @cached_property
+    def shorthand(self):
         if self.name.find('(') > -1:
             return self.name[self.name.find('(') + 1 : self.name.find(')')]
         return self.name
 
+    @cached_property
     def has_shorthand(self):
-        return self.get_shorthand() != self.name
+        return self.shorthand() != self.name
 
+    @cached_property
     def get_object_type(self):
         orbclass = self.orbit_class.name
         if orbclass.find('Comet') > -1:
@@ -87,20 +96,103 @@ class SpaceObject(models.Model):
             return 'object'
         return 'asteroid'
 
-    def get_composition(self):
-        return get_composition(self)
+    @cached_property
+    def composition(self):
+        return composition(self)
 
-    def get_perihelion(self):
+    @cached_property
+    def perihelion(self):
         return self.a * (1 - self.e)
 
-    def get_aphelion(self):
+    @cached_property
+    def aphelion(self):
         return self.a * (1 + self.e)
 
-    def get_moid(self):
+    @cached_property
+    def moid(self):
         entry = self.sbdb_entry.get('moid')
         if not entry:
             return None
         return float(entry)
+
+    @cached_property
+    def firstobs_date(self):
+        firstobs = self.sbdb_entry.get('first_obs')
+        return datetime.strptime(firstobs, '%Y-%m-%d')
+
+    @cached_property
+    def lastobs_date(self):
+        lastobs = self.sbdb_entry.get('last_obs')
+        return datetime.strptime(lastobs, '%Y-%m-%d')
+
+    @cached_property
+    def size_adjective(self):
+        diameter = self.get_diameter_estimate()
+        if not diameter:
+            return None
+
+        if diameter < 1:
+            return 'very small'
+        if diameter < 10:
+            return 'small'
+        if diameter < 100:
+            return 'relatively small'
+        if diameter < 200:
+            return 'average-sized'
+        if diameter < 300:
+            return 'large'
+        if diameter < 600:
+            return 'very large'
+        return 'dwarf planet'
+
+    @cached_property
+    def avg_orbital_speed(self):
+        # in km/s
+        return (2 * math.pi * self.a * 149597870.7) / (self.period_in_days * 86400)
+
+    @cached_property
+    def is_dwarf_planet(self):
+        return self.size_adjective == 'dwarf planet'
+
+    @cached_property
+    def has_size_info(self):
+        diam = self.sbdb_entry.get('diameter')
+        return diam != '' and diam is not None
+
+    @cached_property
+    def has_size_info_estimate(self):
+        return self.get_diameter_estimate() is not None
+
+    @cached_property
+    def get_size_rough_comparison(self):
+        diameter = self.get_diameter_estimate()
+        if not diameter:
+            return None
+        if diameter > 900:
+            return 'the largest asteroid/dwarf planet'
+        if diameter > 300:
+            return 'one of the largest asteroids'
+        if diameter > 1:
+            return 'larger than most asteroids'
+        return 'a small to average asteroid'
+
+    @cached_property
+    def get_diameter_comparison(self):
+        return get_diameter_comparison(self)
+
+    @cached_property
+    def get_similar_orbits(self, n=3):
+        a_range = [self.a - 0.01, self.a + 0.01]
+        similar = SpaceObject.objects.filter(a__range=a_range).exclude(pk=self.pk)
+        return similar[:n]
+
+    @cached_property
+    def period_in_days(self):
+        return float(self.sbdb_entry['per'])
+
+    @cached_property
+    def period_in_years(self):
+        return float(self.sbdb_entry['per']) / 365.25
 
     def get_diameter_estimate_low(self):
         return self.get_diameter_estimate(method='LOW')
@@ -145,66 +237,24 @@ class SpaceObject(models.Model):
             pass
         return None
 
-    def get_firstobs_date(self):
-        firstobs = self.sbdb_entry.get('first_obs')
-        return datetime.strptime(firstobs, '%Y-%m-%d')
-
-    def get_lastobs_date(self):
-        lastobs = self.sbdb_entry.get('last_obs')
-        return datetime.strptime(lastobs, '%Y-%m-%d')
-
-    def get_size_adjective(self):
-        diameter = self.get_diameter_estimate()
-        if not diameter:
-            return None
-
-        if diameter < 1:
-            return 'very small'
-        if diameter < 10:
-            return 'small'
-        if diameter < 100:
-            return 'relatively small'
-        if diameter < 200:
-            return 'average-sized'
-        if diameter < 300:
-            return 'large'
-        if diameter < 600:
-            return 'very large'
-        return 'dwarf planet'
-
-    def has_size_info(self):
-        diam = self.sbdb_entry.get('diameter')
-        return diam != '' and diam is not None
-
-    def has_size_info_estimate(self):
-        return self.get_diameter_estimate() is not None
-
-    def get_size_rough_comparison(self):
-        diameter = self.get_diameter_estimate()
-        if not diameter:
-            return None
-        if diameter > 900:
-            return 'the largest asteroid/dwarf planet'
-        if diameter > 300:
-            return 'one of the largest asteroids'
-        if diameter > 1:
-            return 'larger than most asteroids'
-        return 'a small to average asteroid'
-
-    def get_diameter_comparison(self):
-        return get_diameter_comparison(self)
-
-    def get_similar_orbits(self, n=3):
-        a_range = [self.a - 0.01, self.a + 0.01]
-        similar = SpaceObject.objects.filter(a__range=a_range).exclude(pk=self.pk)
-        return similar[:n]
-
     def to_search_result(self):
         return {
-          'fullname': self.fullname,
-          'name': self.name,
-          'slug': self.slug,
-          'ephem': {
+            'fullname': self.fullname,
+            'name': self.name,
+            'slug': self.slug,
+            'ephem': {
+                'a': self.a,
+                'e': self.e,
+                'i': self.i,
+                'om': self.om,
+                'w': self.w,
+                'ma': self.ma,
+                'epoch': self.epoch,
+            }
+        }
+
+    def to_orbit_obj(self):
+        return {
             'a': self.a,
             'e': self.e,
             'i': self.i,
@@ -212,13 +262,13 @@ class SpaceObject(models.Model):
             'w': self.w,
             'ma': self.ma,
             'epoch': self.epoch,
-          }
         }
 
     def __str__(self):
         return self.fullname
 
     class Meta:
+        ordering = ['id']
         indexes = [
             models.Index(fields=['fullname']),
             models.Index(fields=['slug']),
@@ -239,7 +289,8 @@ class CloseApproach(models.Model):
     dist_au = models.FloatField()
     dist_min_au = models.FloatField()
 
-    def get_dist_km(self):
+    @cached_property
+    def dist_km(self):
         return self.dist_au * 1.496e8
 
 class SentryEvent(models.Model):
@@ -253,10 +304,12 @@ class SentryEvent(models.Model):
     torino_scale = models.FloatField()
     prob = models.FloatField()
 
-    def get_prob_percentage(self):
+    @cached_property
+    def prob_percentage(self):
         return self.prob * 100.0
 
-    def get_energy_with_units(self):
+    @cached_property
+    def energy_with_units(self):
         if self.energy_mt > 1:
             return '%s megatons' % (self.energy_mt)
         return '%s kilotons' % (self.energy_mt * 1000)

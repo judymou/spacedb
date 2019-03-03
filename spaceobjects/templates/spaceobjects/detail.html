@@ -64,7 +64,7 @@ onPageReadyHandlers.push(() => {
   });
   diagram.prepareRender();
   diagram.renderPlanets(true /* useSmartLabels */, {{object.a}});
-  diagram.plotOrbit({{object.a}}, {{object.e}}, {{object.w}}, '#fff', '{{object.get_shorthand}}');
+  diagram.plotOrbit({{object.a}}, {{object.e}}, {{object.w}}, '#fff', '{{object.shorthand}}');
 });
 
 onPageReadyHandlers.push(init3dVis);
@@ -94,7 +94,10 @@ const t = setInterval(function() {
   <h1 class="mainheading">{{object.name}}</h1>
   <h2 class="subheading">
     {% if object.fullname == object.name %}
-      {{object.get_size_adjective|capfirst}} {{object.orbit_class.name}}
+      {% if object.has_size_info_estimate %}
+        {{object.size_adjective|capfirst}}
+      {% endif %}
+      {{object.orbit_class.name}}
     {% else %}
       {{object.fullname}}
     {% endif %}
@@ -131,7 +134,7 @@ const t = setInterval(function() {
         {% endif %}
         {% if object.closeapproach_set.all|length %}
           {% with approach=object.closeapproach_set.all.0 %}
-            <li>Will pass within {{approach.get_dist_km|floatformat:0|intcomma}} km of Earth in {{approach.date|date:"Y"}}</li>
+            <li>Will pass within {{approach.dist_km|floatformat:0|intcomma}} km of Earth in {{approach.date|date:"Y"}}</li>
           {% endwith %}
         {% endif %}
         {% if object.is_nea %}
@@ -148,56 +151,55 @@ const t = setInterval(function() {
       </ul>
       <h3>Overview</h3>
       <p>
-      {{object.name}} is a {{object.get_size_adjective}} {{object.get_object_type}} {{object.get_orbit_desc}}.  NASA JPL has
+      {% if object.is_dwarf_planet %}
+        {{object.name}} is a dwarf planet {{object.orbit_class.orbit_sentence}}.
+      {% elif object.has_size_info_estimate %}
+        {{object.name}} is a {{object.size_adjective}} {{object.get_object_type}} {{object.orbit_class.orbit_sentence}}.
+      {% else %}
+        {{object.get_object_type|capfirst}} {{object.name}} is an object {{object.orbit_class.orbit_sentence}}.
+      {% endif %}
+
       {% if object.is_pha and object.is_nea %}
-        classified {{object.get_shorthand}} as a "Potentially Hazardous Asteroid" due to its predicted close pass(es) with Earth.
-      {% elif not object.is_pha and object.is_nea %}
-        classified {{object.get_shorthand}} as a "Near Earth Asteroid" due to its orbit's proximity to Earth, but it is not considered potentially hazardous because computer simulations have not indicated any imminent likelihood of collision.
-      {% elif not object.is_pha and not object.is_nea %}
-        not classified {{object.get_shorthand}} as potentially hazardous because its orbit does not bring it close to Earth.
+          NASA JPL has classified {{object.shorthand}} as a "Potentially Hazardous Asteroid" due to its predicted close pass(es) with Earth.
+      {% elif object.is_nea %}
+          NASA JPL has classified {{object.shorthand}} as a "Near Earth Asteroid" due to its orbit's proximity to Earth, but it is not considered potentially hazardous because computer simulations have not indicated any imminent likelihood of collision.
+      {% else %}
+          NASA JPL has not classified {{object.shorthand}} as potentially hazardous because its orbit does not bring it close to Earth.
       {% endif %}
       </p>
       <p>
-      {{object.get_shorthand}} <!--was discovered in the year {{object.get_firstobs_date|date:"Y"}}.  It--> orbits the sun every {{object.sbdb_entry.per|floatformat:0|intcomma}} days, coming as close as {{object.get_perihelion|floatformat:2}} AU and reaching as far as {{object.get_aphelion|floatformat:2}} AU from the sun.
+      {{object.shorthand}} <!--was discovered in the year {{object.firstobs_date|date:"Y"}}.  It--> orbits the sun every {{object.period_in_days|floatformat:0|intcomma}} days ({{object.period_in_years|floatformat:2|intcomma}} years), coming as close as {{object.perihelion|floatformat:2}} AU and reaching as far as {{object.aphelion|floatformat:2}} AU from the sun.
       {% if object.e > .7 %}
         Its orbit is highly elliptical.
       {% endif %}
       {% if object.has_size_info %}
-        {{object.get_shorthand}} is about {{object.sbdb_entry.diameter | floatformat:1}} kilometers in diameter, making it {{object.get_size_rough_comparison}}, comparable in size to {{object.get_diameter_comparison}}.
+        {{object.shorthand}} is about {{object.sbdb_entry.diameter | floatformat:1}} kilometers in diameter, making it {{object.get_size_rough_comparison}}, comparable in size to {{object.get_diameter_comparison}}.
       {% elif object.has_size_info_estimate %}
-        Based on its brightness and the way it reflects light, {{object.get_shorthand}} is <a href="https://cneos.jpl.nasa.gov/tools/ast_size_est.html">probably</a> between {{object.get_diameter_estimate_low | floatformat:2}} to {{object.get_diameter_estimate_high | floatformat:2}} kilometers in diameter, making it {{object.get_size_rough_comparison}}, very roughly comparable in size to {{object.get_diameter_comparison}}.
+        Based on its brightness and the way it reflects light, {{object.shorthand}} is <a href="https://cneos.jpl.nasa.gov/tools/ast_size_est.html">probably</a> between {{object.get_diameter_estimate_low | floatformat:2}} to {{object.get_diameter_estimate_high | floatformat:2}} kilometers in diameter, making it {{object.get_size_rough_comparison}}, very roughly comparable in size to {{object.get_diameter_comparison}}.
       {% endif %}
       </p>
 
       {% if object.sbdb_entry.rot_per %}
         <p>
-        The rotation of {{object.get_shorthand}} has been observed. It completes a rotation on its axis every {{object.sbdb_entry.rot_per|floatformat:2}} days.
+        The rotation of {{object.shorthand}} has been observed. It completes a rotation on its axis every {{object.sbdb_entry.rot_per|floatformat:2}} days.
         </p>
       {% endif %}
 
-      {% if object.get_composition %}
+      {% if object.composition %}
         <p>
-        {{object.get_shorthand}}'s spectral type {{object.sbdb_entry.spec_T}} (<a href="http://adsabs.harvard.edu/abs/1989aste.conf..298T">Tholen</a>) / {{object.sbdb_entry.spec_B}} (<a href="http://smass.mit.edu/smass.html">SMASSII</a>) indicates that it is likely to contain
-        {% if object.get_composition|length == 1 %}
-          {{object.get_composition.0}}.
-        {% elif object.get_composition|length == 2 %}
-          {{object.get_composition.0}} and {{object.get_composition.1}}.
-        {% else %}
-          {% for material in object.get_composition %}
-            {% if forloop.last %}
-              and {{material}}.
-            {% else %}
-              {{material}},
-            {% endif %}
-          {% endfor %}
-        {% endif %}
+        {{object.shorthand}}'s spectral type {{object.sbdb_entry.spec_T}} (<a href="http://adsabs.harvard.edu/abs/1989aste.conf..298T">Tholen</a>) / {{object.sbdb_entry.spec_B}} (<a href="http://smass.mit.edu/smass.html">SMASSII</a>) indicates that it is likely to contain
+        {% include 'spaceobjects/partials/composition.html' %}
         </p>
       {% endif %}
 
-      <h3>Close Approaches</h3>
+      {% if close_approaches|length < 1 and sentry_events|length < 1 %}
+        <h3>No Close Approaches</h3>
+      {% else %}
+        <h3>Close Approaches</h3>
+      {% endif %}
       <p>
-      {{object.get_shorthand}}'s orbit is {{object.get_moid | floatformat:5}} AU from Earth's orbit at its closest point.
-      {% if object.get_moid > 0.01 %}
+      {{object.shorthand}}'s orbit is {{object.moid | floatformat:5}} AU from Earth's orbit at its closest point.
+      {% if object.moid > 0.01 %}
         This means that there is a wide berth between this asteroid and Earth at all times.
       {% else %}
         This means that its orbit is relatively close to Earth's orbit.
@@ -205,15 +207,15 @@ const t = setInterval(function() {
       </p>
       {% if object.sbdb_entry.moid_jup < 0.5 %}
         <p>
-          The orbit of {{object.get_shorthand}} brings it close to Jupiter's orbit.
+          The orbit of {{object.shorthand}} brings it close to Jupiter's orbit.
         </p>
       {% endif %}
       <p>
-      {% if object.closeapproach_set.all|length < 1 %}
+      {% if close_approaches|length < 1 %}
         Orbital simulations conducted by NASA JPL's CNEOS do not show any close approaches to Earth.
       {% else %}
         <p>
-          {{object.get_shorthand}} has {{object.closeapproach_set.all|length}} close approaches predicted in the coming decades:
+          {{object.shorthand}} has {{close_approaches|length}} close approaches predicted in the coming decades:
         </p>
         <div class="reference-table">
           <div class="reference-table-content">
@@ -226,17 +228,17 @@ const t = setInterval(function() {
                 </tr>
               </thead>
               <tbody>
-                {% for close_approach in object.closeapproach_set.all|dictsort:"date" %}
+                {% for close_approach in close_approaches %}
                   <tr>
                     <td>{{close_approach.date | date}}</td>
-                    <td>{{close_approach.get_dist_km|floatformat:0|intcomma}}</td>
+                    <td>{{close_approach.dist_km|floatformat:0|intcomma}}</td>
                     <td>{{close_approach.v_rel|floatformat:3}}</td>
                   </tr>
                 {% endfor %}
               </tbody>
             </table>
           </div>
-          {% if object.closeapproach_set.all|length > 10 %}
+          {% if close_approaches|length > 10 %}
             <div class="reference-table-gradient"></div>
           {% endif %}
         </div>
@@ -264,7 +266,7 @@ const t = setInterval(function() {
                       <td>{{event.date|date}}</td>
                       <td>{{event.dist_km|floatformat:2|intcomma}}</td>
                       <td>±{{event.dist_err|floatformat:2|intcomma}}</td>
-                      <td>{{event.get_prob_percentage|floatformat:5}}</td>
+                      <td>{{event.prob_percentage|floatformat:5}}</td>
                       <td>{{event.energy_mt}}</td>
                     </tr>
                   {% endfor %}
@@ -280,7 +282,7 @@ const t = setInterval(function() {
       </p>
       <h3>Images and Observations</h3>
       <p>
-        {{object.get_shorthand}}'s orbit is determined by observations dating back to {{object.get_firstobs_date | date}}.  It was last officially observed on {{object.get_lastobs_date | date}}.  The IAU Minor Planet Center records {{object.sbdb_entry.n_obs_used|intcomma}} observations used to determine its orbit.
+        {{object.shorthand}}'s orbit is determined by observations dating back to {{object.firstobs_date | date}}.  It was last officially observed on {{object.lastobs_date | date}}.  The IAU Minor Planet Center records {{object.sbdb_entry.n_obs_used|intcomma}} observations used to determine its orbit.
       </p>
       {% if shape_models|length %}
         <p>
@@ -299,18 +301,18 @@ const t = setInterval(function() {
       {% if object.nhatsobject_set.all|length %}
         {% with nhats=object.nhatsobject_set.all.0 %}
           <p>
-            {{object.get_shorthand}} can be reached with a journey of {{nhats.min_dv_duration|floatformat:0|intcomma}} days. This trajectory would require a <a href="https://en.wikipedia.org/wiki/Delta-v_budget">delta-v</a> of {{nhats.min_dv}} km/s.  To put this into perspective, the delta-v to launch a rocket to Low-Earth Orbit is 9.7 km/s.  There are {{nhats.num_trajectories|intcomma}} potential trajectories and launch windows to this {{object.get_object_type}}.
+            {{object.shorthand}} can be reached with a journey of {{nhats.min_dv_duration|floatformat:0|intcomma}} days. This trajectory would require a <a href="https://en.wikipedia.org/wiki/Delta-v_budget">delta-v</a> of {{nhats.min_dv}} km/s.  To put this into perspective, the delta-v to launch a rocket to Low-Earth Orbit is 9.7 km/s.  There are {{nhats.num_trajectories|intcomma}} potential trajectories and launch windows to this {{object.get_object_type}}.
           </p>
           <p>
-            See more at the <a href="https://cneos.jpl.nasa.gov/nhats/details.html#?des={{object.sbdb_entry.pdes}}">NHATS Mission Trajectories</a> table for {{object.get_shorthand}}.
+            See more at the <a href="https://cneos.jpl.nasa.gov/nhats/details.html#?des={{object.sbdb_entry.pdes}}">NHATS Mission Trajectories</a> table for {{object.shorthand}}.
           </p>
         {% endwith %}
       {% else %}
-        This {{object.get_object_type}} is not considered readily accessible by the <a href="https://cneos.jpl.nasa.gov/nhats/">NHATS study</a>.
+        This {{object.get_object_type}} is not considered a viable target for human exploration by the <a href="https://cneos.jpl.nasa.gov/nhats/">NHATS study</a>.
       {% endif %}
       {% if object.get_similar_orbits|length %}
       <h3>Similar Objects</h3>
-      These objects have orbits that share similar characteristics to the orbit of {{object.get_shorthand}}:
+      These objects have orbits that share similar characteristics to the orbit of {{object.shorthand}}:
       <ul>
       {% for similar in object.get_similar_orbits %}
         <li>
@@ -328,32 +330,32 @@ const t = setInterval(function() {
   </div>
   <div class="item-container item-container__rightside col-sm-4">
     <div class="item-container__inner">
-      <h3>Search</h3>
+      <h4>Search</h4>
       <div class="react-search"></div>
       &nbsp;&nbsp; or view a <a rel="nofollow" href="/asteroid/random">random</a> object
     </div>
   </div>
   <div class="item-container item-container__rightside col-sm-4">
     <div class="item-container__inner">
-      <h3>Orbital Elements</h3>
+      <h4>Orbital Elements</h4>
       <ul class="keyfacts">
         <li>Epoch: {{object.epoch}} JD</li>
-        <li>Semi-major axis: {{object.a}}</li>
+        <li>Semi-major axis: {{object.a}} AU</li>
         <li>Eccentricity: {{object.e}}</li>
-        <li>Inclination: {{object.i}}</li>
-        <li>Longitude of Ascending Node: {{object.om}}</li>
-        <li>Argument of Periapsis: {{object.w}}</li>
-        <li>Mean Anomaly: {{object.ma}}</li>
+        <li>Inclination: {{object.i}}°</li>
+        <li>Longitude of Ascending Node: {{object.om}}°</li>
+        <li>Argument of Periapsis: {{object.w}}°</li>
+        <li>Mean Anomaly: {{object.ma}}°</li>
       </ul>
     </div>
   </div>
   <div class="item-container item-container__rightside col-sm-4">
     <div class="item-container__inner">
-      <h3>Physical Characteristics</h3>
+      <h4>Physical Characteristics</h4>
       <ul class="keyfacts">
-        {% if object.sbdb_entry.diameter %}
+        {% if object.has_size_info %}
           <li>Diameter: {{object.sbdb_entry.diameter | floatformat:5}} km</li>
-        {% elif object.get_diameter_estimate %}
+        {% elif object.has_size_info_estimate %}
           <li>Diameter: ~{{object.get_diameter_estimate | floatformat:2}} km</li>
         {% endif %}
         {% if object.H %}
@@ -373,7 +375,24 @@ const t = setInterval(function() {
   </div>
   <div class="item-container item-container__rightside col-sm-4">
     <div class="item-container__inner">
-      <h3>Size Comparison</h3>
+      <h4>Derived Characteristics</h4>
+      <ul class="keyfacts">
+        <li>Orbit Period: {{object.period_in_days|floatformat:0|intcomma}} days ({{object.period_in_years|floatformat:2|intcomma}} years)</li>
+        <li>Avg. Orbit Speed: {{object.avg_orbital_speed|floatformat:2|intcomma}} km/s</li>
+        <li>Aphelion Distance: {{object.aphelion|floatformat:2}} AU</li>
+        <li>Perihelion Distance: {{object.perihelion|floatformat:2}} AU</li>
+        {% if object.sbdb_entry.rot_per %}
+          <li>Rotation Period: {{object.sbdb_entry.rot_per|floatformat:2|intcomma}} days</li>
+        {% endif %}
+        {% if object.composition %}
+          <li>Approx. Composition: {% include 'spaceobjects/partials/composition.html' %}</li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+  <div class="item-container item-container__rightside col-sm-4">
+    <div class="item-container__inner">
+      <h4>Size Comparison</h4>
         <div id="size-comparison"></div>
     </div>
   </div>
@@ -386,6 +405,7 @@ const t = setInterval(function() {
           <button class="vis-controls__faster">Faster</button>
           <button class="vis-controls__set-date">Set Date</button>
           <span class="vis-status"></span>
+          <span class="vis-fullscreen-shortcut"><a href="/solar-system#ob={{object.slug}}">⛶ </a></span>
         </div>
         <div id="orbit-sim" class="vis-container vis-container__detail"></div>
       </div>
