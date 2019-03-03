@@ -41,7 +41,7 @@ def index(request):
       '2709-sagan-1982-fh', '6469-armstrong-1982-pc', '6471-collins-1983-eb1']
     for named_after_slug in named_after_slugs:
       named_after.append(SpaceObject.objects.get(slug=named_after_slug))
-    
+
     return render(request, 'spaceobjects/index.html',
           {
               'object_count': SpaceObject.objects.count(),
@@ -51,10 +51,6 @@ def index(request):
                  'data': SpaceObject.objects.all().order_by('-diameter')[:5],
                  'description': 'These are among the largest and earliest discovered asteroids in our solar system.'
                 },
-                {'name': 'In Honor Of...',
-                 'data': named_after, 
-                 'description': 'These objects are named after notable people.'
-                },
                 {'name': 'Upcoming Approaches',
                  'data': close_approaches,
                  'description': 'These objects have upcoming fly-bys of Earth'
@@ -62,9 +58,16 @@ def index(request):
                 {'name': 'Potential Impactors',
                  'data': potential_impactors,
                  'description': 'These objects have the potential to impact Earth (listed by probability of impact).'
-                }
+                },
+                {'name': 'Potential for Exploration',
+                 'data': NhatsObject.objects.all().order_by('min_dv')[:5],
+                 'description': 'It is relatively inexpensive to send a spacecraft to these objects in terms of propulsive cost (listed by delta-v). '
+                },
+                {'name': 'In Honor Of...',
+                 'data': named_after,
+                 'description': 'These objects are named after notable people.'
+                },
               ],
-              'nhats_objects': NhatsObject.objects.all().order_by('min_dv')[:5],
               'orbit_classes': OrbitClass.objects.all(),
               'hide_top_nav': True,
           })
