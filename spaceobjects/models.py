@@ -31,8 +31,7 @@ class OrbitClass(models.Model):
     desc = models.CharField(max_length=500)
     orbit_sentence = models.CharField(max_length=500)
 
-    @cached_property
-    def absolute_url(self):
+    def get_absolute_url(self):
         return reverse('category', args=[self.slug])
 
     def __str__(self):
@@ -75,8 +74,7 @@ class SpaceObject(models.Model):
     # sbdb blob
     sbdb_entry = JSONField()
 
-    @cached_property
-    def absolute_url(self):
+    def get_absolute_url(self):
         return reverse('detail', args=[self.slug])
 
     @cached_property
