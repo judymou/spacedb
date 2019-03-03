@@ -84,7 +84,7 @@ class SearchAndVisualize extends React.Component {
     opts = opts || {};
     objs.forEach(obj => {
       const key = `spaceobject${this._objCount++}`;
-      window.vizcontainer.createObject(key, Object.assign(window.VIZ_OBJECT_OPTS, {
+      window.viz.createObject(key, Object.assign(window.VIZ_OBJECT_OPTS, {
         ephem: new Spacekit.Ephem(obj.ephem, 'deg'),
         // Show short name
         labelText: opts.showLabel ? obj.vizLabel : undefined,
