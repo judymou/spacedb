@@ -192,13 +192,13 @@ const t = setInterval(function() {
         </p>
       {% endif %}
 
-      {% if close_approaches|length < 1 and sentry_events|length < 1 %}
+      {% if object.ordered_close_approaches|length < 1 and object.ordered_sentry_events|length < 1 %}
         <h3>No Close Approaches</h3>
       {% else %}
         <h3>Close Approaches</h3>
       {% endif %}
       <p>
-      {{object.shorthand}}'s orbit is {{object.moid | floatformat:5}} AU from Earth's orbit at its closest point.
+      {{object.shorthand}}'s orbit is {{object.moid | floatformat:2}} AU from Earth's orbit at its closest point.
       {% if object.moid > 0.01 %}
         This means that there is a wide berth between this asteroid and Earth at all times.
       {% else %}
@@ -211,11 +211,11 @@ const t = setInterval(function() {
         </p>
       {% endif %}
       <p>
-      {% if close_approaches|length < 1 %}
+      {% if object.ordered_close_approaches|length < 1 %}
         Orbital simulations conducted by NASA JPL's CNEOS do not show any close approaches to Earth.
       {% else %}
         <p>
-          {{object.shorthand}} has {{close_approaches|length}} close approaches predicted in the coming decades:
+          {{object.shorthand}} has {{object.ordered_close_approaches|length}} close approaches predicted in the coming decades:
         </p>
         <div class="reference-table">
           <div class="reference-table-content">
@@ -228,7 +228,7 @@ const t = setInterval(function() {
                 </tr>
               </thead>
               <tbody>
-                {% for close_approach in close_approaches %}
+                {% for close_approach in object.ordered_close_approaches %}
                   <tr>
                     <td>{{close_approach.date | date}}</td>
                     <td>{{close_approach.dist_km|floatformat:0|intcomma}}</td>
@@ -238,14 +238,14 @@ const t = setInterval(function() {
               </tbody>
             </table>
           </div>
-          {% if close_approaches|length > 10 %}
+          {% if object.ordered_close_approaches|length > 10 %}
             <div class="reference-table-gradient"></div>
           {% endif %}
         </div>
       {% endif %}
-      {% if sentry_events %}
+      {% if object.ordered_sentry_events %}
         <p>
-          <a href="https://cneos.jpl.nasa.gov/sentry/details.html#?des={{object.sbdb_entry.pdes}}">NASA Sentry</a> has assessed impact risk for {{sentry_events|length}} very close approach scenarios.  Here are the top scenarios ordered by probability of impact:
+          <a href="https://cneos.jpl.nasa.gov/sentry/details.html#?des={{object.sbdb_entry.pdes}}">NASA Sentry</a> has assessed impact risk for {{object.ordered_sentry_events|length}} very close approach scenarios.  Here are the top scenarios ordered by probability of impact:
           <ul>
           </ul>
           <div class="reference-table">
@@ -261,7 +261,7 @@ const t = setInterval(function() {
                   </tr>
                 </thead>
                 <tbody>
-                  {% for event in sentry_events %}
+                  {% for event in object.ordered_sentry_events %}
                     <tr>
                       <td>{{event.date|date}}</td>
                       <td>{{event.dist_km|floatformat:2|intcomma}}</td>
@@ -273,7 +273,7 @@ const t = setInterval(function() {
                 </tbody>
               </table>
             </div>
-            {% if sentry_events|length > 10 %}
+            {% if object.ordered_sentry_events|length > 10 %}
               <div class="reference-table-gradient"></div>
             {% endif %}
           </div>
@@ -284,12 +284,12 @@ const t = setInterval(function() {
       <p>
         {{object.shorthand}}'s orbit is determined by observations dating back to {{object.firstobs_date | date}}.  It was last officially observed on {{object.lastobs_date | date}}.  The IAU Minor Planet Center records {{object.sbdb_entry.n_obs_used|intcomma}} observations used to determine its orbit.
       </p>
-      {% if shape_models|length %}
+      {% if object.ordered_shape_models|length %}
         <p>
           The renderings below were generated from inverted radar mappings of asteroids.
         </p>
         <p>
-          <a href="/asteroid/{{object.slug}}/shape"><img class="img-responsive" src="{% static shape_models.0.render_path %}" /></a>
+          <a href="/asteroid/{{object.slug}}/shape"><img class="img-responsive" src="{% static object.ordered_shape_models.0.render_path %}" /></a>
         </p>
         <p>
           This object was mapped by radar and scientists have been able to determine its shape.

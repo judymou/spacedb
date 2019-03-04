@@ -50,27 +50,30 @@ def index(request):
                 {
                     'name': 'Largest',
                     'data': SpaceObject.objects.all().order_by('-diameter')[:HOMEPAGE_NUM_ITEMS_PER_LIST],
-                    'description': 'These are among the largest and earliest discovered asteroids in our solar system.'
+                    'description': 'These are among the largest and earliest discovered asteroids in our solar system.',
                 },
                 {
                     'name': 'Upcoming Approaches',
                     'data': close_approaches,
-                    'description': 'These objects have upcoming fly-bys of Earth.'
+                    'description': 'These objects have upcoming fly-bys of Earth.',
+
+                    # Always show close approaches if possible.
+                    'hide_impact_probability': True,
                 },
                 {
                     'name': 'Potential Impactors',
                     'data': potential_impactors,
-                    'description': 'These objects have the potential to impact Earth (listed by probability of impact).'
+                    'description': 'These objects have the potential to impact Earth (listed by probability of impact).',
                 },
                 {
                     'name': 'Potential for Exploration',
                     'data': [x.space_object for x in NhatsObject.objects.all().order_by('min_dv')[:HOMEPAGE_NUM_ITEMS_PER_LIST]],
-                    'description': 'It is relatively inexpensive to send a spacecraft to these objects in terms of propulsive cost (listed by delta-v). '
+                    'description': 'It is relatively inexpensive to send a spacecraft to these objects in terms of propulsive cost (listed by delta-v).',
                 },
                 {
                     'name': 'In Honor Of...',
                     'data': named_after,
-                    'description': 'These objects are named after notable people.'
+                    'description': 'These objects are named after notable people.',
                 },
               ],
           })
@@ -81,15 +84,8 @@ def detail(request, slug):
     except SpaceObject.DoesNotExist:
         return HttpResponseNotFound('Could not find object "%s"' % slug)
 
-    close_approaches = space_object.closeapproach_set.all().order_by('date')
-    sentry_events = space_object.sentryevent_set.all().order_by('-prob')
-    shape_models = space_object.shapemodel_set.all().order_by('-quality')
-
     return render(request, 'spaceobjects/detail.html', {
                 'object': space_object,
-                'close_approaches': close_approaches,
-                'sentry_events': sentry_events,
-                'shape_models': shape_models,
             })
 
 def detail_shape(request, slug):

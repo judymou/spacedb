@@ -20,7 +20,7 @@ def get_diameter_comparison(roid):
     if diameter_sq < 0.0728434:
         return 'the U.S. White House'
     if diameter_sq < 0.234718:
-        return 'the U.S. Capitol'
+        return 'the U.S. Capitol building'
     if diameter_sq < 1.280:
         return 'the Golden Gate Bridge'
     if diameter_sq < 2.35932:

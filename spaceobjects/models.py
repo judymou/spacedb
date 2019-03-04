@@ -194,6 +194,19 @@ class SpaceObject(models.Model):
     def period_in_years(self):
         return float(self.sbdb_entry['per']) / 365.25
 
+    @cached_property
+    def ordered_close_approaches(self):
+        return self.closeapproach_set.all().order_by('date')
+
+    @cached_property
+    def ordered_sentry_events(self):
+        return self.sentryevent_set.all().order_by('-prob')
+
+    @cached_property
+    def ordered_shape_models(self):
+        return self.shapemodel_set.all().order_by('-quality')
+
+
     def get_diameter_estimate_low(self):
         return self.get_diameter_estimate(method='LOW')
 
