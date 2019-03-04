@@ -289,6 +289,7 @@ class SpaceObject(models.Model):
             models.Index(fields=['object_type']),
             models.Index(fields=['is_nea']),
             models.Index(fields=['is_pha']),
+            models.Index(fields=['diameter']),
         ]
 
 class CloseApproach(models.Model):
@@ -305,6 +306,12 @@ class CloseApproach(models.Model):
     @cached_property
     def dist_km(self):
         return self.dist_au * 1.496e8
+
+    class Meta:
+        ordering = ['id']
+        indexes = [
+            models.Index(fields=['date']),
+        ]
 
 class SentryEvent(models.Model):
     space_object = models.ForeignKey(SpaceObject)
@@ -327,6 +334,12 @@ class SentryEvent(models.Model):
             return '%s megatons' % (self.energy_mt)
         return '%s kilotons' % (self.energy_mt * 1000)
 
+    class Meta:
+        ordering = ['id']
+        indexes = [
+            models.Index(fields=['prob']),
+        ]
+
 class NhatsObject(models.Model):
     space_object = models.ForeignKey(SpaceObject)
 
@@ -341,6 +354,12 @@ class NhatsObject(models.Model):
 
     def __str__(self):
         return self.space_object.fullname
+
+    class Meta:
+        ordering = ['id']
+        indexes = [
+            models.Index(fields=['min_dv']),
+        ]
 
 class ShapeModel(models.Model):
     space_object = models.ForeignKey(SpaceObject)
