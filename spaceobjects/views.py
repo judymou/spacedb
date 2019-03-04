@@ -49,7 +49,7 @@ def index(request):
               'object_sets': [
                 {
                     'name': 'Largest',
-                    'data': SpaceObject.objects.all().order_by('-diameter')[:HOMEPAGE_NUM_ITEMS_PER_LIST],
+                    'data': SpaceObject.objects.all().order_by('-diameter').exclude(diameter__isnull=True)[:HOMEPAGE_NUM_ITEMS_PER_LIST],
                     'description': 'These are among the largest and earliest discovered asteroids in our solar system.',
                 },
                 {
