@@ -135,7 +135,7 @@ Object.keys(window.spaceobjects).forEach(function(key) {
                       {% endif %}
                       <br>
                       <div class="tile-desc">
-                        {{object.shorthand}} orbits the sun every {{object.sbdb_entry.per|floatformat:0|intcomma}} days, coming as close as {{object.perihelion|floatformat:2}} AU and reaching as far as {{object.aphelion|floatformat:2}} AU from the sun.
+                        {{object.shorthand}} orbits the sun every {{object.period_in_years|floatformat:2|intcomma}} years, coming as close as {{object.perihelion|floatformat:2}} AU and reaching as far as {{object.aphelion|floatformat:2}} AU from the sun.
                       </div>
                     </div>
                   </div>
