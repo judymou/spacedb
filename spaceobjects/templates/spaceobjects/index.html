@@ -130,8 +130,11 @@ Object.keys(window.spaceobjects).forEach(function(key) {
                       {% if object.is_nea %}
                         <span class="label label-info">Near-Earth</span>
                       {% endif %}
+                      {% if object.ordered_close_approaches|length %}
+                        <span class="label label-warning">Close Approach</span>
+                      {% endif %}
                       {% if object.is_pha %}
-                        <span class="label label-warning">Potentially Hazardous</span>
+                        <span class="label label-danger">Potentially Hazardous</span>
                       {% endif %}
                       <br>
                       <div class="tile-desc">
