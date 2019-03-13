@@ -91,132 +91,164 @@ const t = setInterval(function() {
 
 {% block header %}
 <header class="site-header">
-  <h1 class="mainheading">{{object.name}}</h1>
-  <h2 class="subheading">
-    {% if object.fullname == object.name %}
-      {% if object.has_size_info_estimate %}
-        {{object.size_adjective|capfirst}}
+  <div class="container">
+    <h1 class="mainheading">{{object.name}}</h1>
+    <h2 class="subheading">
+      {% if object.fullname == object.name %}
+        {% if object.has_size_info_estimate %}
+          {{object.size_adjective|capfirst}}
+        {% endif %}
+        {{object.orbit_class.name}}
+      {% else %}
+        {{object.fullname}}
       {% endif %}
-      {{object.orbit_class.name}}
-    {% else %}
-      {{object.fullname}}
-    {% endif %}
-    {% if object.is_nea %}
-      &nbsp;
-      <span class="label label-info"><a href="/category/near-earth-asteroids">Near-Earth</a></span>
-    {% endif %}
-    {% if object.is_pha %}
-      <span class="label label-warning"><a href="/category/potentially-hazardous-asteroids">Potentially Hazardous</a></span>
-    {% endif %}
-  </h2>
-  <div class="orbit-diagram"></div>
+      {% if object.is_nea %}
+        &nbsp;
+        <span class="label label-info"><a href="/category/near-earth-asteroids">Near-Earth</a></span>
+      {% endif %}
+      {% if object.is_pha %}
+        <span class="label label-warning"><a href="/category/potentially-hazardous-asteroids">Potentially Hazardous</a></span>
+      {% endif %}
+    </h2>
+    <div class="orbit-diagram"></div>
+  </div>
 </header>
 {% endblock %}
 
 {% block content %}
-<div>
-  <div class="breadcrumbs">
-    <a href="/">Space Reference</a>
-    &raquo;
-    <a href="/category/{{object.orbit_class.slug}}">{{object.orbit_class.name}}s</a>
-    &raquo;
-    {{object.name}}
-  </div>
-  <div class="item-container col-sm-8">
-    <div class="item-container__inner">
-      <h3>Key Facts</h3>
-      <ul class="keyfacts">
-        <li>Classified as a <a href="/category/{{object.orbit_class.slug}}">{{object.orbit_class.name}}</a></li>
-        {% if object.has_size_info %}
-          <li>Comparable in size to {{object.get_diameter_comparison}} ({{object.sbdb_entry.diameter | floatformat:2}} km diameter)</li>
-        {% elif object.has_size_info_estimate %}
-            <li>Comparable in size to {{object.get_diameter_comparison}}</li>
-        {% endif %}
-        {% if object.closeapproach_set.all|length %}
-          {% with approach=object.closeapproach_set.all.0 %}
-            <li>Will pass within {{approach.dist_km|floatformat:0|intcomma}} km of Earth in {{approach.date|date:"Y"}}</li>
-          {% endwith %}
-        {% endif %}
-        {% if object.is_nea %}
-        <li>Classified as a Near Earth Asteroid (NEA)</li>
-        {% else %}
-        <li>Not a Near Earth Asteroid (NEA)</li>
-        {% endif %}
-        {% if object.is_pha %}
-        <li>Classified as a Potentially Hazardous Asteroid (PHA)</li>
-        {% else %}
-        <li>Not a Potentially Hazardous Asteroid (PHA)</li>
-        {% endif %}
-        <li><a href="/solar-system#ob={{object.slug}}">See orbit simulation</a></li>
-      </ul>
-      <h3>Overview</h3>
-      <p>
-      {% if object.is_dwarf_planet %}
-        {{object.name}} is a dwarf planet {{object.orbit_class.orbit_sentence}}.
-      {% elif object.has_size_info_estimate %}
-        {{object.name}} is a {{object.size_adjective}} {{object.get_object_type}} {{object.orbit_class.orbit_sentence}}.
-      {% else %}
-        {{object.get_object_type|capfirst}} {{object.name}} is an object {{object.orbit_class.orbit_sentence}}.
-      {% endif %}
-
-      {% if object.is_pha and object.is_nea %}
-          NASA JPL has classified {{object.shorthand}} as a "Potentially Hazardous Asteroid" due to its predicted close pass(es) with Earth.
-      {% elif object.is_nea %}
-          NASA JPL has classified {{object.shorthand}} as a "Near Earth Asteroid" due to its orbit's proximity to Earth, but it is not considered potentially hazardous because computer simulations have not indicated any imminent likelihood of collision.
-      {% else %}
-          NASA JPL has not classified {{object.shorthand}} as potentially hazardous because its orbit does not bring it close to Earth.
-      {% endif %}
-      </p>
-      <p>
-      {{object.shorthand}} <!--was discovered in the year {{object.firstobs_date|date:"Y"}}.  It--> orbits the sun every {{object.period_in_days|floatformat:0|intcomma}} days ({{object.period_in_years|floatformat:2|intcomma}} years), coming as close as {{object.perihelion|floatformat:2}} AU and reaching as far as {{object.aphelion|floatformat:2}} AU from the sun.
-      {% if object.e > .7 %}
-        Its orbit is highly elliptical.
-      {% endif %}
+<div class="breadcrumbs">
+  <a href="/">Space Reference</a>
+  &raquo;
+  <a href="/category/{{object.orbit_class.slug}}">{{object.orbit_class.name}}s</a>
+  &raquo;
+  {{object.name}}
+</div>
+<div class="item-container col-sm-8">
+  <div class="item-container__inner">
+    <h3>Key Facts</h3>
+    <ul class="keyfacts">
+      <li>Classified as a <a href="/category/{{object.orbit_class.slug}}">{{object.orbit_class.name}}</a></li>
       {% if object.has_size_info %}
-        {{object.shorthand}} is about {{object.sbdb_entry.diameter | floatformat:1}} kilometers in diameter, making it {{object.get_size_rough_comparison}}, comparable in size to {{object.get_diameter_comparison}}.
+        <li>Comparable in size to {{object.get_diameter_comparison}} ({{object.sbdb_entry.diameter | floatformat:2}} km diameter)</li>
       {% elif object.has_size_info_estimate %}
-        Based on its brightness and the way it reflects light, {{object.shorthand}} is <a href="https://cneos.jpl.nasa.gov/tools/ast_size_est.html">probably</a> between {{object.get_diameter_estimate_low | floatformat:2}} to {{object.get_diameter_estimate_high | floatformat:2}} kilometers in diameter, making it {{object.get_size_rough_comparison}}, very roughly comparable in size to {{object.get_diameter_comparison}}.
+          <li>Comparable in size to {{object.get_diameter_comparison}}</li>
       {% endif %}
-      </p>
-
-      {% if object.sbdb_entry.rot_per %}
-        <p>
-        The rotation of {{object.shorthand}} has been observed. It completes a rotation on its axis every {{object.sbdb_entry.rot_per|floatformat:2}} days.
-        </p>
+      {% if object.closeapproach_set.all|length %}
+        {% with approach=object.closeapproach_set.all.0 %}
+          <li>Will pass within {{approach.dist_km|floatformat:0|intcomma}} km of Earth in {{approach.date|date:"Y"}}</li>
+        {% endwith %}
       {% endif %}
-
-      {% if object.composition %}
-        <p>
-        {{object.shorthand}}'s spectral type {{object.sbdb_entry.spec_T}} (<a href="http://adsabs.harvard.edu/abs/1989aste.conf..298T">Tholen</a>) / {{object.sbdb_entry.spec_B}} (<a href="http://smass.mit.edu/smass.html">SMASSII</a>) indicates that it is likely to contain
-        {% include 'spaceobjects/partials/composition.html' %}
-        </p>
-      {% endif %}
-
-      {% if object.ordered_close_approaches|length < 1 and object.ordered_sentry_events|length < 1 %}
-        <h3>No Close Approaches</h3>
+      {% if object.is_nea %}
+      <li>Classified as a Near Earth Asteroid (NEA)</li>
       {% else %}
-        <h3>Close Approaches</h3>
+      <li>Not a Near Earth Asteroid (NEA)</li>
       {% endif %}
+      {% if object.is_pha %}
+      <li>Classified as a Potentially Hazardous Asteroid (PHA)</li>
+      {% else %}
+      <li>Not a Potentially Hazardous Asteroid (PHA)</li>
+      {% endif %}
+      <li><a href="/solar-system#ob={{object.slug}}">See orbit simulation</a></li>
+    </ul>
+    <h3>Overview</h3>
+    <p>
+    {% if object.is_dwarf_planet %}
+      {{object.name}} is a dwarf planet {{object.orbit_class.orbit_sentence}}.
+    {% elif object.has_size_info_estimate %}
+      {{object.name}} is a {{object.size_adjective}} {{object.get_object_type}} {{object.orbit_class.orbit_sentence}}.
+    {% else %}
+      {{object.get_object_type|capfirst}} {{object.name}} is an object {{object.orbit_class.orbit_sentence}}.
+    {% endif %}
+
+    {% if object.is_pha and object.is_nea %}
+        NASA JPL has classified {{object.shorthand}} as a "Potentially Hazardous Asteroid" due to its predicted close pass(es) with Earth.
+    {% elif object.is_nea %}
+        NASA JPL has classified {{object.shorthand}} as a "Near Earth Asteroid" due to its orbit's proximity to Earth, but it is not considered potentially hazardous because computer simulations have not indicated any imminent likelihood of collision.
+    {% else %}
+        NASA JPL has not classified {{object.shorthand}} as potentially hazardous because its orbit does not bring it close to Earth.
+    {% endif %}
+    </p>
+    <p>
+    {{object.shorthand}} <!--was discovered in the year {{object.firstobs_date|date:"Y"}}.  It--> orbits the sun every {{object.period_in_days|floatformat:0|intcomma}} days ({{object.period_in_years|floatformat:2|intcomma}} years), coming as close as {{object.perihelion|floatformat:2}} AU and reaching as far as {{object.aphelion|floatformat:2}} AU from the sun.
+    {% if object.e > .7 %}
+      Its orbit is highly elliptical.
+    {% endif %}
+    {% if object.has_size_info %}
+      {{object.shorthand}} is about {{object.sbdb_entry.diameter | floatformat:1}} kilometers in diameter, making it {{object.get_size_rough_comparison}}, comparable in size to {{object.get_diameter_comparison}}.
+    {% elif object.has_size_info_estimate %}
+      Based on its brightness and the way it reflects light, {{object.shorthand}} is <a href="https://cneos.jpl.nasa.gov/tools/ast_size_est.html">probably</a> between {{object.get_diameter_estimate_low | floatformat:2}} to {{object.get_diameter_estimate_high | floatformat:2}} kilometers in diameter, making it {{object.get_size_rough_comparison}}, very roughly comparable in size to {{object.get_diameter_comparison}}.
+    {% endif %}
+    </p>
+
+    {% if object.sbdb_entry.rot_per %}
       <p>
-      {{object.shorthand}}'s orbit is {{object.moid | floatformat:2}} AU from Earth's orbit at its closest point.
-      {% if object.moid > 0.01 %}
-        This means that there is a wide berth between this asteroid and Earth at all times.
-      {% else %}
-        This means that its orbit is relatively close to Earth's orbit.
-      {% endif %}
+      The rotation of {{object.shorthand}} has been observed. It completes a rotation on its axis every {{object.sbdb_entry.rot_per|floatformat:2}} days.
       </p>
-      {% if object.sbdb_entry.moid_jup < 0.5 %}
-        <p>
-          The orbit of {{object.shorthand}} brings it close to Jupiter's orbit.
-        </p>
-      {% endif %}
+    {% endif %}
+
+    {% if object.composition %}
       <p>
-      {% if object.ordered_close_approaches|length < 1 %}
-        Orbital simulations conducted by NASA JPL's CNEOS do not show any close approaches to Earth.
-      {% else %}
-        <p>
-          {{object.shorthand}} has {{object.ordered_close_approaches|length}} close approaches predicted in the coming decades:
-        </p>
+      {{object.shorthand}}'s spectral type {{object.sbdb_entry.spec_T}} (<a href="http://adsabs.harvard.edu/abs/1989aste.conf..298T">Tholen</a>) / {{object.sbdb_entry.spec_B}} (<a href="http://smass.mit.edu/smass.html">SMASSII</a>) indicates that it is likely to contain
+      {% include 'spaceobjects/partials/composition.html' %}
+      </p>
+    {% endif %}
+
+    {% if object.ordered_close_approaches|length < 1 and object.ordered_sentry_events|length < 1 %}
+      <h3>No Close Approaches</h3>
+    {% else %}
+      <h3>Close Approaches</h3>
+    {% endif %}
+    <p>
+    {{object.shorthand}}'s orbit is {{object.moid | floatformat:2}} AU from Earth's orbit at its closest point.
+    {% if object.moid > 0.01 %}
+      This means that there is a wide berth between this asteroid and Earth at all times.
+    {% else %}
+      This means that its orbit is relatively close to Earth's orbit.
+    {% endif %}
+    </p>
+    {% if object.sbdb_entry.moid_jup < 0.5 %}
+      <p>
+        The orbit of {{object.shorthand}} brings it close to Jupiter's orbit.
+      </p>
+    {% endif %}
+    <p>
+    {% if object.ordered_close_approaches|length < 1 %}
+      Orbital simulations conducted by NASA JPL's CNEOS do not show any close approaches to Earth.
+    {% else %}
+      <p>
+        {{object.shorthand}} has {{object.ordered_close_approaches|length}} close approaches predicted in the coming decades:
+      </p>
+      <div class="reference-table">
+        <div class="reference-table-content">
+          <table class="table table-striped table-hover table-condensed">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Distance from Earth (km)</th>
+                <th>Velocity (km/s)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for close_approach in object.ordered_close_approaches %}
+                <tr>
+                  <td>{{close_approach.date | date}}</td>
+                  <td>{{close_approach.dist_km|floatformat:0|intcomma}}</td>
+                  <td>{{close_approach.v_rel|floatformat:3}}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% if object.ordered_close_approaches|length > 10 %}
+          <div class="reference-table-gradient"></div>
+        {% endif %}
+      </div>
+    {% endif %}
+    {% if object.ordered_sentry_events %}
+      <p>
+        <a href="https://cneos.jpl.nasa.gov/sentry/details.html#?des={{object.sbdb_entry.pdes}}">NASA Sentry</a> has assessed impact risk for {{object.ordered_sentry_events|length}} very close approach scenarios.  Here are the top scenarios ordered by probability of impact:
+        <ul>
+        </ul>
         <div class="reference-table">
           <div class="reference-table-content">
             <table class="table table-striped table-hover table-condensed">
@@ -224,203 +256,171 @@ const t = setInterval(function() {
                 <tr>
                   <th>Date</th>
                   <th>Distance from Earth (km)</th>
-                  <th>Velocity (km/s)</th>
+                  <th>Distance Error (km)</th>
+                  <th>Probability of Impact (%)</th>
+                  <th>Impact Energy (Mt)</th>
                 </tr>
               </thead>
               <tbody>
-                {% for close_approach in object.ordered_close_approaches %}
+                {% for event in object.ordered_sentry_events %}
                   <tr>
-                    <td>{{close_approach.date | date}}</td>
-                    <td>{{close_approach.dist_km|floatformat:0|intcomma}}</td>
-                    <td>{{close_approach.v_rel|floatformat:3}}</td>
+                    <td>{{event.date|date}}</td>
+                    <td>{{event.dist_km|floatformat:2|intcomma}}</td>
+                    <td>±{{event.dist_err|floatformat:2|intcomma}}</td>
+                    <td>{{event.prob_percentage|floatformat:5}}</td>
+                    <td>{{event.energy_mt}}</td>
                   </tr>
                 {% endfor %}
               </tbody>
             </table>
           </div>
-          {% if object.ordered_close_approaches|length > 10 %}
+          {% if object.ordered_sentry_events|length > 10 %}
             <div class="reference-table-gradient"></div>
           {% endif %}
         </div>
-      {% endif %}
-      {% if object.ordered_sentry_events %}
-        <p>
-          <a href="https://cneos.jpl.nasa.gov/sentry/details.html#?des={{object.sbdb_entry.pdes}}">NASA Sentry</a> has assessed impact risk for {{object.ordered_sentry_events|length}} very close approach scenarios.  Here are the top scenarios ordered by probability of impact:
-          <ul>
-          </ul>
-          <div class="reference-table">
-            <div class="reference-table-content">
-              <table class="table table-striped table-hover table-condensed">
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Distance from Earth (km)</th>
-                    <th>Distance Error (km)</th>
-                    <th>Probability of Impact (%)</th>
-                    <th>Impact Energy (Mt)</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for event in object.ordered_sentry_events %}
-                    <tr>
-                      <td>{{event.date|date}}</td>
-                      <td>{{event.dist_km|floatformat:2|intcomma}}</td>
-                      <td>±{{event.dist_err|floatformat:2|intcomma}}</td>
-                      <td>{{event.prob_percentage|floatformat:5}}</td>
-                      <td>{{event.energy_mt}}</td>
-                    </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
-            </div>
-            {% if object.ordered_sentry_events|length > 10 %}
-              <div class="reference-table-gradient"></div>
-            {% endif %}
-          </div>
-        </p>
-      {% endif %}
       </p>
-      <h3>Images and Observations</h3>
+    {% endif %}
+    </p>
+    <h3>Images and Observations</h3>
+    <p>
+      {{object.shorthand}}'s orbit is determined by observations dating back to {{object.firstobs_date | date}}.  It was last officially observed on {{object.lastobs_date | date}}.  The IAU Minor Planet Center records {{object.sbdb_entry.n_obs_used|intcomma}} observations used to determine its orbit.
+    </p>
+    {% if object.ordered_shape_models|length %}
       <p>
-        {{object.shorthand}}'s orbit is determined by observations dating back to {{object.firstobs_date | date}}.  It was last officially observed on {{object.lastobs_date | date}}.  The IAU Minor Planet Center records {{object.sbdb_entry.n_obs_used|intcomma}} observations used to determine its orbit.
+        The renderings below were generated from inverted radar mappings of asteroids.
       </p>
-      {% if object.ordered_shape_models|length %}
-        <p>
-          The renderings below were generated from inverted radar mappings of asteroids.
-        </p>
-        <p>
-          <a href="/asteroid/{{object.slug}}/shape"><img class="img-responsive" src="{% static object.ordered_shape_models.0.render_path %}" /></a>
-        </p>
-        <p>
-          This object was mapped by radar and scientists have been able to determine its shape.
-          <br>
-          <strong>View <a href="/asteroid/{{object.slug}}/shape">{{object.get_object_type}} {{object.name}} in 3D</a>.</strong>
-        </p>
-      {% endif %}
-      <h3>Accessibility and Exploration</h3>
-      {% if object.nhatsobject_set.all|length %}
-        {% with nhats=object.nhatsobject_set.all.0 %}
-          <p>
-            {{object.shorthand}} can be reached with a journey of {{nhats.min_dv_duration|floatformat:0|intcomma}} days. This trajectory would require a <a href="https://en.wikipedia.org/wiki/Delta-v_budget">delta-v</a> of {{nhats.min_dv}} km/s.  To put this into perspective, the delta-v to launch a rocket to Low-Earth Orbit is 9.7 km/s.  There are {{nhats.num_trajectories|intcomma}} potential trajectories and launch windows to this {{object.get_object_type}}.
-          </p>
-          <p>
-            See more at the <a href="https://cneos.jpl.nasa.gov/nhats/details.html#?des={{object.sbdb_entry.pdes}}">NHATS Mission Trajectories</a> table for {{object.shorthand}}.
-          </p>
-        {% endwith %}
-      {% else %}
-        This {{object.get_object_type}} is not considered a viable target for human exploration by the <a href="https://cneos.jpl.nasa.gov/nhats/">NHATS study</a>.
-      {% endif %}
-      {% if object.get_similar_orbits|length %}
-      <h3>Similar Objects</h3>
-      These objects have orbits that share similar characteristics to the orbit of {{object.shorthand}}:
-      <ul>
-      {% for similar in object.get_similar_orbits %}
-        <li>
-          <a rel="nofollow" href="/asteroid/{{similar.slug}}">{{similar.fullname}}</a>
-        </li>
-      {% endfor %}
-      </ul>
-      {% endif %}
-      <h3>References</h3>
-      <ul>
-        <li><a rel="nofollow" href="https://ssd.jpl.nasa.gov/sbdb.cgi?sstr={{object.sbdb_entry.pdes}}">JPL Small Body Database</a></li>
-        <li><a rel="nofollow" href="https://in-the-sky.org/findercharts.php?objtxt=A{{object.sbdb_entry.pdes}}&duration=5">Sky Finder Chart</a></li>
-      </ul>
-    </div>
-  </div>
-  <div class="item-container item-container__rightside col-sm-4">
-    <div class="item-container__inner">
-      <h4>Search</h4>
-      <div class="react-search"></div>
-      &nbsp;&nbsp; or view a <a rel="nofollow" href="/asteroid/random">random</a> object
-    </div>
-  </div>
-  <div class="item-container item-container__rightside col-sm-4">
-    <div class="item-container__inner">
-      <h4>Orbital Elements</h4>
-      <ul class="keyfacts">
-        <li>Epoch: {{object.epoch}} JD</li>
-        <li>Semi-major axis: {{object.a}} AU</li>
-        <li>Eccentricity: {{object.e}}</li>
-        <li>Inclination: {{object.i}}°</li>
-        <li>Longitude of Ascending Node: {{object.om}}°</li>
-        <li>Argument of Periapsis: {{object.w}}°</li>
-        <li>Mean Anomaly: {{object.ma}}°</li>
-      </ul>
-    </div>
-  </div>
-  <div class="item-container item-container__rightside col-sm-4">
-    <div class="item-container__inner">
-      <h4>Physical Characteristics</h4>
-      <ul class="keyfacts">
-        {% if object.has_size_info %}
-          <li>Diameter: {{object.sbdb_entry.diameter | floatformat:5}} km</li>
-        {% elif object.has_size_info_estimate %}
-          <li>Diameter: ~{{object.get_diameter_estimate | floatformat:2}} km</li>
-        {% endif %}
-        {% if object.H %}
-          <li>Magnitude: {{object.sbdb_entry.H}}</li>
-        {% endif %}
-        {% if object.sbdb_entry.albedo %}
-          <li>Albedo: {{object.sbdb_entry.albedo}}</li>
-        {% endif %}
-        {% if object.sbdb_entry.spec_T %}
-          <li>Spectral type (Tholen): {{object.spec_T}}</li>
-        {% endif %}
-        {% if object.sbdb_entry.spec_B %}
-          <li>Spectral type (SMASS): {{object.spec_B}}</li>
-        {% endif %}
-      </ul>
-    </div>
-  </div>
-  <div class="item-container item-container__rightside col-sm-4">
-    <div class="item-container__inner">
-      <h4>Derived Characteristics</h4>
-      <ul class="keyfacts">
-        <li>Orbit Period: {{object.period_in_days|floatformat:0|intcomma}} days ({{object.period_in_years|floatformat:2|intcomma}} years)</li>
-        <li>Avg. Orbit Speed: {{object.avg_orbital_speed|floatformat:2|intcomma}} km/s</li>
-        <li>Aphelion Distance: {{object.aphelion|floatformat:2}} AU</li>
-        <li>Perihelion Distance: {{object.perihelion|floatformat:2}} AU</li>
-        {% if object.sbdb_entry.rot_per %}
-          <li>Rotation Period: {{object.sbdb_entry.rot_per|floatformat:2|intcomma}} days</li>
-        {% endif %}
-        {% if object.composition %}
-          <li>Approx. Composition: {% include 'spaceobjects/partials/composition.html' %}</li>
-        {% endif %}
-      </ul>
-    </div>
-  </div>
-  <div class="item-container item-container__rightside col-sm-4">
-    <div class="item-container__inner">
-      <h4>Size Comparison</h4>
-        <div id="size-comparison"></div>
-    </div>
-  </div>
-  <div class="item-container col-sm-12">
-    <div class="item-container__inner">
-      <h3>Orbit Simulation</h3>
-      <div class="vis-panel">
-        <div class="vis-controls">
-          <button class="vis-controls__slower">Slower</button>
-          <button class="vis-controls__faster">Faster</button>
-          <button class="vis-controls__set-date">Set Date</button>
-          <span class="vis-status"></span>
-          <span class="vis-fullscreen-shortcut"><a href="/solar-system#ob={{object.slug}}">⛶ </a></span>
-        </div>
-        <div id="orbit-sim" class="vis-container vis-container__detail"></div>
-      </div>
-    </div>
-  </div>
-  <div class="item-container col-sm-12">
-    <div class="item-container__inner">
-      <h3>Sky Map</h3>
       <p>
-        The position of {{object.name}} is indicated by a <span style="color:rgba(255, 0, 204, 1);font-weight:bold">◯ pink circle</span>.  Note that the object may not be in your current field of view.  Use the controls below to adjust position, location, and time.
+        <a href="/asteroid/{{object.slug}}/shape"><img class="img-responsive" src="{% static object.ordered_shape_models.0.render_path %}" /></a>
       </p>
-      <div class="skymap-container">
-        <div id="celestial-map" class="skymap-panel"></div>
-        <div id="celestial-form"></div>
+      <p>
+        This object was mapped by radar and scientists have been able to determine its shape.
+        <br>
+        <strong>View <a href="/asteroid/{{object.slug}}/shape">{{object.get_object_type}} {{object.name}} in 3D</a>.</strong>
+      </p>
+    {% endif %}
+    <h3>Accessibility and Exploration</h3>
+    {% if object.nhatsobject_set.all|length %}
+      {% with nhats=object.nhatsobject_set.all.0 %}
+        <p>
+          {{object.shorthand}} can be reached with a journey of {{nhats.min_dv_duration|floatformat:0|intcomma}} days. This trajectory would require a <a href="https://en.wikipedia.org/wiki/Delta-v_budget">delta-v</a> of {{nhats.min_dv}} km/s.  To put this into perspective, the delta-v to launch a rocket to Low-Earth Orbit is 9.7 km/s.  There are {{nhats.num_trajectories|intcomma}} potential trajectories and launch windows to this {{object.get_object_type}}.
+        </p>
+        <p>
+          See more at the <a href="https://cneos.jpl.nasa.gov/nhats/details.html#?des={{object.sbdb_entry.pdes}}">NHATS Mission Trajectories</a> table for {{object.shorthand}}.
+        </p>
+      {% endwith %}
+    {% else %}
+      This {{object.get_object_type}} is not considered a viable target for human exploration by the <a href="https://cneos.jpl.nasa.gov/nhats/">NHATS study</a>.
+    {% endif %}
+    {% if object.get_similar_orbits|length %}
+    <h3>Similar Objects</h3>
+    These objects have orbits that share similar characteristics to the orbit of {{object.shorthand}}:
+    <ul>
+    {% for similar in object.get_similar_orbits %}
+      <li>
+        <a rel="nofollow" href="/asteroid/{{similar.slug}}">{{similar.fullname}}</a>
+      </li>
+    {% endfor %}
+    </ul>
+    {% endif %}
+    <h3>References</h3>
+    <ul>
+      <li><a rel="nofollow" href="https://ssd.jpl.nasa.gov/sbdb.cgi?sstr={{object.sbdb_entry.pdes}}">JPL Small Body Database</a></li>
+      <li><a rel="nofollow" href="https://in-the-sky.org/findercharts.php?objtxt=A{{object.sbdb_entry.pdes}}&duration=5">Sky Finder Chart</a></li>
+    </ul>
+  </div>
+</div>
+<div class="item-container item-container__rightside col-sm-4">
+  <div class="item-container__inner">
+    <h4>Search</h4>
+    <div class="react-search"></div>
+    &nbsp;&nbsp; or view a <a rel="nofollow" href="/asteroid/random">random</a> object
+  </div>
+</div>
+<div class="item-container item-container__rightside col-sm-4">
+  <div class="item-container__inner">
+    <h4>Orbital Elements</h4>
+    <ul class="keyfacts">
+      <li>Epoch: {{object.epoch}} JD</li>
+      <li>Semi-major axis: {{object.a}} AU</li>
+      <li>Eccentricity: {{object.e}}</li>
+      <li>Inclination: {{object.i}}°</li>
+      <li>Longitude of Ascending Node: {{object.om}}°</li>
+      <li>Argument of Periapsis: {{object.w}}°</li>
+      <li>Mean Anomaly: {{object.ma}}°</li>
+    </ul>
+  </div>
+</div>
+<div class="item-container item-container__rightside col-sm-4">
+  <div class="item-container__inner">
+    <h4>Physical Characteristics</h4>
+    <ul class="keyfacts">
+      {% if object.has_size_info %}
+        <li>Diameter: {{object.sbdb_entry.diameter | floatformat:5}} km</li>
+      {% elif object.has_size_info_estimate %}
+        <li>Diameter: ~{{object.get_diameter_estimate | floatformat:2}} km</li>
+      {% endif %}
+      {% if object.H %}
+        <li>Magnitude: {{object.sbdb_entry.H}}</li>
+      {% endif %}
+      {% if object.sbdb_entry.albedo %}
+        <li>Albedo: {{object.sbdb_entry.albedo}}</li>
+      {% endif %}
+      {% if object.sbdb_entry.spec_T %}
+        <li>Spectral type (Tholen): {{object.spec_T}}</li>
+      {% endif %}
+      {% if object.sbdb_entry.spec_B %}
+        <li>Spectral type (SMASS): {{object.spec_B}}</li>
+      {% endif %}
+    </ul>
+  </div>
+</div>
+<div class="item-container item-container__rightside col-sm-4">
+  <div class="item-container__inner">
+    <h4>Derived Characteristics</h4>
+    <ul class="keyfacts">
+      <li>Orbit Period: {{object.period_in_days|floatformat:0|intcomma}} days ({{object.period_in_years|floatformat:2|intcomma}} years)</li>
+      <li>Avg. Orbit Speed: {{object.avg_orbital_speed|floatformat:2|intcomma}} km/s</li>
+      <li>Aphelion Distance: {{object.aphelion|floatformat:2}} AU</li>
+      <li>Perihelion Distance: {{object.perihelion|floatformat:2}} AU</li>
+      {% if object.sbdb_entry.rot_per %}
+        <li>Rotation Period: {{object.sbdb_entry.rot_per|floatformat:2|intcomma}} days</li>
+      {% endif %}
+      {% if object.composition %}
+        <li>Approx. Composition: {% include 'spaceobjects/partials/composition.html' %}</li>
+      {% endif %}
+    </ul>
+  </div>
+</div>
+<div class="item-container item-container__rightside col-sm-4">
+  <div class="item-container__inner">
+    <h4>Size Comparison</h4>
+      <div id="size-comparison"></div>
+  </div>
+</div>
+<div class="item-container col-sm-12">
+  <div class="item-container__inner">
+    <h3>Orbit Simulation</h3>
+    <div class="vis-panel">
+      <div class="vis-controls">
+        <button class="vis-controls__slower">Slower</button>
+        <button class="vis-controls__faster">Faster</button>
+        <button class="vis-controls__set-date">Set Date</button>
+        <span class="vis-status"></span>
+        <span class="vis-fullscreen-shortcut"><a href="/solar-system#ob={{object.slug}}">⛶ </a></span>
       </div>
+      <div id="orbit-sim" class="vis-container vis-container__detail"></div>
+    </div>
+  </div>
+</div>
+<div class="item-container col-sm-12">
+  <div class="item-container__inner">
+    <h3>Sky Map</h3>
+    <p>
+      The position of {{object.name}} is indicated by a <span style="color:rgba(255, 0, 204, 1);font-weight:bold">◯ pink circle</span>.  Note that the object may not be in your current field of view.  Use the controls below to adjust position, location, and time.
+    </p>
+    <div class="skymap-container">
+      <div id="celestial-map" class="skymap-panel"></div>
+      <div id="celestial-form"></div>
     </div>
   </div>
 </div>

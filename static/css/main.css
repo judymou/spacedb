@@ -5,7 +5,7 @@ body {
 .site-header {
   position: relative;
   color: #fff;
-  padding: 2em;
+  padding: 2em 0;
   background: #090a0b no-repeat 50%;
   background-size: cover;
 }
@@ -24,7 +24,6 @@ footer {
   line-height: 3;
 
   color: #ccc;
-  text-align: center;
 }
 
 footer a {

@@ -74,8 +74,12 @@ Object.keys(window.spaceobjects).forEach(function(key) {
 
 {% block header %}
 <header class="site-header">
-  <h1 class="mainheading">Space Reference</h1>
-  <h4 class="subheading">Compiled data &amp; simulations for {{object_count|intcomma}} celestial objects</h4>
+  <div class="container">
+    <div class="row">
+      <h1 class="mainheading">Space Reference</h1>
+      <h4 class="subheading">Compiled data &amp; simulations for {{object_count|intcomma}} celestial objects</h4>
+    </div>
+  </div>
 </header>
 {% endblock %}
 

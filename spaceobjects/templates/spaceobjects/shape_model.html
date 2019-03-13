@@ -17,22 +17,24 @@ window.SHAPE_PATH = "{% static shape_models.0.shape_path %}";
 
 {% block header %}
 <header class="site-header">
-  <h1 class="mainheading">{{object.name}} Shape Model</h1>
-  <h2 class="subheading">
-    {% if object.fullname == object.name %}
-      {{object.size_adjective|capfirst}} {{object.orbit_class.name}}
-    {% else %}
-      {{object.fullname}}
-    {% endif %}
-    {% if object.is_nea %}
-      &nbsp;
-      <span class="label label-info">Near-Earth</span>
-    {% endif %}
-    {% if object.is_pha %}
-      <span class="label label-warning">Potentially Hazardous</span>
-    {% endif %}
-  </h2>
-  <div class="orbit-diagram"></div>
+  <div class="container">
+    <h1 class="mainheading">{{object.name}} Shape Model</h1>
+    <h2 class="subheading">
+      {% if object.fullname == object.name %}
+        {{object.size_adjective|capfirst}} {{object.orbit_class.name}}
+      {% else %}
+        {{object.fullname}}
+      {% endif %}
+      {% if object.is_nea %}
+        &nbsp;
+        <span class="label label-info">Near-Earth</span>
+      {% endif %}
+      {% if object.is_pha %}
+        <span class="label label-warning">Potentially Hazardous</span>
+      {% endif %}
+    </h2>
+    <div class="orbit-diagram"></div>
+  </div>
 </header>
 {% endblock %}
 
