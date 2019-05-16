@@ -58,8 +58,8 @@ def process_shapes():
             spaceobject_lookup[fullname] = space_object
 
         # Create ShapeModel object
-        shape_path = '/data/shapefiles/manual/%s.obj' % shape['shape_path']
-        render_path = '/data/shapefiles/manual/%s.shape.png' % shape['render_path']
+        shape_path = '/data/shapefiles/manual/%s' % shape['shape_path']
+        render_path = '/data/shapefiles/manual/%s' % shape['render_path']
 
         newobjects.append(ShapeModel(space_object=space_object,
                             shape_path=shape_path,
