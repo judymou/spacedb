@@ -372,16 +372,16 @@ class ShapeModel(models.Model):
 
     # Ecliptic lat/lng of the spin axis direction (beta and lambda
     # respectively).
-    spin_latitude = models.FloatField()
-    spin_longitude = models.FloatField()
+    spin_latitude = models.FloatField(null=True, blank=True)
+    spin_longitude = models.FloatField(null=True, blank=True)
     # Initial rotation angle (phi)
-    spin_angle = models.FloatField()
+    spin_angle = models.FloatField(null=True, blank=True)
 
     # Period in hours
-    period_hr = models.FloatField()
+    period_hr = models.FloatField(null=True, blank=True)
 
     # Initial julian date
-    jd = models.FloatField()
+    jd = models.FloatField(null=True, blank=True)
 
     # Linear change in the rotation rate (dω / dt) caused by the
     # Yarkovsky-O'Keefe-Radzievskii-Paddack effect (rad / day2)
