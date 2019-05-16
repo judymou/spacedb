@@ -395,7 +395,7 @@ class ShapeModel(models.Model):
     equiv_diameter_km = models.FloatField(null=True, blank=True)
 
     # Quality level
-    quality = models.FloatField()
+    quality = models.FloatField(null=True, blank=True)
 
 admin.site.register(SpaceObject)
 admin.site.register(CloseApproach)
