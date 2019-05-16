@@ -25,7 +25,8 @@ SHAPES = [
         'name': '486958 (2014 MU69)',
         'shape_path': '2014_mu69.obj',
         'render_path': '2014_mu69.png',
-        'credit': 'Stern et al, https://science.sciencemag.org/content/364/6441/eaaw9771',
+        # https://science.sciencemag.org/content/364/6441/eaaw9771?intcmp=trendmd-sci
+        'source': 'S. A. Stern et al., Science, 2019',
     },
 ]
 
@@ -64,6 +65,7 @@ def process_shapes():
         newobjects.append(ShapeModel(space_object=space_object,
                             shape_path=shape_path,
                             render_path=render_path,
+                            source=shape['source'],
                             ))
     logger.info('%d/%d objects matched' % (matched, count))
 

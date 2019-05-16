@@ -364,6 +364,8 @@ class NhatsObject(models.Model):
 class ShapeModel(models.Model):
     space_object = models.ForeignKey(SpaceObject)
 
+    source = models.CharField(max_length=512)
+
     # Path to shapefile
     shape_path = models.CharField(max_length=200)
 

@@ -104,6 +104,7 @@ def process_shapes(f_in, refs):
                             yorp=yorp,
                             equiv_diameter_km=diam,
                             quality=quality,
+                            source='damit',
                             #reference=reference,
                             ))
     logger.info('%d/%d objects matched' % (matched, count))
