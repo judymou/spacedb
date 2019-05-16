@@ -84,20 +84,26 @@ window.SHAPE_PATH = "{% static shape_models.0.shape_path %}";
         {% endif %}
       </ul>
     </p>
-    <p>
-      <h3>Shape Model Characteristics</h3>
-      At {{shape_models.0.jd}} JD:
-      <ul class="keyfacts">
-        <li>Spin period in hours: {{shape_models.0.period_hr}}</li>
-        <li>Spin latitude: {{shape_models.0.spin_latitude}}</li>
-        <li>Spin longitude: {{shape_models.0.spin_longitude}}</li>
-        <li>Spin angle: {{shape_models.0.spin_angle}}</li>
-        <li>Quality level: {{shape_models.0.quality}}</li>
-      </ul>
-    </p>
-    <p>
-      This shape model of {{object.get_object_type}} {{object.name}} is provided by the <a href="http://astro.troja.mff.cuni.cz/projects/asteroids3D/web.php">DAMIT database</a> from The Astronomical Institute of the Charles University in Prague, Czechia.
-    </p>
+    {% if shape_models.0.source == 'damit' %}
+      <p>
+        <h3>Shape Model Characteristics</h3>
+        At {{shape_models.0.jd}} JD:
+        <ul class="keyfacts">
+          <li>Spin period in hours: {{shape_models.0.period_hr}}</li>
+          <li>Spin latitude: {{shape_models.0.spin_latitude}}</li>
+          <li>Spin longitude: {{shape_models.0.spin_longitude}}</li>
+          <li>Spin angle: {{shape_models.0.spin_angle}}</li>
+          <li>Quality level: {{shape_models.0.quality}}</li>
+        </ul>
+      </p>
+      <p>
+        This shape model of {{object.get_object_type}} {{object.name}} is provided by the <a href="http://astro.troja.mff.cuni.cz/projects/asteroids3D/web.php">DAMIT database</a> from The Astronomical Institute of the Charles University in Prague, Czechia.
+      </p>
+    {% else %}
+      <p>
+        This shape model of {{object.get_object_type}} {{object.name}} is sourced from {{shape_models.0.source}}.
+      </p>
+    {% endif %}
     <p>
       Its rotation and spin angle are set to a constant for the purpose of this visualization and do not reflect.
     </p>
