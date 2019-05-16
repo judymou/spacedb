@@ -14,8 +14,10 @@
   // Create an object for 1998 XO94
   const obj = viz.createShape('myobj', {
     shape: {
-      url: window.SHAPE_PATH,
-      enableRotation: true,
+      shapeUrl: window.SHAPE_PATH,
+    },
+    rotation: {
+      enable: true,
     },
   });
   viz.zoomToFit(obj, 5 /* offset */);

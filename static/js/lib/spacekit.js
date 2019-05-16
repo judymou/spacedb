@@ -709,6 +709,309 @@ var Spacekit = (function (exports) {
   }
 
   /**
+   * @ignore
+   */
+  const ORBIT_SHADER_FRAGMENT = `
+    varying vec3 vColor;
+    uniform sampler2D texture;
+
+    void main() {
+      gl_FragColor = vec4(vColor, 1.0);
+      gl_FragColor = gl_FragColor * texture2D(texture, gl_PointCoord);
+    }
+`;
+
+  /**
+   * @ignore
+   */
+  const ORBIT_SHADER_VERTEX = `
+    uniform float jd;
+
+    attribute vec3 fuzzColor;
+    varying vec3 vColor;
+
+    attribute float size;
+
+    attribute float a;
+    attribute float e;
+    attribute float i;
+    attribute float om;
+    attribute float ma;
+    attribute float n;
+    attribute float w;
+    attribute float wBar;
+    attribute float epoch;
+
+    vec3 getAstroPos() {
+      float i_rad = i;
+      float o_rad = om;
+      float p_rad = wBar;
+      float ma_rad = ma;
+      float n_rad = n;
+
+      float d = jd - epoch;
+      float M = ma_rad + n_rad * d;
+
+      // Estimate eccentric and true anom using iterative approximation (this
+      // is normally an intergral).
+      float E0 = M;
+      float E1 = M + e * sin(E0);
+      float lastdiff = abs(E1-E0);
+      E0 = E1;
+      for (int foo=0; foo < 25; foo++) {
+        E1 = M + e * sin(E0);
+        lastdiff = abs(E1-E0);
+        E0 = E1;
+        if (lastdiff < 0.0000001) {
+          break;
+        }
+      }
+
+      float E = E0;
+      float v = 2.0 * atan(sqrt((1.0+e)/(1.0-e)) * tan(E/2.0));
+
+      // Compute radius vector.
+      float r = a * (1.0 - e*e) / (1.0 + e * cos(v));
+
+      // Compute heliocentric coords.
+      float X = r * (cos(o_rad) * cos(v + p_rad - o_rad) - sin(o_rad) * sin(v + p_rad - o_rad) * cos(i_rad));
+      float Y = r * (sin(o_rad) * cos(v + p_rad - o_rad) + cos(o_rad) * sin(v + p_rad - o_rad) * cos(i_rad));
+      float Z = r * (sin(v + p_rad - o_rad) * sin(i_rad));
+      return vec3(X, Y, Z);
+    }
+
+    vec3 getAstroPosFast() {
+      float M1 = ma + (jd - epoch) * n;
+      float theta = M1 + 2. * e * sin(M1);
+
+      float cosT = cos(theta);
+
+      float r = a * (1. - e * e) / (1. + e * cosT);
+      float v0 = r * cosT;
+      float v1 = r * sin(theta);
+
+      float sinOm = sin(om);
+      float cosOm = cos(om);
+      float sinW = sin(w);
+      float cosW = cos(w);
+      float sinI = sin(i);
+      float cosI = cos(i);
+
+      float X = v0 * (cosOm * cosW - sinOm * sinW * cosI) + v1 * (-1. * cosOm * sinW - sinOm * cosW * cosI);
+      float Y = v0 * (sinOm * cosW + cosOm * sinW * cosI) + v1 * (-1. * sinOm * sinW + cosOm * cosW * cosI);
+      float Z = v0 * (sinW * sinI) + v1 * (cosW * sinI);
+
+      return vec3(X, Y, Z);
+    }
+
+    void main() {
+      vColor = fuzzColor;
+
+      //vec3 newpos = getAstroPosFast();
+      vec3 newpos = getAstroPos();
+      vec4 mvPosition = modelViewMatrix * vec4(newpos, 1.0);
+      gl_Position = projectionMatrix * mvPosition;
+      gl_PointSize = size;
+    }
+`;
+
+  const STAR_SHADER_FRAGMENT = `
+    varying vec3 vColor;
+    void main() {
+        gl_FragColor = vec4(vColor, 1.0);
+    }
+`;
+
+  const STAR_SHADER_VERTEX = `
+    attribute float size;
+    varying vec3 vColor;
+
+    void main() {
+        vColor = color;
+        vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+        gl_PointSize = size;
+        gl_Position = projectionMatrix * mvPosition;
+    }
+`;
+
+  const DEFAULT_PARTICLE_COUNT = 1024;
+
+  /**
+   * An efficient way to render many objects in space with Kepler orbits.
+   * Primarily used by Simulation to render all non-static objects.
+   * @see Simulation
+   */
+  class KeplerParticles {
+    /**
+     * @param {Object} options Options container
+     * @param {Object} options.textureUrl Template url for sprite
+     * @param {Object} options.basePath Base path for simulation supporting files
+     * @param {Number} options.jd JD date value
+     * @param {Number} options.maxNumParticles Maximum number of particles to display. Defaults to 1024
+     * @param {Object} contextOrSimulation Simulation context or object
+     */
+    constructor(options, contextOrSimulation) {
+      this._options = options;
+
+      this._id = `KeplerParticles__${KeplerParticles.instanceCount}`;
+
+      // TODO(ian): Add to ctx
+      {
+        // User passed in Simulation
+        this._simulation = contextOrSimulation;
+        this._context = contextOrSimulation.getContext();
+      }
+
+      // Whether Points object has been added to the Simulation/Scene. This
+      // happens lazily when the first data point is added in order to prevent
+      // WebGL render warnings.
+      this._addedToScene = false;
+
+      // Number of particles in the scene.
+      this._particleCount = 0;
+
+      this._attributes = null;
+      this._uniforms = null;
+      this._geometry = null;
+      this._shaderMaterial = null;
+      this._particleSystem = null;
+
+      this.init();
+    }
+
+    /**
+     * @private
+     */
+    init() {
+      this.createParticleSystem();
+    }
+
+    /**
+     * @private
+     */
+    createParticleSystem() {
+      const fullTextureUrl = getFullTextureUrl(
+        this._options.textureUrl,
+        this._context.options.basePath,
+      );
+      const defaultMapTexture = new THREE.TextureLoader().load(fullTextureUrl);
+
+      this._uniforms = {
+        jd: { value: this._options.jd || 0 },
+        texture: { value: defaultMapTexture },
+      };
+
+      const particleCount = this._options.maxNumParticles || DEFAULT_PARTICLE_COUNT;
+      this._attributes = {
+        size: new THREE.BufferAttribute(new Float32Array(particleCount), 1),
+        position: new THREE.BufferAttribute(new Float32Array(particleCount * 3), 3),
+        fuzzColor: new THREE.BufferAttribute(new Float32Array(particleCount * 3), 3),
+
+        a: new THREE.BufferAttribute(new Float32Array(particleCount), 1),
+        e: new THREE.BufferAttribute(new Float32Array(particleCount), 1),
+        i: new THREE.BufferAttribute(new Float32Array(particleCount), 1),
+        om: new THREE.BufferAttribute(new Float32Array(particleCount), 1),
+        ma: new THREE.BufferAttribute(new Float32Array(particleCount), 1),
+        n: new THREE.BufferAttribute(new Float32Array(particleCount), 1),
+        w: new THREE.BufferAttribute(new Float32Array(particleCount), 1),
+        wBar: new THREE.BufferAttribute(new Float32Array(particleCount), 1),
+        epoch: new THREE.BufferAttribute(new Float32Array(particleCount), 1),
+      };
+
+      const geometry = new THREE.BufferGeometry();
+      geometry.setDrawRange(0, 0);
+      Object.keys(this._attributes).forEach((attributeName) => {
+        const attribute = this._attributes[attributeName];
+        // attribute.setDynamic(true);
+        geometry.addAttribute(attributeName, attribute);
+      });
+
+      const shader = new THREE.ShaderMaterial({
+        uniforms: this._uniforms,
+        vertexShader: ORBIT_SHADER_VERTEX,
+        fragmentShader: ORBIT_SHADER_FRAGMENT,
+
+        depthTest: false,
+        transparent: true,
+      });
+
+
+      this._shaderMaterial = shader;
+      this._geometry = geometry;
+      this._particleSystem = new THREE.Points(geometry, shader);
+    }
+
+    /**
+     * Add a particle to this particle system.
+     * @param {Ephem} ephem Kepler ephemeris
+     * @param {Object} options Options container
+     * @param {Number} options.particleSize Size of particles
+     * @param {Number} options.color Color of particles
+     */
+    addParticle(ephem, options = {}) {
+      const attributes = this._attributes;
+      const offset = this._particleCount++;
+
+      attributes.size.set([options.particleSize || 15], offset);
+      const color = new THREE.Color(options.color || 0xffffff);
+      attributes.fuzzColor.set([color.r, color.g, color.b], offset * 3);
+
+      attributes.a.set([ephem.get('a')], offset);
+      attributes.e.set([ephem.get('e')], offset);
+      attributes.i.set([ephem.get('i', 'rad')], offset);
+      attributes.om.set([ephem.get('om', 'rad')], offset);
+      attributes.ma.set([ephem.get('ma', 'rad')], offset);
+      attributes.n.set([ephem.get('n', 'rad')], offset);
+      attributes.w.set([ephem.get('w', 'rad')], offset);
+      attributes.wBar.set([ephem.get('wBar', 'rad')], offset);
+      attributes.epoch.set([ephem.get('epoch')], offset);
+
+      // TODO(ian): Set the update range
+      for (const attributeKey in attributes) {
+        if (attributes.hasOwnProperty(attributeKey)) {
+          attributes[attributeKey].needsUpdate = true;
+        }
+      }
+      this._shaderMaterial.needsUpdate = true;
+      this._geometry.setDrawRange(0, this._particleCount);
+      this._geometry.needsUpdate = true;
+
+      if (!this._addedToScene && this._simulation) {
+        // This happens lazily when the first data point is added in order to
+        // prevent WebGL render warnings.
+        this._simulation.addObject(this);
+        this._addedToScene = true;
+      }
+    }
+
+    /**
+     * Update the position for all particles
+     * @param {Number} jd JD date
+     */
+    update(jd) {
+      this._uniforms.jd.value = jd;
+    }
+
+    /**
+     * Get THREE.js objects that comprise this point cloud
+     * @return {Array.<THREE.Object>} List of objects to add to THREE.js scene
+     */
+    get3jsObjects() {
+      return [this._particleSystem];
+    }
+
+    /**
+     * Get unique id for this object.
+     * @return {String} Unique id
+     */
+    getId() {
+      return this._id;
+    }
+  }
+
+  KeplerParticles.instanceCount = 0;
+
+  /**
    * @private
    * Minimum number of degrees per day an object must move in order for its
    * position to be updated in the visualization.
@@ -1055,6 +1358,15 @@ var Spacekit = (function (exports) {
     }
 
     /**
+     * Specifies the object that is used to compute the bounding box. By default,
+     * this will be the first THREE.js object in this class's list of objects.
+     * @return {THREE.Object3D} THREE.js object
+     */
+    getBoundingObject() {
+      return this.get3jsObjects()[0];
+    }
+
+    /**
      * Gets the color of this object. Usually this corresponds to the color of
      * the dot representing the object as well as its orbit.
      * @return {Number} A hexidecimal color value, e.g. 0xFFFFFF
@@ -1192,42 +1504,173 @@ var Spacekit = (function (exports) {
     },
   };
 
-  const deg2rad = Math.PI / 180;
-  const rad2deg = 180 / Math.PI;
+  function getAxes() {
+    return [
+      getAxis(new THREE.Vector3(0, 0, 0), new THREE.Vector3(3, 0, 0), 0xff0000),
+      getAxis(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 3, 0), 0x00ff00),
+      getAxis(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 3), 0x0000ff),
+    ];
+  }
 
-  THREE.Object3D.prototype.rotateAroundWorldAxis = (function () {
-    // https://stackoverflow.com/questions/31953608/rotate-object-on-specific-axis-anywhere-in-three-js-including-outside-of-mesh
+  function getAxis(src, dst, color) {
+    const geom = new THREE.Geometry();
+    const mat = new THREE.LineBasicMaterial({ linewidth: 3, color });
 
-    // rotate object around axis in world space (the axis passes through point)
-    // axis is assumed to be normalized
-    // assumes object does not have a rotated parent
+    geom.vertices.push(src.clone());
+    geom.vertices.push(dst.clone());
 
-    const q = new THREE.Quaternion();
+    const axis = new THREE.Line(geom, mat, THREE.LineSegments);
+    axis.computeLineDistances();
+    return axis;
+  }
 
-    return function rotateAroundWorldAxis(point, axis, angle) {
-      q.setFromAxisAngle(axis, angle);
+  /**
+   * This class simulates an object that spins according to provided rotational
+   * parameters.
+   */
+  class RotatingObject extends SpaceObject {
+    /*
+     * FIXME(ian): This implementation is still WIP! Rotational parameters are not
+     * used right now.
+     * @param {boolean} options.rotation.enable Rotate the object
+     * @param {Number} options.rotation.speed Factor that determines speed of rotation
+     * @param {Number} options.rotation.lambdaDeg Ecliptic longitude lambda, in degrees
+     * @param {Number} options.rotation.betaDeg Ecliptic longitude beta, in degrees
+     * @param {Number} options.rotation.period Rotational period, in JD
+     * @param {Number} options.rotation.yorp YORP coefficient, if any (defaults to 0)
+     * @param {Number} options.rotation.phi0 Initial rotation phi, in degrees (defaults to 0)
+     * @param {Number} options.rotation.jd0 JD epoch of rotational parameters
+     * @see SpaceObject
+     */
+    constructor(id, options, contextOrSimulation) {
+      super(id, options, contextOrSimulation, false /* autoInit */);
 
-      this.applyQuaternion(q);
+      this._objectIsRotatable = false;
+      if (this._options.rotation) {
+        this._objectIsRotatable = true;
+      }
 
-      this.position.sub(point);
-      this.position.applyQuaternion(q);
-      this.position.add(point);
+      // The THREE.js object
+      this._obj = new THREE.Object3D();
 
-      return this;
-    };
-  }());
+      // Offset of axis angle
+      this._axisRotationAngleOffset = 0;
+      this._axisOfRotation = undefined;
 
-  class ShapeObject extends SpaceObject {
+      // Keep track of materials that comprise this object.
+      this._materials = [];
+
+      this.init();
+    }
+
+    init() {
+      if (this._objectIsRotatable) {
+        this.initRotation();
+      }
+
+      if (this._options.debug && this._options.debug.showAxes) {
+        getAxes().forEach(axis => this._obj.add(axis));
+
+        const gridHelper = new THREE.GridHelper(3, 3, 0xff0000, 0xffeeee);
+        gridHelper.geometry.rotateX(Math.PI / 2);
+        this._obj.add(gridHelper);
+      }
+    }
+
+    initRotation() {
+      // Formula
+      // https://astro.troja.mff.cuni.cz/projects/asteroids3D/web.php?page=db_description
+
+      // Testing this asteroid:
+      // http://astro.troja.mff.cuni.cz/projects/asteroids3D/web.php?page=db_asteroid_detail&asteroid_id=1504
+      // Model 2691
+      const PI = Math.PI;
+
+      // Cacus
+      // http://astro.troja.mff.cuni.cz/projects/asteroids3D/web.php?page=db_asteroid_detail&asteroid_id=1046
+      // http://astro.troja.mff.cuni.cz/projects/asteroids3D/php.php?script=db_sky_projection&model_id=1863&jd=2443568.0
+
+      const rotation = this._options.rotation;
+
+      // Latitude
+      const lambda = rad(rotation.lambdaDeg);
+
+      // Longitude
+      const beta = rad(rotation.betaDeg);
+
+      // Other
+      const P = rotation.period;
+      const YORP = rotation.yorp;
+      const phi0 = rad(rotation.phi0);
+      const JD = this._simulation.getJd();
+      const JD0 = rotation.jd0;
+
+      // Asteroid rotation
+      // this._obj.rotateOnWorldAxis(new THREE.Vector3(0, 0, 1), lambda);
+      // this._obj.rotateOnWorldAxis(new THREE.Vector3(0, 1, 0), beta);
+
+      // Adjust Z axis according to time.
+      const zAdjust = phi0 + 2 * PI / P * (JD - JD0) + 1 / 2 * YORP * Math.pow(JD - JD0, 2);
+      this._obj.rotateY(-(PI / 2 - beta));
+      this._obj.rotateZ(-lambda);
+      this._obj.rotateZ(zAdjust);
+    }
+
+    /**
+     * Updates the object and its label positions for a given time.
+     * @param {Number} jd JD date
+     */
+    update(jd) {
+      if (this._obj && this._objectIsRotatable && this._options.rotation && this._options.rotation.enable) {
+        // For now, just rotate on X axis.
+        const speed = this._options.rotation.speed || 0.5;
+        this._obj.rotation.z += (speed * (Math.PI / 180));
+        this._obj.rotation.z %= 360;
+      }
+      if (this._axisOfRotation) ;
+      // this._obj.rotateZ(0.015)
+      // this._obj.rotateOnWorldAxis(new THREE.Vector3(0, 0, 1), 0.01);
+      // TODO(ian): Update position if there is an associated orbit
+    }
+
+    /**
+     * Gets the THREE.js objects that represent this SpaceObject.
+     * @return {Array.<THREE.Object>} A list of THREE.js objects
+     */
+    get3jsObjects() {
+      const ret = super.get3jsObjects();
+      ret.push(this._obj);
+      return ret;
+    }
+
+    /**
+     * Begin rotating this object.
+     */
+    startRotation() {
+      this._options.rotation.enable = true;
+    }
+
+    /**
+     * Stop rotation of this object.
+     */
+    stopRotation() {
+      this._options.rotation.enable = false;
+    }
+  }
+
+  class ShapeObject extends RotatingObject {
     /**
      * @param {Object} options.shape Shape specification
-     * @param {String} options.shape.url Path to shapefile
+     * @param {String} options.shape.type Type of object ("custom" or "sphere")
+     * @param {String} options.shape.shapeUrl Path to shapefile if type is "custom"
+     * @param {Number} options.shape.textureUrl Optional texture map for shape
      * @param {Number} options.shape.color Color of shape materials. Default 0xcccccc
-     * @param {boolean} options.shape.enableRotation Show rotation of object
-     * @param {Number} options.shape.rotationSpeed Factor that determines
+     * @param {Number} options.shape.radius Radius, if applicable. Defaults to 1
      * @param {Object} options.shape.debug Debug options
      * @param {boolean} options.shape.debug.showAxes Show axes
      * rotation speed. Default 0.5
      * @see SpaceObject
+     * @see RotatingObject
      */
     constructor(id, options, contextOrSimulation) {
       super(id, options, contextOrSimulation, false /* autoInit */);
@@ -1236,30 +1679,22 @@ var Spacekit = (function (exports) {
         return;
       }
 
-      // The THREE.js object
-      this._obj = undefined;
-      this._eclipticOrigin = undefined;
+      this._shapeObj = undefined;
 
-      // Offset of axis angle
-      this._axisRotationAngleOffset = 0;
-      this._axisOfRotation = undefined;
-
-      // Keep track of materials that comprise this object.
-      this._asteroidMaterials = [];
-
-      this.init();
+      this.initShape();
     }
 
     /**
      * @private
      */
-    init() {
+    initShape() {
       const manager = new THREE.LoadingManager();
       manager.onProgress = (item, loaded, total) => {
         console.info(this._id, item, 'loading progress:', loaded, '/', total);
       };
       const loader = new THREE.OBJLoader(manager);
-      loader.load(this._options.shape.url, (object) => {
+      // TODO(ian): Make shapeurl follow assetpath logic.
+      loader.load(this._options.shape.shapeUrl, (object) => {
         object.traverse((child) => {
           if (child instanceof THREE.Mesh) {
             const material = new THREE.MeshStandardMaterial({
@@ -1272,27 +1707,14 @@ var Spacekit = (function (exports) {
             child.geometry.computeVertexNormals();
             child.geometry.computeBoundingBox();
            */
-            this._asteroidMaterials.push(material);
+            this._materials.push(material);
           }
         });
 
-        const parent = new THREE.Object3D();
-        parent.add(object);
+        this._shapeObj = object;
+        this._obj.add(object);
 
-        if (this._options.debug && this._options.debug.showAxes) {
-          this.getAxes().forEach(axis => parent.add(axis));
-
-          const gridHelper = new THREE.GridHelper(3, 3, 0xff0000, 0xffeeee);
-          gridHelper.geometry.rotateX(Math.PI / 2);
-          parent.add(gridHelper);
-        }
-
-        this._obj = parent;
-
-        // Initialize the rotation at 0,0,0.
-        this.initRotation();
-
-        // Then move the object to its position.
+        // Move the object to its position.
         const pos = this._options.position;
         if (pos) {
           this._obj.position.set(pos[0], pos[1], pos[2]);
@@ -1309,95 +1731,12 @@ var Spacekit = (function (exports) {
       // TODO(ian): Create an orbit if applicable
     }
 
-    initRotation() {
-      // Formula
-      // https://astro.troja.mff.cuni.cz/projects/asteroids3D/web.php?page=db_description
-
-      // Testing this asteroid:
-      // http://astro.troja.mff.cuni.cz/projects/asteroids3D/web.php?page=db_asteroid_detail&asteroid_id=1504
-      // Model 2691
-      const PI = Math.PI;
-
-      // Cacus
-      // http://astro.troja.mff.cuni.cz/projects/asteroids3D/web.php?page=db_asteroid_detail&asteroid_id=1046
-      // http://astro.troja.mff.cuni.cz/projects/asteroids3D/php.php?script=db_sky_projection&model_id=1863&jd=2443568.0
-
-      // Latitude
-      const lambda = 251 * deg2rad;
-
-      // Longitude
-      const beta = -63 * deg2rad;
-      this._obj.rotateY(-(PI / 2 - beta));
-      this._obj.rotateZ(-lambda);
-      // this._obj.rotateZ(zAdjust);
-
-      const eclipticOrigin = new THREE.Object3D();
-      /*
-      // Set up ecliptic
-      const geometry = new THREE.SphereGeometry(0.05, 32, 32);
-      const material = new THREE.MeshBasicMaterial( {color: 0xffff00} );
-      const pointOfAries = new THREE.Mesh( geometry, material );
-      //pointOfAries.position.set(5, 0, 0);
-      eclipticOrigin.add(pointOfAries);
-      eclipticOrigin.rotateOnWorldAxis(new THREE.Vector3(0, 0, 1), lambda);
-      eclipticOrigin.rotateOnWorldAxis(new THREE.Vector3(0, 1, 0), -beta);
-
-      eclipticOrigin.updateMatrixWorld();
-      const poleProjectionPoint = new THREE.Vector3();
-      pointOfAries.getWorldPosition(poleProjectionPoint);
-      */
-      this._eclipticOrigin = eclipticOrigin;
-      // this._obj.lookAt(poleProjectionPoint);
-
-      // this._obj.rotateOnWorldAxis(new THREE.Vector3(0, 0, 1), zAdjust + PI);
-    }
-
-    getAxes() {
-      return [
-        this.getAxis(new THREE.Vector3(0, 0, 0), new THREE.Vector3(3, 0, 0), 0xff0000),
-        this.getAxis(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 3, 0), 0x00ff00),
-        this.getAxis(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 3), 0x0000ff),
-      ];
-    }
-
-    getAxis(src, dst, color) {
-      const geom = new THREE.Geometry();
-      const mat = new THREE.LineBasicMaterial({ linewidth: 3, color });
-
-      geom.vertices.push(src.clone());
-      geom.vertices.push(dst.clone());
-
-      const axis = new THREE.Line(geom, mat, THREE.LineSegments);
-      axis.computeLineDistances();
-      return axis;
-    }
-
     /**
-     * Gets the THREE.js objects that represent this SpaceObject.
-     * @return {Array.<THREE.Object>} A list of THREE.js objects
+     * Specifies the object that is used to compute the bounding box.
+     * @return {THREE.Object3D} THREE.js object
      */
-    get3jsObjects() {
-      const ret = super.get3jsObjects();
-      ret.push(this._obj);
-      ret.push(this._eclipticOrigin);
-      return ret;
-    }
-
-    /**
-     * Updates the object and its label positions for a given time.
-     * @param {Number} jd JD date
-     */
-    update(jd) {
-      if (this._obj && this._options.shape.enableRotation) {
-        // For now, just rotate on X axis.
-        const speed = this._options.shape.rotationSpeed || 0.5;
-        this._obj.rotation.x += (speed * (Math.PI / 180));
-        this._obj.rotation.x %= 360;
-      }
-      if (this._axisOfRotation) ;
-      // this._obj.rotateZ(0.015)
-      // this._obj.rotateOnWorldAxis(new THREE.Vector3(0, 0, 1), 0.01);
-      // TODO(ian): Update position if there is an associated orbit
+    getBoundingObject() {
+      return this._shapeObj;
     }
   }
 
@@ -1498,308 +1837,70 @@ var Spacekit = (function (exports) {
     },
   };
 
-  /**
-   * @ignore
-   */
-  const ORBIT_SHADER_FRAGMENT = `
-    varying vec3 vColor;
-    uniform sampler2D texture;
+  const NUM_SPHERE_SEGMENTS = 32;
 
-    void main() {
-      gl_FragColor = vec4(vColor, 1.0);
-      gl_FragColor = gl_FragColor * texture2D(texture, gl_PointCoord);
+  /**
+   * Simulates a planet or other object as a perfect sphere.
+   */
+  class SphereObject extends RotatingObject {
+    /**
+     * @param {String} options.textureUrl Path to basic texture (optional)
+     * @param {String} options.bumpMapUrl Path to bump map (optional)
+     * @param {String} options.specularMapUrl Path to specular map (optional)
+     * @param {Number} options.color Hex color of the sphere
+     * @param {Number} options.radius Radius of sphere. Defaults to 1
+     * @param {Object} options.debug Debug options
+     * @param {boolean} options.debug.showAxes Show axes
+     * @see SpaceObject
+     * @see RotatingObject
+     */
+    constructor(id, options, contextOrSimulation) {
+      super(id, options, contextOrSimulation, false /* autoInit */);
+
+      this.initSphere();
     }
-`;
 
-  /**
-   * @ignore
-   */
-  const ORBIT_SHADER_VERTEX = `
-    uniform float jd;
-
-    attribute vec3 fuzzColor;
-    varying vec3 vColor;
-
-    attribute float size;
-
-    attribute float a;
-    attribute float e;
-    attribute float i;
-    attribute float om;
-    attribute float ma;
-    attribute float n;
-    attribute float w;
-    attribute float wBar;
-    attribute float epoch;
-
-    vec3 getAstroPos() {
-      float i_rad = i;
-      float o_rad = om;
-      float p_rad = wBar;
-      float ma_rad = ma;
-      float n_rad = n;
-
-      float d = jd - epoch;
-      float M = ma_rad + n_rad * d;
-
-      // Estimate eccentric and true anom using iterative approximation (this
-      // is normally an intergral).
-      float E0 = M;
-      float E1 = M + e * sin(E0);
-      float lastdiff = abs(E1-E0);
-      E0 = E1;
-      for (int foo=0; foo < 25; foo++) {
-        E1 = M + e * sin(E0);
-        lastdiff = abs(E1-E0);
-        E0 = E1;
-        if (lastdiff < 0.0000001) {
-          break;
-        }
+    initSphere() {
+      let map;
+      if (this._options.textureUrl) {
+        map = THREE.ImageUtils.loadTexture(this._options.textureUrl);
+        map.minFilter = THREE.LinearFilter;
       }
 
-      float E = E0;
-      float v = 2.0 * atan(sqrt((1.0+e)/(1.0-e)) * tan(E/2.0));
+      // TODO(ian): Clouds and rings
 
-      // Compute radius vector.
-      float r = a * (1.0 - e*e) / (1.0 + e * cos(v));
-
-      // Compute heliocentric coords.
-      float X = r * (cos(o_rad) * cos(v + p_rad - o_rad) - sin(o_rad) * sin(v + p_rad - o_rad) * cos(i_rad));
-      float Y = r * (sin(o_rad) * cos(v + p_rad - o_rad) + cos(o_rad) * sin(v + p_rad - o_rad) * cos(i_rad));
-      float Z = r * (sin(v + p_rad - o_rad) * sin(i_rad));
-      return vec3(X, Y, Z);
-    }
-
-    vec3 getAstroPosFast() {
-      float M1 = ma + (jd - epoch) * n;
-      float theta = M1 + 2. * e * sin(M1);
-
-      float cosT = cos(theta);
-
-      float r = a * (1. - e * e) / (1. + e * cosT);
-      float v0 = r * cosT;
-      float v1 = r * sin(theta);
-
-      float sinOm = sin(om);
-      float cosOm = cos(om);
-      float sinW = sin(w);
-      float cosW = cos(w);
-      float sinI = sin(i);
-      float cosI = cos(i);
-
-      float X = v0 * (cosOm * cosW - sinOm * sinW * cosI) + v1 * (-1. * cosOm * sinW - sinOm * cosW * cosI);
-      float Y = v0 * (sinOm * cosW + cosOm * sinW * cosI) + v1 * (-1. * sinOm * sinW + cosOm * cosW * cosI);
-      float Z = v0 * (sinW * sinI) + v1 * (cosW * sinI);
-
-      return vec3(X, Y, Z);
-    }
-
-    void main() {
-      vColor = fuzzColor;
-
-      //vec3 newpos = getAstroPosFast();
-      vec3 newpos = getAstroPos();
-      vec4 mvPosition = modelViewMatrix * vec4(newpos, 1.0);
-      gl_Position = projectionMatrix * mvPosition;
-      gl_PointSize = size;
-    }
-`;
-
-  const STAR_SHADER_FRAGMENT = `
-    varying vec3 vColor;
-    void main() {
-        gl_FragColor = vec4(vColor, 1.0);
-    }
-`;
-
-  const STAR_SHADER_VERTEX = `
-    attribute float size;
-    varying vec3 vColor;
-
-    void main() {
-        vColor = color;
-        vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-        gl_PointSize = size;
-        gl_Position = projectionMatrix * mvPosition;
-    }
-`;
-
-  const DEFAULT_PARTICLE_COUNT = 1024;
-
-  /**
-   * An efficient way to render many objects in space with Kepler orbits.
-   * Primarily used by Simulation to render all non-static objects.
-   * @see Simulation
-   */
-  class SpaceParticles {
-    /**
-     * @param {Object} options Options container
-     * @param {Object} options.textureUrl Template url for sprite
-     * @param {Object} options.basePath Base path for simulation supporting files
-     * @param {Number} options.jd JD date value
-     * @param {Number} options.maxNumParticles Maximum number of particles to display. Defaults to 1024
-     * @param {Object} contextOrSimulation Simulation context or object
-     */
-    constructor(options, contextOrSimulation) {
-      this._options = options;
-
-      this._id = `SpaceParticles__${SpaceParticles.instanceCount}`;
-
-      // TODO(ian): Add to ctx
-      {
-        // User passed in Simulation
-        this._simulation = contextOrSimulation;
-        this._context = contextOrSimulation.getContext();
-      }
-
-      // Whether Points object has been added to the Simulation/Scene. This
-      // happens lazily when the first data point is added in order to prevent
-      // WebGL render warnings.
-      this._addedToScene = false;
-
-      // Number of particles in the scene.
-      this._particleCount = 0;
-
-      this._attributes = null;
-      this._uniforms = null;
-      this._geometry = null;
-      this._shaderMaterial = null;
-      this._particleSystem = null;
-
-      this.init();
-    }
-
-    /**
-     * @private
-     */
-    init() {
-      this.createParticleSystem();
-    }
-
-    /**
-     * @private
-     */
-    createParticleSystem() {
-      const fullTextureUrl = getFullTextureUrl(
-        this._options.textureUrl,
-        this._context.options.basePath,
+      const sphereGeometry = new THREE.SphereGeometry(this._options.radius || 1, NUM_SPHERE_SEGMENTS, NUM_SPHERE_SEGMENTS);
+      const mesh = new THREE.Mesh(
+        sphereGeometry,
+        // new THREE.MeshPhongMaterial({
+        new THREE.MeshBasicMaterial({
+          map,
+          color: this._options.color || 0xbbbbbb,
+          // specular: 0x111111,
+          // shininess: 1,
+          // shininess: 0,
+          // bumpMap:     map,
+          // bumpScale:   0.02,
+          // specularMap: map,
+          // specular:    new THREE.Color('grey')
+          // bumpMap:     THREE.ImageUtils.loadTexture('images/elev_bump_4k.jpg'),
+          // bumpScale:   0.005,
+        }),
       );
-      const defaultMapTexture = new THREE.TextureLoader().load(fullTextureUrl);
 
-      this._uniforms = {
-        jd: { value: this._options.jd || 0 },
-        texture: { value: defaultMapTexture },
-      };
+      // Change the coordinate system to have Z-axis pointed up.
+      mesh.rotation.x = Math.PI / 2;
 
-      const particleCount = this._options.maxNumParticles || DEFAULT_PARTICLE_COUNT;
-      this._attributes = {
-        size: new THREE.BufferAttribute(new Float32Array(particleCount), 1),
-        position: new THREE.BufferAttribute(new Float32Array(particleCount * 3), 3),
-        fuzzColor: new THREE.BufferAttribute(new Float32Array(particleCount * 3), 3),
+      this._obj.add(mesh);
 
-        a: new THREE.BufferAttribute(new Float32Array(particleCount), 1),
-        e: new THREE.BufferAttribute(new Float32Array(particleCount), 1),
-        i: new THREE.BufferAttribute(new Float32Array(particleCount), 1),
-        om: new THREE.BufferAttribute(new Float32Array(particleCount), 1),
-        ma: new THREE.BufferAttribute(new Float32Array(particleCount), 1),
-        n: new THREE.BufferAttribute(new Float32Array(particleCount), 1),
-        w: new THREE.BufferAttribute(new Float32Array(particleCount), 1),
-        wBar: new THREE.BufferAttribute(new Float32Array(particleCount), 1),
-        epoch: new THREE.BufferAttribute(new Float32Array(particleCount), 1),
-      };
-
-      const geometry = new THREE.BufferGeometry();
-      geometry.setDrawRange(0, 0);
-      Object.keys(this._attributes).forEach((attributeName) => {
-        const attribute = this._attributes[attributeName];
-        // attribute.setDynamic(true);
-        geometry.addAttribute(attributeName, attribute);
-      });
-
-      const shader = new THREE.ShaderMaterial({
-        uniforms: this._uniforms,
-        vertexShader: ORBIT_SHADER_VERTEX,
-        fragmentShader: ORBIT_SHADER_FRAGMENT,
-
-        depthTest: false,
-        transparent: true,
-      });
-
-
-      this._shaderMaterial = shader;
-      this._geometry = geometry;
-      this._particleSystem = new THREE.Points(geometry, shader);
-    }
-
-    /**
-     * Add a particle to this particle system.
-     * @param {Ephem} ephem Kepler ephemeris
-     * @param {Object} options Options container
-     * @param {Number} options.particleSize Size of particles
-     * @param {Number} options.color Color of particles
-     */
-    addParticle(ephem, options = {}) {
-      const attributes = this._attributes;
-      const offset = this._particleCount++;
-
-      attributes.size.set([options.particleSize || 15], offset);
-      const color = new THREE.Color(options.color || 0xffffff);
-      attributes.fuzzColor.set([color.r, color.g, color.b], offset * 3);
-
-      attributes.a.set([ephem.get('a')], offset);
-      attributes.e.set([ephem.get('e')], offset);
-      attributes.i.set([ephem.get('i', 'rad')], offset);
-      attributes.om.set([ephem.get('om', 'rad')], offset);
-      attributes.ma.set([ephem.get('ma', 'rad')], offset);
-      attributes.n.set([ephem.get('n', 'rad')], offset);
-      attributes.w.set([ephem.get('w', 'rad')], offset);
-      attributes.wBar.set([ephem.get('wBar', 'rad')], offset);
-      attributes.epoch.set([ephem.get('epoch')], offset);
-
-      // TODO(ian): Set the update range
-      for (const attributeKey in attributes) {
-        if (attributes.hasOwnProperty(attributeKey)) {
-          attributes[attributeKey].needsUpdate = true;
-        }
+      if (this._simulation) {
+        // Add it all to visualization.
+        this._simulation.addObject(this, false /* noUpdate */);
       }
-      this._shaderMaterial.needsUpdate = true;
-      this._geometry.setDrawRange(0, this._particleCount);
-      this._geometry.needsUpdate = true;
 
-      if (!this._addedToScene && this._simulation) {
-        // This happens lazily when the first data point is added in order to
-        // prevent WebGL render warnings.
-        this._simulation.addObject(this);
-        this._addedToScene = true;
-      }
-    }
-
-    /**
-     * Update the position for all particles
-     * @param {Number} jd JD date
-     */
-    update(jd) {
-      this._uniforms.jd.value = jd;
-    }
-
-    /**
-     * Get THREE.js objects that comprise this point cloud
-     * @return {Array.<THREE.Object>} List of objects to add to THREE.js scene
-     */
-    get3jsObjects() {
-      return [this._particleSystem];
-    }
-
-    /**
-     * Get unique id for this object.
-     * @return {String} Unique id
-     */
-    getId() {
-      return this._id;
+      this._initialized = true;
     }
   }
-
-  SpaceParticles.instanceCount = 0;
 
   /**
    * Maps spectral class to star color
@@ -1817,6 +1918,12 @@ var Spacekit = (function (exports) {
     return 0xffb56c;
   }
 
+  /**
+   * Returns the pixel size of a star.
+   * @param mag {Number} Absolute magnitude of star
+   * @param minSize {Number} Pixel size of the smallest star
+   * @return {Number} Pixel size of star.
+   */
   function getSizeForStar(mag, minSize) {
     if (mag < 2.0) return minSize * 4;
     if (mag < 4.0) return minSize * 2;
@@ -1824,10 +1931,14 @@ var Spacekit = (function (exports) {
     return 1;
   }
 
+  /**
+   * Builds a starry background that is accurate for the Earth's position in
+   * space.
+   */
   class Stars {
     /**
-     * @param {Number} options.minimumStarSize The size of the smallest stars.
-     * Defaults to 0.5
+     * @param {Number} options.minSize The size of the smallest star.
+     * Defaults to 0.75
      */
     constructor(options, contextOrSimulation) {
       this._options = options;
@@ -1846,7 +1957,7 @@ var Spacekit = (function (exports) {
     }
 
     init() {
-      const dataUrl = getFullUrl('{{data}}/bsc_processed.json', this._context.options.basePath);
+      const dataUrl = getFullUrl('{{data}}/processed/bsc.json', this._context.options.basePath);
 
       fetch(dataUrl).then(resp => resp.json()).then((library) => {
         const n = library.length;
@@ -1875,7 +1986,7 @@ var Spacekit = (function (exports) {
           const color = new THREE.Color(getColorForStar(temp));
           colors.set(color.toArray(), idx * 3);
 
-          sizes[idx] = getSizeForStar(mag, this._options.minimumStarSize || 0.75 /* minSize */);
+          sizes[idx] = getSizeForStar(mag, this._options.minSize || 0.75 /* minSize */);
         });
 
         const material = new THREE.ShaderMaterial({
@@ -1918,7 +2029,8 @@ var Spacekit = (function (exports) {
    * Simulation.
    *
    * @example
-   * const sim = new Spacekit.Simulation('my-container', {
+   * const sim = new Spacekit.Simulation(document.getElementById('my-container'), {
+   *  basePath: '../path/to/assets',
    *  startDate: Date.now(),
    *  jd: 0.0,
    *  jdDelta: 10.0,
@@ -1940,7 +2052,7 @@ var Spacekit = (function (exports) {
     /**
      * @param {HTMLElement} simulationElt The container for this simulation.
      * @param {Object} options for simulation
-     * @param {String} basePath Path to simulation assets and data
+     * @param {String} options.basePath Path to simulation assets and data
      * @param {Date} options.startDate The start date and time for this
      * simulation.
      * @param {Number} options.jd The JD date of this simulation.
@@ -1957,6 +2069,8 @@ var Spacekit = (function (exports) {
      * particles, but not too much larger. It's usually good enough to choose the
      * next highest power of 2. If you're not showing many particles (tens of
      * thousands+), you don't need to worry about this.
+     * @param {String} options.particleTextureUrl The texture for the default
+     * particle system.
      * @param {Object} options.camera Options for camera
      * @param {Array.<Number>} options.camera.initialPosition Initial X, Y, Z
      * coordinates of the camera. Defaults to [0, -10, 5].
@@ -1971,6 +2085,7 @@ var Spacekit = (function (exports) {
     constructor(simulationElt, options) {
       this._simulationElt = simulationElt;
       this._options = options || {};
+      this._options.basePath = this._options.basePath || 'https://typpo.github.io/spacekit/src';
 
       this._jd = this._options.jd || julian.toJulianDay(this._options.startDate) || 0;
       this._jdDelta = this._options.jdDelta;
@@ -2059,8 +2174,8 @@ var Spacekit = (function (exports) {
       }
 
       // Orbit particle system must be initialized after scene is created.
-      this._particles = new SpaceParticles({
-        textureUrl: '{{assets}}/sprites/smallparticle.png',
+      this._particles = new KeplerParticles({
+        textureUrl: this._options.particleTextureUrl || '{{assets}}/sprites/smallparticle.png',
         jd: this._jd,
         maxNumParticles: this._options.maxNumParticles,
       }, this);
@@ -2158,6 +2273,7 @@ var Spacekit = (function (exports) {
      * animated.
      */
     addObject(obj, noUpdate = false) {
+      console.log('adding', obj.get3jsObjects());
       obj.get3jsObjects().map((x) => {
         this._scene.add(x);
       });
@@ -2197,6 +2313,15 @@ var Spacekit = (function (exports) {
      */
     createShape(...args) {
       return new ShapeObject(...args, this);
+    }
+
+    /**
+     * Shortcut for creating a new SphereOjbect belonging to this visualization.
+     * Takes any SphereObject arguments.
+     * @see SphereObject
+     */
+    createSphere(...args) {
+      return new SphereObject(...args, this);
     }
 
     /**
@@ -2299,7 +2424,7 @@ var Spacekit = (function (exports) {
     zoomToFit(spaceObj, offset = 3.0) {
       const checkZoomFit = () => {
         const orbit = spaceObj.getOrbit();
-        const obj = orbit ? orbit.getEllipse() : spaceObj.get3jsObjects()[0];
+        const obj = orbit ? orbit.getEllipse() : spaceObj.getBoundingObject();
         if (obj) {
           this.doZoomToFit(obj, offset);
           return true;
@@ -2518,7 +2643,10 @@ var Spacekit = (function (exports) {
   exports.SkyboxPresets = SkyboxPresets;
   exports.SpaceObject = SpaceObject;
   exports.SpaceObjectPresets = SpaceObjectPresets;
-  exports.SpaceParticles = SpaceParticles;
+  exports.RotatingObject = RotatingObject;
+  exports.ShapeObject = ShapeObject;
+  exports.SphereObject = SphereObject;
+  exports.KeplerParticles = KeplerParticles;
   exports.Stars = Stars;
   exports.rad = rad;
   exports.deg = deg;
