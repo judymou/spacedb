@@ -1,4 +1,4 @@
 when setting up a new instance, also don't forget to populate
 
-/var/spacedb/manual - manual symlink
-/var/spacedb/raw - raw data
+/var/spacedb/manual - manual copy
+(/var/spacedb/raw - raw data)  -- should persist

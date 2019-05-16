@@ -16,7 +16,6 @@ services:
     volumes:
       - ./static:/app/static
       - /var/spacedb/raw:/app/data/rawdata
-      - /var/spacedb/manual:/app/data/manual
     ports:
       - 8000:8000
     networks:
@@ -31,7 +30,7 @@ services:
       - ./config/nginx/conf.d:/etc/nginx/conf.d
       - ./static:/var/www/static
       - /var/spacedb/raw/shapes/archive:/var/www/static/data/shapefiles/damit
-      - /var/spacedb/manual/shapes/archive:/var/www/static/data/shapefiles/manual
+      - /var/spacedb/manual/shapes:/var/www/static/data/shapefiles/manual
     ports:
       - 80:80
     networks:
