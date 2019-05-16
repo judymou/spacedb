@@ -8,4 +8,6 @@ docker-compose build
 docker-compose down
 docker-compose up -d
 
+docker system prune -af
+
 popd &>/dev/null
