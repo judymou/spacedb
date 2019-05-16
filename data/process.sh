@@ -7,5 +7,6 @@ pushd $(dirname $0) &>/dev/null
 ./process_sentry.py
 ./process_nhats.py
 ./process_damit.py
+./process_manual_shapes.py
 
 popd &>/dev/null
