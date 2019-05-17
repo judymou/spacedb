@@ -20,5 +20,5 @@
       enable: true,
     },
   });
-  viz.zoomToFit(obj, 3 /* offset */);
+  viz.zoomToFit(obj, 2 /* offset */);
 })();
