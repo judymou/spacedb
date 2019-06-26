@@ -6,7 +6,7 @@ from datetime import date
 from random import randint
 
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Count
+from django.db.models import Count, Max
 from django.http import JsonResponse, HttpResponse, HttpResponseNotFound
 from django.shortcuts import render, redirect
 from spaceobjects.models import SpaceObject, SentryEvent, CloseApproach, NhatsObject, OrbitClass, ObjectType
@@ -199,7 +199,18 @@ def api_objects(request):
     return JsonResponse({'results': results})
 
 def random(request):
-    count = SpaceObject.objects.all().count()
-    random_index = randint(0, count - 1)
-    obj = SpaceObject.objects.all()[random_index]
+    max_id = SpaceObject.objects.all().aggregate(max_id=Max('id'))['max_id']
+    count = 0
+    while True:
+        pk = randint(1, max_id)
+        try:
+            obj = SpaceObject.objects.get(pk=pk)
+        except SpaceObject.DoesNotExist:
+            count += 1
+            if count > 500:
+                redirect('/asteroid/1-ceres')
+                return
+            continue
+        break
+
     return redirect(obj)
