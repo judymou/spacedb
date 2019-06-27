@@ -163,7 +163,7 @@ const t = setInterval(function() {
     {% if object.is_pha and object.is_nea %}
         NASA JPL has classified {{object.shorthand}} as a "Potentially Hazardous Asteroid" due to its predicted close pass(es) with Earth.
     {% elif object.is_nea %}
-        NASA JPL has classified {{object.shorthand}} as a "Near Earth Asteroid" due to its orbit's proximity to Earth, but it is not considered potentially hazardous because computer simulations have not indicated any imminent likelihood of collision.
+        NASA JPL has classified {{object.shorthand}} as a "Near Earth Asteroid" due to its orbit's proximity to Earth, but it is not considered potentially hazardous because computer simulations have not indicated any imminent likelihood of future collision.
     {% else %}
         NASA JPL has not classified {{object.shorthand}} as potentially hazardous because its orbit does not bring it close to Earth.
     {% endif %}
