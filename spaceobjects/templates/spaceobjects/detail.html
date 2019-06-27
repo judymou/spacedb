@@ -176,7 +176,7 @@ const t = setInterval(function() {
     {% if object.has_size_info %}
       {{object.shorthand}} is about {{object.sbdb_entry.diameter | floatformat:1}} kilometers in diameter, making it {{object.get_size_rough_comparison}}, comparable in size to {{object.get_diameter_comparison}}.
     {% elif object.has_size_info_estimate %}
-      Based on its brightness and the way it reflects light, {{object.shorthand}} is <a href="https://cneos.jpl.nasa.gov/tools/ast_size_est.html">probably</a> between {{object.get_diameter_estimate_low | floatformat:2}} to {{object.get_diameter_estimate_high | floatformat:2}} kilometers in diameter, making it {{object.get_size_rough_comparison}}, very roughly comparable in size to {{object.get_diameter_comparison}}.
+      Based on its brightness and the way it reflects light, {{object.shorthand}} is <a href="https://cneos.jpl.nasa.gov/tools/ast_size_est.html">probably</a> between {{object.get_diameter_estimate_low | floatformat:3}} to {{object.get_diameter_estimate_high | floatformat:3}} kilometers in diameter, making it {{object.get_size_rough_comparison}}, very roughly comparable in size to {{object.get_diameter_comparison}}.
     {% endif %}
     </p>
 
@@ -355,7 +355,7 @@ const t = setInterval(function() {
       {% if object.has_size_info %}
         <li>Diameter: {{object.sbdb_entry.diameter | floatformat:5}} km</li>
       {% elif object.has_size_info_estimate %}
-        <li>Diameter: ~{{object.get_diameter_estimate | floatformat:2}} km</li>
+        <li>Diameter: ~{{object.get_diameter_estimate | floatformat:3}} km</li>
       {% endif %}
       {% if object.H %}
         <li>Magnitude: {{object.sbdb_entry.H}}</li>
