@@ -34,6 +34,7 @@ class SearchAndVisualize extends React.Component {
     this._objCount = 0;
     this.state = {
       inputValue: '',
+      savedDate: undefined,
       selectedObjects: [],
     };
   }
@@ -78,6 +79,13 @@ class SearchAndVisualize extends React.Component {
       });
 
     }
+    if (query.date) {
+      const dateObj = new Date(Date.parse(`${query.date}T00:00:00Z`));
+      window.viz.setDate(dateObj);
+      this.setState({
+        savedDate: query.date,
+      });
+    }
   }
 
   addMany(objs, opts) {
@@ -95,7 +103,11 @@ class SearchAndVisualize extends React.Component {
 
     if (opts.updateHash) {
       this.setState(prevState => ({ selectedObjects: prevState.selectedObjects.concat(objs) }), () => {
-        window.location.hash = '#ob=' + this.state.selectedObjects.map(object => object.value).join(',');
+        let hashStr = '#ob=' + this.state.selectedObjects.map(object => object.value).join(',');
+        if (this.state.savedDate) {
+          hashStr += `&date=${this.state.savedDate}`;
+        }
+        window.location.hash = hashStr;
       });
     }
   }
