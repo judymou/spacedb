@@ -9,7 +9,7 @@
 <script src="{% static "js/lib/TrackballControls.js" %}"></script>
 <script src="{% static "js/lib/spacekit.js" %}"></script>
 <script src="{% static "js/orbitDiagram.js" %}"></script>
-<script src="{% static "js/lib/d3.v2.js" %}"></script>
+<script src="{% static "js/lib/d3.v3.js" %}"></script>
 <!--
 <script src="http://localhost:8001/src/lib/three.r98.min.js"></script>
 <script src="http://localhost:8001/src/lib/TrackballControls.js"></script>
@@ -70,7 +70,10 @@ init3dVis();
 
 {% block header %}
 <header class="site-header">
-  <h1 class="mainheading">{{page_name}}</h1>
+  <div class="container">
+    <h1 class="mainheading">{{page_name}}</h1>
+    <div class="orbit-diagram"></div>
+  </div>
 </header>
 {% endblock %}
 
