@@ -200,8 +200,12 @@ const t = setInterval(function() {
     {% endif %}
     <p>
     {{object.shorthand}}'s orbit is {{object.moid | floatformat:2}} AU from Earth's orbit at its closest point.
-    {% if object.moid > 0.01 %}
-      This means that there is a wide berth between this asteroid and Earth at all times.
+    {% if object.moid > 1 %}
+      This means that there is an extremely wide berth between this asteroid and Earth at all times.
+    {% elif object.moid > 0.5 %}
+      This means that there is an very wide berth between this asteroid and Earth at all times.
+    {% elif object.moid > 0.01 %}
+      This means that there is an wide berth between this asteroid and Earth at all times.
     {% else %}
       This means that its orbit is relatively close to Earth's orbit.
     {% endif %}
