@@ -290,6 +290,7 @@ class SpaceObject(models.Model):
             models.Index(fields=['is_nea']),
             models.Index(fields=['is_pha']),
             models.Index(fields=['diameter']),
+            models.Index(fields=['a']),
         ]
 
 class CloseApproach(models.Model):

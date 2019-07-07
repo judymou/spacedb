@@ -118,6 +118,9 @@ def get_category_info(category):
     elif category == 'asteroid-shapes':
         objects = SpaceObject.objects.annotate(num_shapes=Count('shapemodel')).filter(num_shapes__gt=0)
         page_name = 'Asteroids with Known Shapes'
+    elif category == 'kuiper-belt':
+        objects = SpaceObject.objects.filter(a__gt=35)
+        page_name = 'Kuiper Belt Objects'
     elif category == 'near-earth-asteroids':
         objects = SpaceObject.objects.filter(is_nea=True)
         page_name = 'Near-Earth Asteroids'
