@@ -180,7 +180,14 @@ Object.keys(window.spaceobjects).forEach(function(key) {
 <div class="row">
   <div class="item-container">
     <div class="item-container__inner">
-      <h2>Orbit Types</h2>
+      <h2>Categories</h2>
+      <ul>
+        <li><a href="/category/asteroid-shapes">Asteroids with known shapes</a> - these asteroids have been mapped by light curve inversion, radar, or flybys.  Click through to see 3D models.</li>
+      </ul>
+
+      <p>
+        The categories below are orbital classifications as defined by <a href="https://pdssbn.astro.umd.edu/data_other/objclass.shtml">NASA PDS</a>:
+      </p>
       <ul>
       {% for orbit_class in orbit_classes %}
         <li><a href="/category/{{orbit_class.slug}}">{{orbit_class.name}}</a> - {{orbit_class.desc}}</li>
