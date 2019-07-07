@@ -171,7 +171,7 @@ class SpaceObject(models.Model):
         if diameter > 900:
             return 'the largest asteroid/dwarf planet'
         if diameter > 300:
-            return 'one of the largest asteroids'
+            return 'one of the largest objects'
         if diameter > 1:
             return 'larger than most asteroids'
         return 'a small to average asteroid'
