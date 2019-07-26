@@ -40,9 +40,9 @@ class SearchAndVisualize extends React.Component {
   }
 
   componentDidMount() {
-    const query = parseQuery(location.hash);
-    if (query.ob) {
-      fetch(`/api/objects?slugs=${query.ob}`).then(resp => {
+    const hash = parseQuery(window.location.hash);
+    if (hash.ob) {
+      fetch(`/api/objects?slugs=${hash.ob}`).then(resp => {
         return resp.json()
       }).then(respJson => {
         this.addMany(respJson.results.map(result => {
@@ -59,8 +59,10 @@ class SearchAndVisualize extends React.Component {
         });
       });
     }
-    if (query.cat) {
-      fetch(`/api/category/${query.cat}?limit=3000`).then(resp => {
+    if (hash.cat) {
+      const query = parseQuery(window.location.search);
+      const limit = query.limit || 3000;
+      fetch(`/api/category/${hash.cat}?limit=${limit}`).then(resp => {
         return resp.json()
       }).then(respJson => {
         this.addMany(respJson.data.map(result => {
@@ -79,11 +81,11 @@ class SearchAndVisualize extends React.Component {
       });
 
     }
-    if (query.date) {
-      const dateObj = new Date(Date.parse(`${query.date}T00:00:00Z`));
+    if (hash.date) {
+      const dateObj = new Date(Date.parse(`${hash.date}T00:00:00Z`));
       window.viz.setDate(dateObj);
       this.setState({
-        savedDate: query.date,
+        savedDate: hash.date,
       });
     }
   }
