@@ -82,6 +82,14 @@ var Spacekit = (function (exports) {
     return [decDeg, decMin, decSec];
   }
 
+  function kmToAu(km) {
+    return km / 149598000;
+  }
+
+  function auToKm(au) {
+    return km * 149598000;
+  }
+
   const J2000 = 2451545.0;
 
   function sphericalToCartesian(ra, dec, dist) {
@@ -93,13 +101,22 @@ var Spacekit = (function (exports) {
     ];
   }
 
-  function equatorialToEcliptic_Cartesian(x, y, z, jd = J2000) {
-    const obliquity = getObliquity(jd);
-
+  /**
+   * See https://en.wikipedia.org/wiki/Ecliptic_coordinate_system#Converting_Cartesian_vector
+   */
+  function equatorialToEcliptic_Cartesian(x, y, z, tilt) {
     return [
       x,
-      Math.cos(obliquity) * y + Math.sin(obliquity) * z,
-      -Math.sin(obliquity) * y + Math.cos(obliquity) * z,
+      Math.cos(tilt) * y + Math.sin(tilt) * z,
+      -Math.sin(tilt) * y + Math.cos(tilt) * z,
+    ];
+  }
+
+  function eclipticToEquatorial_Cartesian(x, y, z, tilt) {
+    return [
+      x,
+      Math.cos(tilt) * y + -Math.sin(tilt) * z,
+      Math.sin(tilt) * y + Math.cos(tilt) * z,
     ];
   }
 
@@ -160,7 +177,7 @@ var Spacekit = (function (exports) {
     'i', // Inclination
 
     'epoch',
-    'period',
+    'period', // in days
 
     'ma', // Mean anomaly
     'n', // Mean motion
@@ -213,8 +230,9 @@ var Spacekit = (function (exports) {
      * Defaults to GM.SUN.  @see {GM}
      * @param {'deg'|'rad'} units The unit of angles in the list of initial values.
      */
-    constructor(initialValues, units = 'rad') {
+    constructor(initialValues, units = 'rad', locked = false) {
       this._attrs = {};
+      this._locked = false;
 
       for (const attr in initialValues) {
         if (initialValues.hasOwnProperty(attr)) {
@@ -227,6 +245,8 @@ var Spacekit = (function (exports) {
         this._attrs.GM = GM.SUN;
       }
       this.fill();
+
+      this._locked = locked;
     }
 
     /**
@@ -236,6 +256,10 @@ var Spacekit = (function (exports) {
      * @param {'deg'|'rad'} units The unit of angle provided, if applicable.
      */
     set(attr, val, units = 'rad') {
+      if (this._locked) {
+        throw new Error('Attempted to modify locked (immutable) Ephem object');
+      }
+
       if (!EPHEM_VALID_ATTRS.has(attr)) {
         console.warn(`Invalid ephem attr: ${attr}`);
         return false;
@@ -322,6 +346,26 @@ var Spacekit = (function (exports) {
 
       //  TODO(ian): Handle no om
     }
+
+    /**
+     * Make this ephem object immutable.
+     */
+    lock() {
+      this._locked = true;
+    }
+
+    copy() {
+      return new Ephem({
+        GM: this.get('GM'),
+        epoch: this.get('epoch'),
+        a: this.get('a'),
+        e: this.get('e'),
+        i: this.get('i'),
+        om: this.get('om'),
+        ma: this.get('ma'),
+        w: this.get('w'),
+      }, 'rad');
+    }
   }
 
   /**
@@ -343,6 +387,42 @@ var Spacekit = (function (exports) {
   };
 
   /**
+   * @ignore
+   */
+  const DEFAULT_TEXTURE_URL = '{{assets}}/sprites/fuzzyparticle.png';
+
+  /**
+   * Returns the complete URL to a texture given a basepath and a template url.
+   * @param {String} template URL containing optional template parameters
+   * @param {String} basePath Base path
+   * @example
+   * getFullUrl('{{assets}}/images/mysprite.png', '/path/to/assets')
+   * => '/path/to/assets/images/mysprite.png'
+   */
+  function getFullUrl(template, basePath) {
+    return template
+      .replace('{{assets}}', `${basePath}/assets`)
+      .replace('{{data}}', `${basePath}/data`);
+  }
+
+  /**
+   * Returns the complete URL to a texture given a basepath and a template url.
+   * @param {String} template URL containing optional template parameters
+   * @param {String} basePath Base path for simulation data and assets.
+   * @example
+   * getFullTextureUrl('{{assets}}/images/mysprite.png', '/path/to/assets')
+   * => '/path/to/assets/images/mysprite.png'
+   */
+  function getFullTextureUrl(template, basePath) {
+    return getFullUrl(template || DEFAULT_TEXTURE_URL, basePath);
+  }
+
+  function getDefaultBasePath() {
+    return window.location.href.indexOf('localhost') > -1
+      ? '/src/' : 'https://typpo.github.io/spacekit/src';
+  }
+
+  /**
    * A dictionary containing ephemerides of planets and other well-known objects.
    * @example
    * const planet1 = viz.createObject('planet1', {
@@ -362,6 +442,7 @@ var Spacekit = (function (exports) {
         ma: 2.56190975209273e2,
       },
       'deg',
+      true, /* locked */
     ),
     VENUS: new Ephem(
       {
@@ -374,6 +455,7 @@ var Spacekit = (function (exports) {
         ma: 2.756687596099721e2,
       },
       'deg',
+      true, /* locked */
     ),
     EARTH: new Ephem(
       {
@@ -408,6 +490,7 @@ var Spacekit = (function (exports) {
        */
       },
       'deg',
+      true, /* locked */
     ),
     MOON: new Ephem(
       {
@@ -435,6 +518,7 @@ var Spacekit = (function (exports) {
      */
       },
       'deg',
+      true, /* locked */
     ),
     MARS: new Ephem(
       {
@@ -447,6 +531,7 @@ var Spacekit = (function (exports) {
         ma: 2.538237617924876e1,
       },
       'deg',
+      true, /* locked */
     ),
     JUPITER: new Ephem(
       {
@@ -459,6 +544,7 @@ var Spacekit = (function (exports) {
         ma: 2.31939544389401e2,
       },
       'deg',
+      true, /* locked */
     ),
     SATURN: new Ephem(
       {
@@ -471,6 +557,7 @@ var Spacekit = (function (exports) {
         ma: 1.870970898012944e2,
       },
       'deg',
+      true, /* locked */
     ),
     URANUS: new Ephem(
       {
@@ -483,6 +570,7 @@ var Spacekit = (function (exports) {
         ma: 2.202603033874267e2,
       },
       'deg',
+      true, /* locked */
     ),
     NEPTUNE: new Ephem(
       {
@@ -495,6 +583,7 @@ var Spacekit = (function (exports) {
         ma: 3.152804988924479e2,
       },
       'deg',
+      true, /* locked */
     ),
     PLUTO: new Ephem(
       {
@@ -507,8 +596,122 @@ var Spacekit = (function (exports) {
         ma: 25.2471897122,
       },
       'deg',
+      true, /* locked */
     ),
   };
+
+  /**
+   * A class for fetching orbital elements of natural satellites in our solar
+   * system.
+   */
+  class NaturalSatellites {
+    constructor(contextOrSimulation) {
+      {
+        // User passed in Simulation
+        this._simulation = contextOrSimulation;
+        this._context = contextOrSimulation.getContext();
+      }
+
+      this._satellitesByPlanet = {};
+      this._readyPromise = null;
+
+      this.init();
+    }
+
+    init() {
+      const dataUrl = getFullUrl(
+        '{{data}}/processed/natural-satellites.json',
+        this._context.options.basePath,
+      );
+
+      this._readyPromise = new Promise((resolve, reject) => {
+        fetch(dataUrl)
+          .then(resp => resp.json())
+          .then((moons) => {
+            moons.forEach((moon) => {
+              const planetName = moon.Planet.toLowerCase();
+              if (!this._satellitesByPlanet[planetName]) {
+                this._satellitesByPlanet[planetName] = [];
+              }
+              switch (moon['Element Type']) {
+                case 'Ecliptic':
+                  // Don't have to do anything
+                  break;
+                case 'Equatorial':
+                  break;
+                case 'Laplace':
+                  break;
+                default:
+                  console.error('Unknown element type in natural satellites object:', moon);
+                  return;
+              }
+
+              let ephemGM;
+              switch (moon.Planet) {
+                case 'Earth':
+                  ephemGM = GM.EARTH_MOON;
+                  break;
+                case 'Pluto':
+                  ephemGM = GM.PLUTO_CHARON;
+                  break;
+                default:
+                ephemGM = GM[moon.Planet.toUpperCase()];
+              }
+              if (!ephemGM) {
+                console.error(`Could not look up GM for ${moon.Planet}`);
+              }
+
+              const ephem = new Ephem({
+                GM: ephemGM,
+                epoch: moon['Epoch JD'],
+                a: kmToAu(moon.a),
+                e: parseFloat(moon.e),
+                i: parseFloat(moon.i),
+                w: parseFloat(moon.w),
+                om: parseFloat(moon.node),
+                ma: parseFloat(moon.M),
+              }, 'deg', true /* locked */);
+
+              this._satellitesByPlanet[planetName].push({
+                name: moon['Sat.'],
+                elementType: moon['Element Type'],
+                tags: new Set(moon['tags'].split(',')),
+                ephem,
+              });
+            });
+            console.info('Loaded', moons.length, 'natural satellites');
+            resolve(this);
+          })
+          .catch((err) => {
+            reject(err);
+          });
+      });
+    }
+
+    /**
+     * Get a list of satellites and their orbital elements for a given planet.
+     * @param {String} planetName Name of a planet, e.g. "Jupiter"
+     * @return {Object} List containing a list of dictionaries with information
+     * on each satellite.
+     */
+    getSatellitesForPlanet(planetName) {
+      return this._satellitesByPlanet[planetName.toLowerCase()];
+    }
+
+    load() {
+      return this._readyPromise;
+    }
+  }
+
+  const SCALE_FACTOR = 1.0;
+
+  function rescaleXYZ(X, Y, Z) {
+    return [X * SCALE_FACTOR, Y * SCALE_FACTOR, Z * SCALE_FACTOR];
+  }
+
+  function rescaleNumber(x) {
+    return SCALE_FACTOR * x;
+  }
 
   /**
    * A class that builds a visual representation of a Kepler orbit.
@@ -568,7 +771,8 @@ var Spacekit = (function (exports) {
 
       const period = eph.get('period');
       const ecc = eph.get('e');
-      const minSegments = ecc > 0.4 ? 100 : 50;
+      // const minSegments = ecc > 0.4 ? 100 : 50;
+      const minSegments = 360;
       const numSegments = Math.max(period / 2, minSegments);
       const step = period / numSegments;
 
@@ -646,11 +850,15 @@ var Spacekit = (function (exports) {
       // Estimate eccentric and true anom using iterative approx
       let E0 = M;
       let lastdiff;
-      do {
+      for (let count = 0; count < 100; count++) {
         const E1 = M + e * sin(E0);
         lastdiff = Math.abs(E1 - E0);
         E0 = E1;
-      } while (lastdiff > 0.0000001);
+
+        if (lastdiff < 0.0000001) {
+          break;
+        }
+      }
       const E = E0;
       const v = 2 * Math.atan(Math.sqrt((1 + e) / (1 - e)) * Math.tan(E / 2));
 
@@ -667,7 +875,7 @@ var Spacekit = (function (exports) {
       const X = r * (cos(o) * cos(v + p - o) - sin(o) * sin(v + p - o) * cos(i));
       const Y = r * (sin(o) * cos(v + p - o) + cos(o) * sin(v + p - o) * cos(i));
       const Z = r * (sin(v + p - o) * sin(i));
-      return [X, Y, Z];
+      return rescaleXYZ(X, Y, Z);
     }
 
     /**
@@ -724,7 +932,7 @@ var Spacekit = (function (exports) {
      * @param {Number} hexVal The hexadecimal color of the orbital ellipse.
      */
     setHexColor(hexVal) {
-      return (this._ellipse.material.color = new THREE.Color(hexVal));
+      this._ellipse.material.color = new THREE.Color(hexVal);
     }
 
     /**
@@ -742,7 +950,7 @@ var Spacekit = (function (exports) {
      * @param {boolean} val Whether to show the orbital ellipse.
      */
     setVisibility(val) {
-      return (this._ellipse.visible = val);
+      this._ellipse.visible = val;
     }
   }
 
@@ -780,37 +988,6 @@ var Spacekit = (function (exports) {
   /**
    * @ignore
    */
-  const DEFAULT_TEXTURE_URL = '{{assets}}/sprites/fuzzyparticle.png';
-
-  /**
-   * Returns the complete URL to a texture given a basepath and a template url.
-   * @param {String} template URL containing optional template parameters
-   * @param {String} basePath Base path
-   * @example
-   * getFullUrl('{{assets}}/images/mysprite.png', '/path/to/assets')
-   * => '/path/to/assets/images/mysprite.png'
-   */
-  function getFullUrl(template, basePath) {
-    return template
-      .replace('{{assets}}', `${basePath}/assets`)
-      .replace('{{data}}', `${basePath}/data`);
-  }
-
-  /**
-   * Returns the complete URL to a texture given a basepath and a template url.
-   * @param {String} template URL containing optional template parameters
-   * @param {String} basePath Base path for simulation data and assets.
-   * @example
-   * getFullTextureUrl('{{assets}}/images/mysprite.png', '/path/to/assets')
-   * => '/path/to/assets/images/mysprite.png'
-   */
-  function getFullTextureUrl(template, basePath) {
-    return getFullUrl(template || DEFAULT_TEXTURE_URL, basePath);
-  }
-
-  /**
-   * @ignore
-   */
   const ORBIT_SHADER_FRAGMENT = `
     varying vec3 vColor;
     uniform sampler2D texture;
@@ -825,8 +1002,6 @@ var Spacekit = (function (exports) {
    * @ignore
    */
   const ORBIT_SHADER_VERTEX = `
-    uniform float jd;
-
     attribute vec3 fuzzColor;
     attribute vec3 origin;
     varying vec3 vColor;
@@ -837,21 +1012,14 @@ var Spacekit = (function (exports) {
     attribute float e;
     attribute float i;
     attribute float om;
-    attribute float ma;
-    attribute float n;
     attribute float w;
     attribute float wBar;
-    attribute float epoch;
+    attribute float M;
 
     vec3 getAstroPos() {
       float i_rad = i;
       float o_rad = om;
       float p_rad = wBar;
-      float ma_rad = ma;
-      float n_rad = n;
-
-      float d = jd - epoch;
-      float M = ma_rad + n_rad * d;
 
       float adjusted_e = e;
       if (e >= 1.0) {
@@ -864,7 +1032,7 @@ var Spacekit = (function (exports) {
       float E1 = M + adjusted_e * sin(E0);
       float lastdiff = abs(E1-E0);
       E0 = E1;
-      for (int foo=0; foo < 25; foo++) {
+      for (int foo=0; foo < 100; foo++) {
         E1 = M + adjusted_e * sin(E0);
         lastdiff = abs(E1-E0);
         E0 = E1;
@@ -877,7 +1045,7 @@ var Spacekit = (function (exports) {
       float v = 2.0 * atan(sqrt((1.0+adjusted_e)/(1.0-adjusted_e)) * tan(E/2.0));
 
       // Compute radius vector.
-      float r = a * (1.0 - adjusted_e*adjusted_e) / (1.0 + adjusted_e * cos(v));
+      float r = ${SCALE_FACTOR.toFixed(1)} * a * (1.0 - adjusted_e*adjusted_e) / (1.0 + adjusted_e * cos(v));
 
       // Compute heliocentric coords.
       float X = r * (cos(o_rad) * cos(v + p_rad - o_rad) - sin(o_rad) * sin(v + p_rad - o_rad) * cos(i_rad));
@@ -945,6 +1113,14 @@ var Spacekit = (function (exports) {
   const DEFAULT_PARTICLE_COUNT = 1024;
 
   /**
+   * Compute mean anomaly at date.
+   */
+  function getM(ephem, jd) {
+    const d = jd - ephem.get('epoch');
+    return ephem.get('ma') + ephem.get('n') * d;
+  }
+
+  /**
    * An efficient way to render many objects in space with Kepler orbits.
    * Primarily used by Simulation to render all non-static objects.
    * @see Simulation
@@ -956,6 +1132,8 @@ var Spacekit = (function (exports) {
      * @param {Object} options.basePath Base path for simulation supporting files
      * @param {Number} options.jd JD date value
      * @param {Number} options.maxNumParticles Maximum number of particles to display. Defaults to 1024
+     * @param {Number} options.defaultSize Default size of particles. Note this
+     * can be overriden by SpaceObject particleSize. Defaults to 15
      * @param {Object} contextOrSimulation Simulation context or object
      */
     constructor(options, contextOrSimulation) {
@@ -978,6 +1156,7 @@ var Spacekit = (function (exports) {
       // Number of particles in the scene.
       this._particleCount = 0;
 
+      this._elements = null;
       this._attributes = null;
       this._uniforms = null;
       this._geometry = null;
@@ -1005,11 +1184,11 @@ var Spacekit = (function (exports) {
       const defaultMapTexture = new THREE.TextureLoader().load(fullTextureUrl);
 
       this._uniforms = {
-        jd: { value: this._options.jd || 0 },
         texture: { value: defaultMapTexture },
       };
 
       const particleCount = this._options.maxNumParticles || DEFAULT_PARTICLE_COUNT;
+      this._elements = [];
       this._attributes = {
         size: new THREE.BufferAttribute(new Float32Array(particleCount), 1),
         origin: new THREE.BufferAttribute(new Float32Array(particleCount * 3), 3),
@@ -1030,7 +1209,7 @@ var Spacekit = (function (exports) {
         n: new THREE.BufferAttribute(new Float32Array(particleCount), 1),
         w: new THREE.BufferAttribute(new Float32Array(particleCount), 1),
         wBar: new THREE.BufferAttribute(new Float32Array(particleCount), 1),
-        epoch: new THREE.BufferAttribute(new Float32Array(particleCount), 1),
+        M: new THREE.BufferAttribute(new Float32Array(particleCount), 1),
       };
 
       const geometry = new THREE.BufferGeometry();
@@ -1064,10 +1243,11 @@ var Spacekit = (function (exports) {
      * @return {Number} The index of this article in the attribute list.
      */
     addParticle(ephem, options = {}) {
+      this._elements.push(ephem);
       const attributes = this._attributes;
       const offset = this._particleCount++;
 
-      attributes.size.set([options.particleSize || 15], offset);
+      attributes.size.set([options.particleSize || this._options.defaultSize || 15], offset);
       const color = new THREE.Color(options.color || 0xffffff);
       attributes.fuzzColor.set([color.r, color.g, color.b], offset * 3);
 
@@ -1077,11 +1257,9 @@ var Spacekit = (function (exports) {
       attributes.e.set([ephem.get('e')], offset);
       attributes.i.set([ephem.get('i', 'rad')], offset);
       attributes.om.set([ephem.get('om', 'rad')], offset);
-      attributes.ma.set([ephem.get('ma', 'rad')], offset);
-      attributes.n.set([ephem.get('n', 'rad')], offset);
       attributes.w.set([ephem.get('w', 'rad')], offset);
       attributes.wBar.set([ephem.get('wBar', 'rad')], offset);
-      attributes.epoch.set([ephem.get('epoch')], offset);
+      attributes.M.set([getM(ephem, this._options.jd || 0)], offset);
 
       // TODO(ian): Set the update range
       for (const attributeKey in attributes) {
@@ -1116,7 +1294,9 @@ var Spacekit = (function (exports) {
      * @param {Number} jd JD date
      */
     update(jd) {
-      this._uniforms.jd.value = jd;
+      const Ms = this._elements.map(ephem => getM(ephem, jd));
+      this._attributes.M.set(Ms);
+      this._attributes.M.needsUpdate = true;
     }
 
     /**
@@ -1175,6 +1355,7 @@ var Spacekit = (function (exports) {
    * const myObject = viz.addObject('planet1', {
    *   position: [0, 0, 0],
    *   scale: [1, 1, 1],
+   *   particleSize: 5,
    *   labelText: 'My object',
    *   labelUrl: 'http://...',
    *   hideOrbit: false,
@@ -1187,6 +1368,7 @@ var Spacekit = (function (exports) {
    *   },
    *   theme: {
    *     color: 0xFFFFFF,
+   *     orbitColor: 0x888888,
    *   },
    * });
    */
@@ -1207,7 +1389,8 @@ var Spacekit = (function (exports) {
      * @param {Number} options.ecliptic.lineColor Hex color of lines that run perpendicular to ecliptic. @see Orbit
      * @param {boolean} options.ecliptic.displayLines Whether to show ecliptic lines. Defaults false.
      * @param {Object} options.theme Contains settings related to appearance of orbit
-     * @param {Number} options.theme.color Hex color of the orbit
+     * @param {Number} options.theme.color Hex color of the object, if applicable
+     * @param {Number} options.theme.orbitColor Hex color of the orbit
      * @param {Object} contextOrSimulation Simulation context or simulation object
      * @param {boolean} autoInit Automatically initialize this object. If false
      * you must call init() manually.
@@ -1409,7 +1592,7 @@ var Spacekit = (function (exports) {
         return this._orbit;
       }
       return new Orbit(this._options.ephem, {
-        color: this.getColor(),
+        color: this._options.theme ? this._options.theme.orbitColor || 0x888888 : 0x888888,
         eclipticLineColor: this._options.ecliptic
           ? this._options.ecliptic.lineColor
           : null,
@@ -1476,6 +1659,14 @@ var Spacekit = (function (exports) {
       }
 
       const posModified = this._orbit.getPositionAtTime(jd);
+      if (this._orbitAround) {
+        const parentPos = this._orbitAround.getPosition(jd);
+        return [
+          pos[0] + posModified[0] + parentPos[0],
+          pos[1] + posModified[1] + parentPos[1],
+          pos[2] + posModified[2] + parentPos[2],
+        ];
+      }
       return [
         pos[0] + posModified[0],
         pos[1] + posModified[1],
@@ -1516,9 +1707,6 @@ var Spacekit = (function (exports) {
         if (!newpos) {
           newpos = this.getPosition(jd);
         }
-        newpos[0] += parentPos[0];
-        newpos[1] += parentPos[1];
-        newpos[2] += parentPos[2];
       }
 
       // TODO(ian): Determine this based on orbit and camera position change.
@@ -2066,7 +2254,7 @@ var Spacekit = (function (exports) {
     },
   };
 
-  const NUM_SPHERE_SEGMENTS = 32;
+  const NUM_SPHERE_SEGMENTS = 16;
 
   /**
    * Simulates a planet or other object as a perfect sphere.
@@ -2092,14 +2280,14 @@ var Spacekit = (function (exports) {
     initSphere() {
       let map;
       if (this._options.textureUrl) {
-        map = THREE.ImageUtils.loadTexture(this._options.textureUrl);
+        map = new THREE.TextureLoader().load(this._options.textureUrl);
         map.minFilter = THREE.LinearFilter;
       }
 
       // TODO(ian): Clouds and rings
 
       const sphereGeometry = new THREE.SphereGeometry(
-        this._options.radius || 1,
+        rescaleNumber(this._options.radius || 1),
         NUM_SPHERE_SEGMENTS,
         NUM_SPHERE_SEGMENTS,
       );
@@ -2224,6 +2412,7 @@ var Spacekit = (function (exports) {
               cartesianSpherical[0],
               cartesianSpherical[1],
               cartesianSpherical[2],
+              getObliquity(), // defaults to J2000 value
             );
 
             positions.set(pos, idx * 3);
@@ -2319,6 +2508,8 @@ var Spacekit = (function (exports) {
      * thousands+), you don't need to worry about this.
      * @param {String} options.particleTextureUrl The texture for the default
      * particle system.
+     * @param {Number} options.particleDefaultSize The default size for the
+     * particle system.
      * @param {Object} options.camera Options for camera
      * @param {Array.<Number>} options.camera.initialPosition Initial X, Y, Z
      * coordinates of the camera. Defaults to [0, -10, 5].
@@ -2333,7 +2524,7 @@ var Spacekit = (function (exports) {
     constructor(simulationElt, options) {
       this._simulationElt = simulationElt;
       this._options = options || {};
-      this._options.basePath = this._options.basePath || 'https://typpo.github.io/spacekit/src';
+      this._options.basePath = this._options.basePath || getDefaultBasePath();
 
       this._jd = typeof this._options.jd === 'undefined' ? julian.toJulianDay(this._options.startDate) || 0 : this._options.jd;
       this._jdDelta = this._options.jdDelta;
@@ -2435,6 +2626,7 @@ var Spacekit = (function (exports) {
             || '{{assets}}/sprites/smallparticle.png',
           jd: this._jd,
           maxNumParticles: this._options.maxNumParticles,
+          defaultSize: this._options.particleDefaultSize,
         },
         this,
       );
@@ -2447,6 +2639,11 @@ var Spacekit = (function (exports) {
       const renderer = new THREE.WebGLRenderer({
         antialias: true,
       });
+
+      const maxPrecision = renderer.capabilities.getMaxPrecision();
+      if (maxPrecision !== 'highp') {
+        console.warn(`Shader maximum precision is "${maxPrecision}", GPU rendering may not be accurate.`);
+      }
 
       renderer.setPixelRatio(window.devicePixelRatio);
       renderer.setSize(
@@ -2640,6 +2837,17 @@ var Spacekit = (function (exports) {
     }
 
     /**
+     * Returns a promise that receives a NaturalSatellites object when it is
+     * resolved.  @return {Promise<NaturalSatellites>} NaturalSatellites object
+     * that is ready to load.
+     *
+     * @see {NaturalSatellites}
+     */
+    loadNaturalSatellites() {
+      return new NaturalSatellites(this).load();
+    }
+
+    /**
      * Installs a scroll handler that only renders the visualization while it is
      * in the user's viewport.
      *
@@ -2778,7 +2986,7 @@ var Spacekit = (function (exports) {
     }
 
     /**
-     * Get a date object representing current date and time of the simulation.
+     * Get a date object representing local date and time of the simulation.
      * @return {Date} Date of simulation
      */
     getDate() {
@@ -2786,7 +2994,7 @@ var Spacekit = (function (exports) {
     }
 
     /**
-     * Set the date and time of the simulation.
+     * Set the local date and time of the simulation.
      * @param {Date} date Date of simulation
      */
     setDate(date) {
@@ -2897,11 +3105,13 @@ var Spacekit = (function (exports) {
   exports.Camera = Camera;
   exports.sphericalToCartesian = sphericalToCartesian;
   exports.equatorialToEcliptic_Cartesian = equatorialToEcliptic_Cartesian;
+  exports.eclipticToEquatorial_Cartesian = eclipticToEquatorial_Cartesian;
   exports.getNutationAndObliquity = getNutationAndObliquity;
   exports.getObliquity = getObliquity;
   exports.Ephem = Ephem;
   exports.GM = GM;
   exports.EphemPresets = EphemPresets;
+  exports.NaturalSatellites = NaturalSatellites;
   exports.Orbit = Orbit;
   exports.Simulation = Simulation;
   exports.Skybox = Skybox;
@@ -2920,6 +3130,8 @@ var Spacekit = (function (exports) {
   exports.sexagesimalToDecimalDec = sexagesimalToDecimalDec;
   exports.decimalToSexagesimalRa = decimalToSexagesimalRa;
   exports.decimalToSexagesimalDec = decimalToSexagesimalDec;
+  exports.kmToAu = kmToAu;
+  exports.auToKm = auToKm;
 
   return exports;
 
