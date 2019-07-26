@@ -4,7 +4,7 @@ function init3dVis() {
     //basePath: 'http://localhost:8001/src',
     basePath: '/static/spacekit',
     startDate: Date.now(),
-    maxNumParticles: 65536,
+    maxNumParticles: 4096,
   }, window.VIZ_SIMULATION_OPTS));
   window.viz = viz;
 
