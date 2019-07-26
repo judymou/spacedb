@@ -41,25 +41,17 @@ function init3dVis() {
     window.spaceobjects[objDef.slug] = spaceobject;
   });
 
-  /*
-  window.BACKGROUND_OBJECT_DEFINITIONS.forEach(function(objDef, idx) {
-    viz.createObject(`spaceobject-background${idx}`, {
-      hideOrbit: true,
-      particleSize: 5,
-      ephem: new Spacekit.Ephem(objDef.ephem, 'deg'),
-    });
-  });
- */
   if (typeof window.BACKGROUND_QUERY_URL !== 'undefined') {
     fetch(`${window.BACKGROUND_QUERY_URL}?limit=2000`).then(function(resp) {
       return resp.json();
     }).then(function(result) {
       result.data.forEach(function(objDef, idx) {
-        viz.createObject(`spaceobject-background${idx}`, {
+        viz.createObject(`spaceobject-background${idx}`, Object.assign(window.VIZ_OBJECT_OPTS, {
           hideOrbit: true,
-          particleSize: 8,
+          particleSize: window.VIZ_OBJECT_OPTS.particleSize ?
+            Math.round(window.VIZ_OBJECT_OPTS.particleSize * 0.8) : 8,
           ephem: new Spacekit.Ephem(objDef, 'deg'),
-        });
+        }));
       });
     });
 

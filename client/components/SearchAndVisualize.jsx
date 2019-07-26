@@ -76,7 +76,6 @@ class SearchAndVisualize extends React.Component {
           showLabel: false,
           showOrbit: false,
           updateHash: false,
-          particleSize: 8,
         });
       });
 
