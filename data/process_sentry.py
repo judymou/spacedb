@@ -32,6 +32,9 @@ def process(events):
         if count % 2000 == 0:
             logger.info(count)
 
+        if 'dist' not in event:
+            continue
+
         fullname = get_normalized_full_name(event['fullname'])
 
         date_str = event['date']
