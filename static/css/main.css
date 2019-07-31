@@ -318,3 +318,13 @@ ul.keyfacts li {
   position: sticky;
   top: 0;
 }
+
+@media (max-width: 960px) {
+  .item-container__inner {
+    padding: 0;
+  }
+
+  .item-container__rightside {
+    padding: 0;
+  }
+}
