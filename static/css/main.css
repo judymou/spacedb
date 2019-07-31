@@ -327,4 +327,8 @@ ul.keyfacts li {
   .item-container__rightside {
     padding: 0;
   }
+
+  .desktop-only {
+    display: none;
+  }
 }
