@@ -28,11 +28,11 @@ function init3dVis() {
 
   window.spaceobjects = {};
   window.OBJECT_DEFINITIONS.forEach(function(objDef, idx) {
-    const spaceobject = viz.createObject(`spaceobject${idx}`, Object.assign(window.VIZ_OBJECT_OPTS, {
+    const spaceobject = viz.createObject(`spaceobject${idx}`, Object.assign({
       ephem: new Spacekit.Ephem(objDef.ephem, 'deg'),
       labelText: objDef.name,
       labelUrl: `/asteroid/${objDef.slug}`,
-    }));
+    }, window.VIZ_OBJECT_OPTS));
 
     if (idx === 0) {
       viz.zoomToFit(spaceobject, 0.5);
@@ -46,12 +46,12 @@ function init3dVis() {
       return resp.json();
     }).then(function(result) {
       result.data.forEach(function(objDef, idx) {
-        viz.createObject(`spaceobject-background${idx}`, Object.assign(window.VIZ_OBJECT_OPTS, {
+        viz.createObject(`spaceobject-background${idx}`, Object.assign({
           hideOrbit: true,
           particleSize: window.VIZ_OBJECT_OPTS.particleSize ?
             Math.round(window.VIZ_OBJECT_OPTS.particleSize * 0.8) : 8,
           ephem: new Spacekit.Ephem(objDef, 'deg'),
-        }));
+        }, window.VIZ_OBJECT_OPTS));
       });
     });
 
