@@ -133,6 +133,11 @@ h1.mainheading {
   color: #fff;
 }
 
+.subheading label {
+  font-size: 50%;
+  line-height: 2;
+}
+
 ul.keyfacts li {
   margin-left: -1em;
 }
