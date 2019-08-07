@@ -259,6 +259,7 @@ ul.keyfacts li {
 .tile {
   border: 1px solid #e8e8e8;
   padding: 1em;
+  cursor: pointer;
 }
 
 .tile:hover {
