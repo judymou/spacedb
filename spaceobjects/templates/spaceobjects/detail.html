@@ -102,14 +102,13 @@ const t = setInterval(function() {
       {% else %}
         {{object.fullname}}
       {% endif %}
-      {% if object.is_nea %}
-        &nbsp;
-        <span class="label label-info"><a href="/category/near-earth-asteroids">Near-Earth</a></span>
-      {% endif %}
-      {% if object.is_pha %}
-        <span class="label label-warning"><a href="/category/potentially-hazardous-asteroids">Potentially Hazardous</a></span>
-      {% endif %}
     </h2>
+    {% if object.is_nea %}
+      <span class="label label-info"><a href="/category/near-earth-asteroids">Near-Earth</a></span>
+    {% endif %}
+    {% if object.is_pha %}
+      <span class="label label-warning"><a href="/category/potentially-hazardous-asteroids">Potentially Hazardous</a></span>
+    {% endif %}
     <div class="orbit-diagram"></div>
   </div>
 </header>

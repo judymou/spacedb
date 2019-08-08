@@ -133,9 +133,8 @@ h1.mainheading {
   color: #fff;
 }
 
-.subheading label {
-  font-size: 50%;
-  line-height: 2;
+.site-header .label a {
+  color: #fff;
 }
 
 ul.keyfacts li {
@@ -336,5 +335,13 @@ ul.keyfacts li {
 
   .desktop-only {
     display: none;
+  }
+
+  .row {
+    margin: 0;
+  }
+
+  .sticky {
+    position: relative;
   }
 }
