@@ -70,12 +70,14 @@ onPageReadyHandlers.push(() => {
 onPageReadyHandlers.push(init3dVis);
 onPageReadyHandlers.push(initReferenceTables);
 
-function initMap() {
-  onPageReadyHandlers.push(() => {
-    const sizeComparison = new SizeComparison('#size-comparison', {});
-    sizeComparison.render({{object.get_diameter_estimate}});
-  });
-}
+{% if object.has_size_info %}
+  function initMap() {
+    onPageReadyHandlers.push(() => {
+      const sizeComparison = new SizeComparison('#size-comparison', {});
+      sizeComparison.render({{object.get_diameter_estimate}});
+    });
+  }
+{% endif %}
 
 const t = setInterval(function() {
   if (window.pageReady) {
@@ -84,9 +86,11 @@ const t = setInterval(function() {
   }
 }, 500);
 </script>
-<script async defer
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCGGGEBu3lHIz-sfzh-OB6PUe3-6mBteQI&callback=initMap">
-</script>
+{% if object.has_size_info %}
+  <script async defer
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCGGGEBu3lHIz-sfzh-OB6PUe3-6mBteQI&callback=initMap">
+  </script>
+{% endif %}
 {% endblock %}
 
 {% block header %}
