@@ -130,7 +130,7 @@ const t = setInterval(function() {
   <div class="item-container__inner">
     <h3>Key Facts</h3>
     <ul class="keyfacts">
-      <li>Classified as a <a href="/category/{{object.orbit_class.slug}}">{{object.orbit_class.name}}</a></li>
+      <li>Categorized as a <a href="/category/{{object.orbit_class.slug}}">{{object.orbit_class.name}}</a></li>
       {% if object.has_size_info %}
         <li>Comparable in size to {{object.get_diameter_comparison}} ({{object.sbdb_entry.diameter | floatformat:2}} km diameter)</li>
       {% elif object.has_size_info_estimate %}
@@ -144,12 +144,12 @@ const t = setInterval(function() {
       {% if object.is_nea %}
       <li>Classified as a Near Earth Asteroid (NEA)</li>
       {% else %}
-      <li>Not a Near Earth Asteroid (NEA)</li>
+      <li>Not a Near Earth Object</li>
       {% endif %}
       {% if object.is_pha %}
       <li>Classified as a Potentially Hazardous Asteroid (PHA)</li>
       {% else %}
-      <li>Not a Potentially Hazardous Asteroid (PHA)</li>
+      <li>Not a Potentially Hazardous Object</li>
       {% endif %}
       <li><a href="/solar-system#ob={{object.slug}}">See orbit simulation</a></li>
     </ul>
