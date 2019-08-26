@@ -396,12 +396,14 @@ const t = setInterval(function() {
     </ul>
   </div>
 </div>
-<div class="item-container item-container__rightside col-sm-4">
-  <div class="item-container__inner">
-    <h4>Size Comparison</h4>
-      <div id="size-comparison"></div>
+{% if object.has_size_info %}
+  <div class="item-container item-container__rightside col-sm-4">
+    <div class="item-container__inner">
+      <h4>Size Comparison</h4>
+        <div id="size-comparison"></div>
+    </div>
   </div>
-</div>
+{% endif %}
 <div class="item-container col-sm-12">
   <div class="item-container__inner">
     <h3>Orbit Simulation</h3>
