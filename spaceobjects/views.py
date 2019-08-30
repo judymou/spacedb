@@ -78,6 +78,16 @@ def index(request):
               ],
           })
 
+def detail_asteroid(request, slug):
+    if space_object.object_type != ObjectType.ASTEROID:
+        return redirect('/comet/%s' % slug)
+    return detail(request, slug)
+
+def detail_comet(request, slug):
+    if space_object.object_type != ObjectType.COMET:
+        return redirect('/asteroid/' % slug)
+    return detail(request, slug)
+
 def detail(request, slug):
     try:
         space_object = SpaceObject.objects.get(slug=slug)

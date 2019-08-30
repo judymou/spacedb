@@ -75,7 +75,9 @@ class SpaceObject(models.Model):
     sbdb_entry = JSONField()
 
     def get_absolute_url(self):
-        return reverse('detail', args=[self.slug])
+        if self.object_type == ObjectType.COMET:
+            return reverse('detail_comet', args=[self.slug])
+        return reverse('detail_asteroid', args=[self.slug])
 
     @cached_property
     def shorthand(self):
@@ -89,8 +91,7 @@ class SpaceObject(models.Model):
 
     @cached_property
     def get_object_type(self):
-        orbclass = self.orbit_class.name
-        if orbclass.find('Comet') > -1:
+        if self.object_type == ObjectType.COMET:
             return 'comet'
         if self.fullname == '1 Ceres':
             return 'object'
