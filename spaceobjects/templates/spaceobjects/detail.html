@@ -70,7 +70,7 @@ onPageReadyHandlers.push(() => {
 onPageReadyHandlers.push(init3dVis);
 onPageReadyHandlers.push(initReferenceTables);
 
-{% if object.has_size_info %}
+{% if object.has_size_info_estimate %}
   function initMap() {
     onPageReadyHandlers.push(() => {
       const sizeComparison = new SizeComparison('#size-comparison', {});
@@ -86,7 +86,7 @@ const t = setInterval(function() {
   }
 }, 500);
 </script>
-{% if object.has_size_info %}
+{% if object.has_size_info_estimate %}
   <script async defer
       src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCGGGEBu3lHIz-sfzh-OB6PUe3-6mBteQI&callback=initMap">
   </script>
@@ -396,7 +396,7 @@ const t = setInterval(function() {
     </ul>
   </div>
 </div>
-{% if object.has_size_info %}
+{% if object.has_size_info_estimate %}
   <div class="item-container item-container__rightside col-sm-4">
     <div class="item-container__inner">
       <h4>Size Comparison</h4>
