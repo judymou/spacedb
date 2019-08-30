@@ -127,6 +127,10 @@ def get_category_info(category):
     elif category == 'potentially-hazardous-asteroids':
         page_name = 'Potentially Hazardous Asteroids'
         objects = SpaceObject.objects.filter(is_pha=True)
+    elif category == 'dwarf-planets':
+        page_name = 'Dwarf Planets'
+        # FIXME(ian): Need to do this with estimated size.
+        objects = SpaceObject.objects.filter(diameter__gt=600)
     elif category.startswith('asteroid-type-'):
         page_name = 'Type ? Asteroids'
     else:
