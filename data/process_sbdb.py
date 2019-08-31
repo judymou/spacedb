@@ -59,6 +59,11 @@ def process(reader):
         except ObjectDoesNotExist:
             orbit_class = None
 
+        magnitude = float(row['H']) if row['H'] else None
+        if not magnitude:
+            # Comet total magnitude
+            magnitude = float(row['M1']) if row['M1'] else None
+
         space_object = SpaceObject(
             fullname = fullname,
             name = row['name'].strip() if row['name'] else fullname,
@@ -77,7 +82,7 @@ def process(reader):
             diameter = float(row['diameter'].decode('utf-8')) if row['diameter'] else None,
             spec_B = row['spec_B'],
             spec_T = row['spec_T'],
-            H = float(row['H']) if row['H'] else None,
+            H = magnitude,
             sbdb_entry = row,
             )
 
