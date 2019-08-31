@@ -94,7 +94,7 @@ def detail_comet(request, slug):
     except SpaceObject.DoesNotExist:
         return HttpResponseNotFound('Could not find object "%s"' % slug)
 
-    if not space_object.is_comet:
+    if space_object.is_asteroid:
         return redirect('/asteroid/%s' % slug)
     return detail(request, slug)
 

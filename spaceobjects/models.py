@@ -23,6 +23,9 @@ class ObjectType(Enum):
             return self.COMET
         return self.ASTEROID
 
+    def __str__(self):
+        return self.value
+
 class OrbitClass(models.Model):
     name = models.CharField(max_length=200)
     slug = models.CharField(max_length=200, unique=True)
