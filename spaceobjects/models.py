@@ -51,7 +51,7 @@ class SpaceObject(models.Model):
 
     orbit_class = models.ForeignKey(OrbitClass, blank=True, null=True)
     object_type = models.CharField(max_length = 20,
-            choices=[(tag, tag.value) for tag in ObjectType])
+            choices=[(tag.name, tag.value) for tag in ObjectType])
 
     # Basic orbital elements
     a = models.FloatField()
@@ -94,11 +94,16 @@ class SpaceObject(models.Model):
 
     @cached_property
     def get_object_type(self):
-        if self.object_type == ObjectType.COMET:
-            return 'comet'
         if self.fullname == '1 Ceres':
             return 'object'
-        return 'asteroid'
+
+        if self.object_type == ObjectType.COMET:
+            return 'comet'
+        if self.object_type == ObjectType.ASTEROID:
+            return 'asteroid'
+
+        # This should never happen...
+        return 'object'
 
     @cached_property
     def composition(self):
@@ -258,6 +263,7 @@ class SpaceObject(models.Model):
                 # Comet nuclear magnitude
                 mag = float(self.sbdb_entry.get('M2'))
                 # Typical albedo for a comet
+                # https://en.wikipedia.org/wiki/Comet_nucleus#Albedo
                 albedo_default = 0.04
 
             albedo_known = self.sbdb_entry.get('albedo')
