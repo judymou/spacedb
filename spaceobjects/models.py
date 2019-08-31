@@ -236,9 +236,9 @@ class SpaceObject(models.Model):
     def get_diameter_estimate(self, method='MID'):
         '''Diameter estimate in km, using either SBDB-supplied estimate
         or estimate based on magnitude/albedo'''
-        diameter_str = self.diameter
-        if diameter_str:
-            return float(diameter_str)
+        diameter = self.diameter
+        if diameter:
+            return diameter
 
         # NHATS also has a diameter estimate
         nhats_set = self.nhatsobject_set.all()
