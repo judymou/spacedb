@@ -368,7 +368,7 @@ const t = setInterval(function() {
         <li>Diameter: ~{{object.get_diameter_estimate | floatformat:3}} km</li>
       {% endif %}
       {% if object.H %}
-        <li>Magnitude: {{object.sbdb_entry.H}}</li>
+        <li>Magnitude: {{object.H}}</li>
       {% endif %}
       {% if object.sbdb_entry.albedo %}
         <li>Albedo: {{object.sbdb_entry.albedo}}</li>
