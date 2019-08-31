@@ -235,8 +235,7 @@ def random(request):
         except SpaceObject.DoesNotExist:
             count += 1
             if count > 500:
-                redirect('/asteroid/1-ceres')
-                return
+                return redirect('/asteroid/1-ceres')
             continue
         break
 
