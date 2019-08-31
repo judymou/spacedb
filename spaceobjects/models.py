@@ -81,7 +81,7 @@ class SpaceObject(models.Model):
     sbdb_entry = JSONField()
 
     def get_absolute_url(self):
-        if self.object_type == ObjectType.COMET:
+        if self.object_type == ObjectType.COMET.value:
             return reverse('detail_comet', args=[self.slug])
         return reverse('detail_asteroid', args=[self.slug])
 
@@ -100,9 +100,9 @@ class SpaceObject(models.Model):
         if self.fullname == '1 Ceres':
             return 'object'
 
-        if self.object_type == ObjectType.COMET:
+        if self.object_type == ObjectType.COMET.value:
             return 'comet'
-        if self.object_type == ObjectType.ASTEROID:
+        if self.object_type == ObjectType.ASTEROID.value:
             return 'asteroid'
 
         # This should never happen...
@@ -168,11 +168,11 @@ class SpaceObject(models.Model):
 
     @cached_property
     def is_asteroid(self):
-        return self.object_type == ObjectType.ASTEROID
+        return self.object_type == ObjectType.ASTEROID.value
 
     @cached_property
     def is_comet(self):
-        return self.object_type == ObjectType.COMET
+        return self.object_type == ObjectType.COMET.value
 
     @cached_property
     def has_size_info(self):
