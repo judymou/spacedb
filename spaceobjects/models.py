@@ -241,20 +241,28 @@ class SpaceObject(models.Model):
             elif method == 'HIGH':
                 return nhats.max_diameter / 100.
             else:
+                # method == LOW
                 return nhats.min_diameter / 100.
 
         try:
-            mag = float(self.sbdb_entry.get('H'))
-            # Assume default albedo of .2
-            albedo_str = self.sbdb_entry.get('albedo')
-            if albedo_str:
-                albedo = float(albedo_str)
-            elif method == 'MID':
-                albedo = 0.15
-            elif method == 'HIGH':
-                albedo = 0.05
-            else:
-                albedo = 0.25
+            if 'H' in self.sbdb_entry:
+                mag = float(self.sbdb_entry.get('H'))
+                if method == 'MID':
+                    albedo_default = 0.15
+                elif method == 'HIGH':
+                    albedo_default = 0.05
+                else:
+                    # method == LOW
+                    albedo_default = 0.25
+            elif 'M2' in self.sbdb_entry:
+                # Comet nuclear magnitude
+                mag = float(self.sbdb_entry.get('M2'))
+                # Typical albedo for a comet
+                albedo_default = 0.04
+
+            albedo_known = self.sbdb_entry.get('albedo')
+            albedo = float(albedo_known) if albedo_known else albedo_default
+
             # Estimate diameter in km
             # http://www.physics.sfasu.edu/astro/asteroids/sizemagnitude.html
             return 1329 / math.sqrt(albedo) * math.pow(10, -0.2 * mag)
