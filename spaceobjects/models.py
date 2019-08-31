@@ -71,6 +71,9 @@ class SpaceObject(models.Model):
     # For now this is only SBDB diameter. See get_diameter_estimate below.
     diameter = models.FloatField(null=True, blank=True)
 
+    # Automatically filled via get_diameter_estimate
+    diameter_estimate = models.FloatField(null=True, blank=True)
+
     # sbdb blob
     sbdb_entry = JSONField()
 
@@ -285,6 +288,10 @@ class SpaceObject(models.Model):
             'ma': self.ma,
             'epoch': self.epoch,
         }
+
+    def save(self):
+        self.diameter_estimate = self.get_diameter_estimate()
+        super(SpaceObject, self).save()
 
     def __str__(self):
         return self.fullname
