@@ -11,8 +11,8 @@ sitemaps = {
 
 urlpatterns = [
     url('^asteroid/random$', views.random, name='random'),
-    url('^asteroid/(?P<slug>[^/]+)$', views.detail, name='detail_asteroid'),
-    url('^comet/(?P<slug>[^/]+)$', views.detail, name='detail_comet'),
+    url('^asteroid/(?P<slug>[^/]+)$', views.detail_asteroid, name='detail_asteroid'),
+    url('^comet/(?P<slug>[^/]+)$', views.detail_comet, name='detail_comet'),
     url('^asteroid/(?P<slug>[^/]+)/shape$', views.detail_shape, name='detail_shape'),
     url('^category/(?P<category>[^/]+)$', views.category, name='category'),
     url('^solar-system$', views.solar_system, name='solar_system'),

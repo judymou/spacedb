@@ -156,6 +156,14 @@ class SpaceObject(models.Model):
         return self.size_adjective == 'dwarf planet'
 
     @cached_property
+    def is_asteroid(self):
+        return self.object_type == ObjectType.ASTEROID
+
+    @cached_property
+    def is_comet(self):
+        return self.object_type == ObjectType.COMET
+
+    @cached_property
     def has_size_info(self):
         diam = self.sbdb_entry.get('diameter')
         return diam != '' and diam is not None
