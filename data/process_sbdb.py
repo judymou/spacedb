@@ -59,6 +59,12 @@ def process(reader):
         except ObjectDoesNotExist:
             orbit_class = None
 
+        object_type = ObjectType.from_class(row['class'])
+        if row['name'] and object_type != ObjectType.COMET:
+            shortname = row['name'].strip()
+        else:
+            shortname = fullname
+
         magnitude = float(row['H']) if row['H'] else None
         if not magnitude:
             # Comet total magnitude
@@ -66,7 +72,7 @@ def process(reader):
 
         space_object = SpaceObject(
             fullname = fullname,
-            name = row['name'].strip() if row['name'] else fullname,
+            name = shortname,
             slug = slugify(fullname.replace('/',' ')),
             a = float(row['a']),
             e = float(row['e']),
@@ -78,7 +84,7 @@ def process(reader):
             is_nea = True if row['neo'] == 'Y' else False,
             is_pha = True if row['pha'] == 'Y' else False,
             orbit_class = orbit_class,
-            object_type = ObjectType.from_class(row['class']).value,
+            object_type = object_type,
             diameter = float(row['diameter'].decode('utf-8')) if row['diameter'] else None,
             spec_B = row['spec_B'],
             spec_T = row['spec_T'],
