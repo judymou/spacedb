@@ -127,30 +127,36 @@ def get_category_info(category):
     '''
     orbit_class = None
     page_name = None
+
+    # Logic below can either set `query_results` or `query_filter`. If
+    # `query_results` is set, it overrides any query filter.
+    query_results = None
+    query_filter = {}
+
     if category == 'asteroids':
         # All asteroids
-        objects = SpaceObject.objects.filter(object_type=ObjectType.ASTEROID)
+        query_filter['object_type'] = ObjectType.ASTEROID
         page_name = 'Asteroids'
     elif category == 'comets':
         # All comets
-        objects = SpaceObject.objects.filter(object_type=ObjectType.COMET)
+        query_filter['object_type'] = ObjectType.COMET
         page_name = 'Comets'
     elif category == 'asteroid-shapes':
-        objects = SpaceObject.objects.annotate(num_shapes=Count('shapemodel')).filter(num_shapes__gt=0)
+        query_results = SpaceObject.objects.annotate(num_shapes=Count('shapemodel')).filter(num_shapes__gt=0)
         page_name = 'Asteroids with Known Shapes'
     elif category == 'kuiper-belt':
-        objects = SpaceObject.objects.filter(a__gt=35)
+        query_filter['a__gt'] = 35
         page_name = 'Kuiper Belt Objects'
     elif category == 'near-earth-asteroids':
-        objects = SpaceObject.objects.filter(is_nea=True)
+        query_filter['is_nea'] =True
         page_name = 'Near-Earth Asteroids'
     elif category == 'potentially-hazardous-asteroids':
+        query_filter['is_pha'] =True
         page_name = 'Potentially Hazardous Asteroids'
-        objects = SpaceObject.objects.filter(is_pha=True)
     elif category == 'dwarf-planets':
         page_name = 'Dwarf Planets'
         # FIXME(ian): Need to do this with estimated size.
-        objects = SpaceObject.objects.filter(diameter__gt=600)
+        query_filter['diameter_estimate__gt'] = 600
     elif category.startswith('asteroid-type-'):
         page_name = 'Type ? Asteroids'
     else:
@@ -160,11 +166,16 @@ def get_category_info(category):
         except ObjectDoesNotExist:
             return HttpResponseNotFound('Unknown category "%s"' % category)
 
-        objects = SpaceObject.objects.filter(orbit_class=orbit_class)
+        query_filter['orbit_class'] =orbit_class
         page_name = '%ss' % orbit_class.name
 
+    if query_results is None:
+        # Add a global filter for no excessively huge semimajor axes
+        query_filter['a__lt'] = 10000
+        query_results = SpaceObject.objects.filter(**query_filter)
+
     return {
-        'objects': objects,
+        'objects': query_results,
         'page_name': page_name,
         'orbit_class': orbit_class,
     }
