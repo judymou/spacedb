@@ -254,7 +254,7 @@ class SpaceObject(models.Model):
 
         try:
             if 'H' in self.sbdb_entry:
-                mag = float(self.sbdb_entry.get('H'))
+                mag = float(self.sbdb_entry['H'])
                 if method == 'MID':
                     albedo_default = 0.15
                 elif method == 'HIGH':
@@ -264,7 +264,7 @@ class SpaceObject(models.Model):
                     albedo_default = 0.25
             elif 'M2' in self.sbdb_entry:
                 # Comet nuclear magnitude
-                mag = float(self.sbdb_entry.get('M2'))
+                mag = float(self.sbdb_entry['M2'])
                 # Typical albedo for a comet
                 # https://en.wikipedia.org/wiki/Comet_nucleus#Albedo
                 albedo_default = 0.04
@@ -276,6 +276,8 @@ class SpaceObject(models.Model):
             # http://www.physics.sfasu.edu/astro/asteroids/sizemagnitude.html
             return 1329 / math.sqrt(albedo) * math.pow(10, -0.2 * mag)
         except ValueError:
+            pass
+        except KeyError:
             pass
         return None
 
