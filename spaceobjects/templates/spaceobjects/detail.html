@@ -174,7 +174,7 @@ const t = setInterval(function() {
     {% endif %}
     </p>
     <p>
-    {{object.shorthand}} <!--was discovered in the year {{object.firstobs_date|date:"Y"}}.  It--> orbits the sun every {{object.period_in_days|floatformat:0|intcomma}} days ({{object.period_in_years|floatformat:2|intcomma}} years), coming as close as {{object.perihelion|floatformat:2}} AU and reaching as far as {{object.aphelion|floatformat:2}} AU from the sun.
+    {{object.shorthand}} orbits the sun every {{object.period_in_days|floatformat:0|intcomma}} days ({{object.period_in_years|floatformat:2|intcomma}} years), coming as close as {{object.perihelion|floatformat:2}} AU and reaching as far as {{object.aphelion|floatformat:2}} AU from the sun.
     {% if object.e > .7 %}
       Its orbit is highly elliptical.
     {% endif %}

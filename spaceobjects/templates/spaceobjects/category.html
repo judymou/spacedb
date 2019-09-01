@@ -114,7 +114,7 @@ init3dVis();
               {% endif %}
               <br>
               <div class="tile-desc">
-              {{object.shorthand}} <!--was discovered in the year {{object.firstobs_date|date:"Y"}}.  It--> orbits the sun every {{object.sbdb_entry.per|floatformat:0|intcomma}} days, coming as close as {{object.perihelion|floatformat:2}} AU and reaching as far as {{object.aphelion|floatformat:2}} AU from the sun.
+              {{object.shorthand}} orbits the sun every {{object.sbdb_entry.per|floatformat:0|intcomma}} days, coming as close as {{object.perihelion|floatformat:2}} AU and reaching as far as {{object.aphelion|floatformat:2}} AU from the sun.
               </div>
             </div>
           </div>
