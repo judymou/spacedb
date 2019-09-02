@@ -2,7 +2,7 @@
 {% load humanize %}
 {% load static %}
 
-{% block title%}{{object.name}} | Space Reference{% endblock %}
+{% block title%}{% if object.is_asteroid %}Asteroid {% elif object.is_comet %}Comet {% endif %}{{object.name}} | Space Reference{% endblock %}
 
 {% block css %}
 <link rel="stylesheet" href="{% static "css/lib/celestial0.6.css" %}" />

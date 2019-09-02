@@ -100,9 +100,9 @@ class SpaceObject(models.Model):
         if self.fullname == '1 Ceres':
             return 'object'
 
-        if self.object_type == ObjectType.COMET.value:
+        if self.is_comet:
             return 'comet'
-        if self.object_type == ObjectType.ASTEROID.value:
+        if self.is_asteroid:
             return 'asteroid'
 
         # This should never happen...
