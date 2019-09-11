@@ -28,6 +28,13 @@ SHAPES = [
         # https://science.sciencemag.org/content/364/6441/eaaw9771?intcmp=trendmd-sci
         'source': 'S. A. Stern et al., Science, 2019',
     },
+    {
+        'name': '101955 Bennu (1999 RQ36)',
+        'shape_path': 'bennu.obj',
+        'render_path': 'bennu.png',
+        # https://www.asteroidmission.org/updated-bennu-shape-model-3d-files/
+        'source': 'NASA/Goddard/University of Arizona',
+    },
 ]
 
 def process_shapes():
