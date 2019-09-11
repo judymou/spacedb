@@ -211,6 +211,10 @@ const t = setInterval(function() {
       This means that there is an very wide berth between this asteroid and Earth at all times.
     {% elif object.moid > 0.01 %}
       This means that there is an wide berth between this asteroid and Earth at all times.
+    {% elif object.moid < 0.001 %}
+      This means that its orbit is very close to Earth's orbit.
+    {% elif object.moid < 0.0001 %}
+      This means that its orbit is extremely close to Earth's orbit.
     {% else %}
       This means that its orbit is relatively close to Earth's orbit.
     {% endif %}
