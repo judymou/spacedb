@@ -70,6 +70,11 @@ def process(reader):
             # Comet total magnitude
             magnitude = float(row['M1']) if row['M1'] else None
 
+        try:
+            diam = float(row['diameter'].strip())
+        except ValueError:
+            diam = None
+
         space_object = SpaceObject(
             fullname = fullname,
             name = shortname,
@@ -85,7 +90,7 @@ def process(reader):
             is_pha = True if row['pha'] == 'Y' else False,
             orbit_class = orbit_class,
             object_type = object_type,
-            diameter = float(row['diameter']) if row['diameter'] else None,
+            diameter = diam,
             spec_B = row['spec_B'],
             spec_T = row['spec_T'],
             H = magnitude,
