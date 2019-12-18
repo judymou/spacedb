@@ -85,7 +85,7 @@ def process(reader):
             is_pha = True if row['pha'] == 'Y' else False,
             orbit_class = orbit_class,
             object_type = object_type,
-            diameter = float(row['diameter'].decode('utf-8')) if row['diameter'] else None,
+            diameter = float(row['diameter']) if row['diameter'] else None,
             spec_B = row['spec_B'],
             spec_T = row['spec_T'],
             H = magnitude,
