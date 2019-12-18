@@ -101,11 +101,18 @@ def process(reader):
 
     logger.info('Done.')
 
+def generate_rows(fields, data):
+    for row in data:
+        yield dict(zip(fields, row))
+
 if __name__ == '__main__':
     logger.info('Processing sbdb data')
 
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    data_path = os.path.realpath(os.path.join(dir_path, 'rawdata/sbdb.csv.gz'))
+    data_path = os.path.realpath(os.path.join(dir_path, 'rawdata/sbdb.json.gz'))
     with gzip.open(data_path) as f:
-        reader = csv.DictReader(f, delimiter=',')
-        process(reader)
+        obj = json.load(f)
+        fields = obj['fields']
+        data = obj['data']
+        rows = generate_rows(fields, data)
+        process(rows)
