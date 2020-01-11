@@ -39,7 +39,7 @@ def process(reader):
         if count % 10000 == 0:
             logger.info(count)
 
-        if count % 30000 == 0:
+        if count % 20000 == 0:
             # Subdivide insertions - slower, but needed for low memory
             # environments like production machine
             logger.info('Inserting...')
