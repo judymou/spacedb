@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 def insert_all(newobjects, delete=False):
     if delete:
         logger.info('Deleting...')
-        for obj in SpaceObject.objects.all().only('pk').iterator(chunk_size=10000):
+        for obj in SpaceObject.objects.all().only('pk').iterator():
             obj.delete()
         logger.info('Finished deleting.')
     SpaceObject.objects.bulk_create(newobjects, batch_size=499)
