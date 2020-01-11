@@ -72,7 +72,7 @@ def process(reader):
 
         try:
             diam = float(row['diameter'].strip())
-        except ValueError, AttributeError:
+        except:
             diam = None
 
         space_object = SpaceObject(
