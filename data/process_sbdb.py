@@ -28,7 +28,10 @@ logger = logging.getLogger(__name__)
 @transaction.atomic
 def insert_all(newobjects, delete=False):
     if delete:
-        SpaceObject.objects.all().only('pk').delete()
+        logger.info('Deleting...')
+        for obj in SpaceObject.objects.all().only('pk').iterator(chunk_size=10000):
+            obj.delete()
+        logger.info('Finished deleting.')
     SpaceObject.objects.bulk_create(newobjects, batch_size=499)
 
 def process(reader):
