@@ -67,8 +67,8 @@ class SpaceObject(models.Model):
 
     is_nea = models.BooleanField()
     is_pha = models.BooleanField()
-    spec_B = models.CharField(max_length=200)
-    spec_T = models.CharField(max_length=200)
+    spec_B = models.CharField(max_length=200, null=True, blank=True)
+    spec_T = models.CharField(max_length=200, null=True, blank=True)
     H = models.FloatField(null=True, blank=True)
 
     # For now this is only SBDB diameter. See get_diameter_estimate below.
