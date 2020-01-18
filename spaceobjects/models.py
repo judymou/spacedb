@@ -160,7 +160,9 @@ class SpaceObject(models.Model):
     @cached_property
     def avg_orbital_speed(self):
         # in km/s
-        return (2 * math.pi * self.a * 149597870.7) / (self.period_in_days * 86400)
+        if self.period_in_days > 0:
+            return (2 * math.pi * self.a * 149597870.7) / (self.period_in_days * 86400)
+        return None
 
     @cached_property
     def is_dwarf_planet(self):
