@@ -293,6 +293,8 @@ class SpaceObject(models.Model):
                 'om': self.om,
                 'w': self.w,
                 'ma': self.ma,
+                'q': self.sbdb_entry.q,
+                'tp': self.sbdb_entry.tp,
                 'epoch': self.epoch,
             }
         }
@@ -305,6 +307,8 @@ class SpaceObject(models.Model):
             'om': self.om,
             'w': self.w,
             'ma': self.ma,
+            'q': self.sbdb_entry.q,
+            'tp': self.sbdb_entry.tp,
             'epoch': self.epoch,
         }
 
