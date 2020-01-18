@@ -52072,14 +52072,14 @@ var Spacekit = (function (exports) {
 	   * @return {Number} The hexadecimal color of the orbital ellipse.
 	   */
 	  getHexColor() {
-	    return this._ellipse.material.color.getHex();
+	    return this._orbitShape.material.color.getHex();
 	  }
 
 	  /**
 	   * @param {Number} hexVal The hexadecimal color of the orbital ellipse.
 	   */
 	  setHexColor(hexVal) {
-	    this._ellipse.material.color = new Color(hexVal);
+	    this._orbitShape.material.color = new Color(hexVal);
 	  }
 
 	  /**
@@ -52089,7 +52089,7 @@ var Spacekit = (function (exports) {
 	   * underlying Scene and Simultation.
 	   */
 	  getVisibility() {
-	    return this._ellipse.visible;
+	    return this._orbitShape.visible;
 	  }
 
 	  /**
@@ -52097,7 +52097,7 @@ var Spacekit = (function (exports) {
 	   * @param {boolean} val Whether to show the orbital ellipse.
 	   */
 	  setVisibility(val) {
-	    this._ellipse.visible = val;
+	    this._orbitShape.visible = val;
 	  }
 	}
 
