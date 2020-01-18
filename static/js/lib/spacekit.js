@@ -51963,14 +51963,14 @@ var Spacekit = (function (exports) {
 	    const pointsGeometry = new Geometry();
 	    pointsGeometry.vertices = points;
 
-	    const line = new Line(
+	    this._orbitShape = new Line(
 	      pointsGeometry,
 	      new LineBasicMaterial({
 	        color: new Color(this._options.color || 0x444444),
 	      }),
 	      LineStrip,
 	    );
-	    return line;
+	    return this._orbitShape;
 	  }
 
 	  /**
