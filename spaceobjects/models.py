@@ -282,6 +282,12 @@ class SpaceObject(models.Model):
         return None
 
     def to_search_result(self):
+        q = self.sbdb_entry.get('q', None)
+        if q:
+            q = float(q)
+        tp = self.sbdb_entry.get('tp', None)
+        if tp:
+            tp = float(tp)
         return {
             'fullname': self.fullname,
             'name': self.name,
@@ -293,13 +299,19 @@ class SpaceObject(models.Model):
                 'om': self.om,
                 'w': self.w,
                 'ma': self.ma,
-                'q': self.sbdb_entry.q,
-                'tp': self.sbdb_entry.tp,
+                'q': q,
+                'tp': tp,
                 'epoch': self.epoch,
             }
         }
 
     def to_orbit_obj(self):
+        q = self.sbdb_entry.get('q', None)
+        if q:
+            q = float(q)
+        tp = self.sbdb_entry.get('tp', None)
+        if tp:
+            tp = float(tp)
         return {
             'a': self.a,
             'e': self.e,
@@ -307,8 +319,8 @@ class SpaceObject(models.Model):
             'om': self.om,
             'w': self.w,
             'ma': self.ma,
-            'q': self.sbdb_entry.q,
-            'tp': self.sbdb_entry.tp,
+            'q': q,
+            'tp': tp,
             'epoch': self.epoch,
         }
 
