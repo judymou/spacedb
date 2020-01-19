@@ -155,7 +155,9 @@ class SpaceObject(models.Model):
             return 'large'
         if diameter < 600:
             return 'very large'
-        return 'dwarf planet'
+        if self.object_type == ObjectType.ASTEROID.value:
+            return 'dwarf planet'
+        return None
 
     @cached_property
     def avg_orbital_speed(self):
