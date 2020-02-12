@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 SHAPES = [
     {
-        'name': '486958 (2014 MU69)',
+        'name': '486958 Arrokoth (2014 MU69)',
         'shape_path': '2014_mu69.obj',
         'render_path': '2014_mu69.png',
         # https://science.sciencemag.org/content/364/6441/eaaw9771?intcmp=trendmd-sci
@@ -31,9 +31,17 @@ SHAPES = [
     {
         'name': '101955 Bennu (1999 RQ36)',
         'shape_path': 'bennu.obj',
-        'render_path': 'bennu.png',
+        'render_path': 'bennu.gif',
         # https://www.asteroidmission.org/updated-bennu-shape-model-3d-files/
         'source': 'NASA/Goddard/University of Arizona',
+    },
+    # http://observations.lam.fr/astero/
+    {
+        'name': '2 Pallas',
+        'shape_path': 'Pallas_ADAM.obj',
+        'render_path': 'pallas.png',
+        # https://www.nature.com/articles/s41550-019-1007-5
+        'source': 'Marsset et al., Nature Astronomy, 2020',
     },
 ]
 
