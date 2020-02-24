@@ -143,17 +143,17 @@ class SpaceObject(models.Model):
         if not diameter:
             return None
 
-        if diameter < 1:
+        if diameter < 0.5:
             return 'very small'
-        if diameter < 10:
+        if diameter < 1:
             return 'small'
+        if diameter < 10:
+            return 'mid-sized'
         if diameter < 100:
-            return 'relatively small'
-        if diameter < 200:
-            return 'average-sized'
-        if diameter < 300:
             return 'large'
-        if diameter < 600:
+        if diameter < 200:
+            return 'large'
+        if diameter < 300:
             return 'very large'
         if self.object_type == ObjectType.ASTEROID.value:
             return 'dwarf planet'
@@ -197,7 +197,11 @@ class SpaceObject(models.Model):
         if diameter > 300:
             return 'one of the largest objects'
         if diameter > 1:
-            return 'larger than most asteroids'
+            return 'larger than 99% of asteroids'
+        if diameter > 0.5:
+            return 'small in absolute terms, but larger than ~97% of asteroids'
+        if diameter > 0.3:
+            return 'small in absolute terms, but larger than 90% of asteroids'
         return 'a small to average asteroid'
 
     @cached_property
