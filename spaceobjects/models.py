@@ -459,9 +459,24 @@ class ShapeModel(models.Model):
     # Quality level
     quality = models.FloatField(null=True, blank=True)
 
+class MissionDesign(models.Model):
+    space_object = models.ForeignKey(SpaceObject)
+
+    jd_0 = models.FloatField()
+    jd_f = models.FloatField()
+    vinf_dep = models.FloatField()
+    vinf_arr = models.FloatField()
+    phase_ang = models.FloatField()
+    earth_dist = models.FloatField()
+    elong_arr = models.FloatField()
+    decl_dep = models.FloatField()
+    approach_ang = models.FloatField()
+    tof = models.FloatField()
+
 admin.site.register(SpaceObject)
 admin.site.register(CloseApproach)
 admin.site.register(SentryEvent)
 admin.site.register(NhatsObject)
 admin.site.register(OrbitClass)
 admin.site.register(ShapeModel)
+admin.site.register(MissionDesign)
