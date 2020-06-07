@@ -16,8 +16,12 @@ URL_BASE = 'https://ssd-api.jpl.nasa.gov/mdesign.api?des='
 def read_existing():
     seen_pdes = set()
     bad_count = 0
-    with gzip.open('rawdata/mission_design15.json.gz', 'r') as f:
-        for line in f.readlines():
+    with gzip.open('rawdata/mission_design21.json.gz', 'r') as f:
+        count = 0
+        for line in f:
+            count += 1
+            if count < 720000:
+                continue
             try:
                 obj = json.loads(line)
             except ValueError:
@@ -28,10 +32,11 @@ def read_existing():
     return seen_pdes
 
 def process(reader, seen_pdes):
-    with gzip.open('rawdata/mission_design16.json.gz', 'wb') as f:
+    with gzip.open('rawdata/mission_design22.json.gz', 'wb') as f:
         for count, row in enumerate(reader, 1):
+            if count < 720000:
+                continue
             if count % 1000 == 0:
-                logger.info(count)
                 f.flush()
 
             pdes = row['pdes']
@@ -59,7 +64,7 @@ def process(reader, seen_pdes):
                 found_something = True
 
             if found_something:
-                logger.info('Writing row for %s', line['fullname'])
+                logger.info('Writing row %d for %s', count, line['fullname'])
                 f.write('%s\n' % json.dumps(line))
 
 def generate_rows(fields, data):
