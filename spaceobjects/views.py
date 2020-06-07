@@ -39,7 +39,10 @@ def index(request):
     named_after_slugs = ['2001-einstein-1973-eb', '7672-hawking-1995-uo2',
       '2709-sagan-1982-fh', '6469-armstrong-1982-pc', '6471-collins-1983-eb1']
     for named_after_slug in named_after_slugs:
-        named_after.append(SpaceObject.objects.get(slug=named_after_slug))
+        try:
+            named_after.append(SpaceObject.objects.get(slug=named_after_slug))
+        except SpaceObject.DoesNotExist:
+            pass
 
     return render(request, 'spaceobjects/index.html',
           {

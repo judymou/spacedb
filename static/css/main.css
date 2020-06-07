@@ -248,6 +248,73 @@ ul.keyfacts li {
   height: 350px;
 }
 
+.size-comparison-placeholder {
+  background-image: url('/static/images/nyc-map.png');
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.size-comparison-overlay {
+  display: flex;
+  background-color: #000000a3;
+  width: 100%;
+  height: 100%;
+  color: #fff;
+
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+}
+
+.size-comparison-overlay:hover {
+  background-color: #0000008f;
+}
+
+#height-comparison {
+  position: relative;
+  padding: 1em;
+  text-align: center;
+
+  display: flex;
+}
+
+#height-comparison div {
+  flex: 1;
+  align-self: flex-end;
+}
+
+.artistic-comparison {
+  position: relative;
+  height: 500px;
+  max-width: 100%;
+
+  background-color: #528fc4;
+
+  margin: 0 auto;
+  margin-bottom: 1em;
+}
+
+.artistic-comparison .background {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+
+  width: 100%;
+  height: auto;
+  z-index: 5;
+}
+
+.artistic-comparison .object {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+
+  height: 100%;  /* this is overriden to show actual size */
+  width: auto;
+  z-index: 4;
+}
+
 /* Category page */
 .tile-list {
   padding:0;
@@ -325,8 +392,14 @@ ul.keyfacts li {
 }
 
 @media (max-width: 960px) {
+  .item-container {
+    padding-right: 0;
+  }
+
   .item-container__inner {
+    /*
     padding: 0;
+    */
   }
 
   .item-container__rightside {

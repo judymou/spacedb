@@ -73,12 +73,13 @@ onPageReadyHandlers.push(init3dVis);
 onPageReadyHandlers.push(initReferenceTables);
 
 {% if object.has_size_info_estimate %}
-  function initMap() {
-    onPageReadyHandlers.push(() => {
+  (function() {
+    var overlay = document.getElementById('size-comparison-overlay');
+    overlay.onclick = function() {
       const sizeComparison = new SizeComparison('#size-comparison', {});
       sizeComparison.render({{object.get_diameter_estimate}});
-    });
-  }
+    };
+  })();
 {% endif %}
 
 const t = setInterval(function() {
@@ -90,7 +91,7 @@ const t = setInterval(function() {
 </script>
 {% if object.has_size_info_estimate %}
   <script async defer
-      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCGGGEBu3lHIz-sfzh-OB6PUe3-6mBteQI&callback=initMap">
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCGGGEBu3lHIz-sfzh-OB6PUe3-6mBteQI">
   </script>
 {% endif %}
 {% endblock %}
@@ -414,8 +415,33 @@ const t = setInterval(function() {
 {% if object.has_size_info_estimate %}
   <div class="item-container item-container__rightside col-sm-4">
     <div class="item-container__inner">
-      <h4>Size Comparison</h4>
-        <div id="size-comparison"></div>
+      <h4>Map Comparison</h4>
+        <div id="size-comparison">
+          <div class="size-comparison-placeholder">
+            <div id="size-comparison-overlay" class="size-comparison-overlay">
+              Click to load map
+            </div>
+          </div>
+        </div>
+        <!--
+        <div id="height-comparison">
+          <div>
+            <img src="{% static "images/empire-state-building.svg" %}" />
+            Empire State Building
+          </div>
+          <div>
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="50" cy="50" r="50" style="fill:#ccc" />
+              <circle cx="25" cy="25" r="4" style="fill:#999" />
+              <circle cx="65" cy="15" r="5" style="fill:#999" />
+              <circle cx="35" cy="70" r="4" style="fill:#999" />
+              <circle cx="45" cy="35" r="3" style="fill:#999" />
+              <circle cx="80" cy="60" r="5" style="fill:#999" />
+            </svg>
+            {{object.name}}
+          </div>
+        </div>
+        -->
     </div>
   </div>
 {% endif %}
@@ -446,4 +472,18 @@ const t = setInterval(function() {
     </div>
   </div>
 </div>
+{% if object.get_1wtc_pct <= 100.0 %}
+  <div class="item-container col-sm-12">
+    <div class="item-container__inner">
+      <h3>Size Rendering</h3>
+      <div id="artistic-comparison" class="artistic-comparison">
+        <img class="background" src="{% static "images/nyc-skyline.png" %}" />
+        <img class="object" src="{% static "images/generic-asteroid.png" %}" style="height:{{object.get_1wtc_pct}}%" />
+      </div>
+      <p>
+        The above comparison is an artistic rendering that uses available data on the diameter of {{object.name}} to create an approximate landscape rendering.  Shape, color, and texture of asteroid are imagined.
+      </p>
+    </div>
+  </div>
+{% endif %}
 {% endblock %}

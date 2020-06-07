@@ -289,6 +289,12 @@ class SpaceObject(models.Model):
             pass
         return None
 
+    @cached_property
+    def get_1wtc_pct(self):
+        # Helper function used to get size ratio compared to 1 WTC in New York City.
+        diam_km = self.get_diameter_estimate()
+        return diam_km / 0.5413 * 100.0
+
     def to_search_result(self):
         q = self.sbdb_entry.get('q', None)
         if q:
