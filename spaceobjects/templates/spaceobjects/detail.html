@@ -404,7 +404,7 @@ const t = setInterval(function() {
       {% endif %}
       <li>Perihelion Distance: {{object.perihelion|floatformat:2}} AU</li>
       {% if object.sbdb_entry.rot_per %}
-        <li>Rotation Period: {{object.sbdb_entry.rot_per|floatformat:2|intcomma}} days</li>
+        <li>Rotation Period: {{object.sbdb_entry.rot_per|floatformat:2|intcomma}} hours</li>
       {% endif %}
       {% if object.composition %}
         <li>Approx. Composition: {% include 'spaceobjects/partials/composition.html' %}</li>
