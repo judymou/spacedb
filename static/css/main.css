@@ -312,6 +312,7 @@ ul.keyfacts li {
 
   height: 100%;  /* this is overriden to show actual size */
   width: auto;
+  max-width: 100%;   /* avoid stretching page on small screens */
   z-index: 4;
 }
 
