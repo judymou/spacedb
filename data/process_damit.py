@@ -78,6 +78,9 @@ def process_shapes(f_in, refs):
                 except SpaceObject.DoesNotExist:
                     logger.error('Cannot find space object %s' % fullname)
                     continue
+                except SpaceObject.MultipleObjectsReturned:
+                    logger.error('Multiple objects returned (ambiguous query) for %s' % fullname)
+                    continue
             spaceobject_lookup[fullname] = space_object
 
         # Create ShapeModel object
