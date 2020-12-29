@@ -71,6 +71,9 @@ def process_shapes(f_in, refs):
             try:
                 space_object = SpaceObject.objects.get(fullname=fullname)
                 matched += 1
+            except SpaceObject.MultipleObjectsReturned:
+                logger.error('Multiple objects returned (ambiguous query) for %s' % fullname)
+                continue
             except SpaceObject.DoesNotExist:
                 try:
                     space_object = SpaceObject.objects.get(fullname__contains=fullname)
