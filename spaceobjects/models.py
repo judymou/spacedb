@@ -253,12 +253,12 @@ class SpaceObject(models.Model):
         if len(nhats_set):
             nhats = nhats_set[0]
             if method == 'MID':
-                return (nhats.min_diameter + nhats.max_diameter) / 2.0 / 100.
+                return (nhats.min_diameter + nhats.max_diameter) / 2.0 / 1000.
             elif method == 'HIGH':
-                return nhats.max_diameter / 100.
+                return nhats.max_diameter / 1000.
             else:
                 # method == LOW
-                return nhats.min_diameter / 100.
+                return nhats.min_diameter / 1000.
 
         try:
             if 'H' in self.sbdb_entry:
