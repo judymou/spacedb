@@ -199,9 +199,9 @@ class SpaceObject(models.Model):
         if diameter > 1:
             return 'larger than 99% of asteroids'
         if diameter > 0.5:
-            return 'small in absolute terms, but larger than ~97% of asteroids'
+            return 'larger than ~97% of asteroids but small compared to large asteroids'
         if diameter > 0.3:
-            return 'small in absolute terms, but larger than 90% of asteroids'
+            return 'larger than 90% of asteroids but tiny compared to large asteroids'
         return 'a small to average asteroid'
 
     @cached_property
