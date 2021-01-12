@@ -295,6 +295,13 @@ class SpaceObject(models.Model):
         diam_km = self.get_diameter_estimate()
         return diam_km / 0.5413 * 100.0
 
+    @cached_property
+    def get_everest_pct(self):
+        # Helper function used to get size ratio compared to Mt Everest prominence of photo.
+        # Photo shows elevation from ~16417 ft to ~29032 ft = 3.845052 km * adjustment.
+        diam_km = self.get_diameter_estimate()
+        return diam_km / (3.845052 * 2.25) * 100.0
+
     def to_search_result(self):
         q = self.sbdb_entry.get('q', None)
         if q:

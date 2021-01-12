@@ -288,11 +288,10 @@ ul.keyfacts li {
   position: relative;
   height: 500px;
   max-width: 100%;
-
   background-color: #528fc4;
-
   margin: 0 auto;
   margin-bottom: 1em;
+  overflow-hidden;
 }
 
 .artistic-comparison .background {
