@@ -18,7 +18,7 @@ window.OBJECT_DEFINITIONS= [
 {% for object_set in object_sets %}
   {% for object in object_set.data %}
 {
-  name: "{{object.name}}",
+  name: unescape("{{object.name}}"),
   slug: "{{object.slug}}",
   ephem: {
     a: {{object.a}},

@@ -25,7 +25,7 @@
 -->
 <script>
 window.OBJECT_DEFINITIONS = [{
-  name: "{{object.name}}",
+  name: unescape("{{object.name}}"),
   slug: "{{object.slug}}",
   ephem: {
     a: {{object.a}},
@@ -60,6 +60,9 @@ window.pageReady = false;
 let onPageReadyHandlers = [];
 
 onPageReadyHandlers.push(() => {
+  if ({{object.a}} < 0) {
+    return;
+  }
   const diagram = new OrbitDiagram('.orbit-diagram', {
     // object's semimajor axis should be 40px
     pixels_per_au: 40 / {{object.a}},
