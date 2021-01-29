@@ -216,11 +216,17 @@ class SpaceObject(models.Model):
 
     @cached_property
     def period_in_days(self):
-        return float(self.sbdb_entry['per'])
+        try:
+            return float(self.sbdb_entry['per'])
+        except:
+            return None
 
     @cached_property
     def period_in_years(self):
-        return float(self.sbdb_entry['per']) / 365.25
+        try:
+            return float(self.sbdb_entry['per']) / 365.25
+        except:
+            return None
 
     @cached_property
     def ordered_close_approaches(self):
