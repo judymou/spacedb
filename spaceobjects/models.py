@@ -293,6 +293,8 @@ class SpaceObject(models.Model):
             pass
         except KeyError:
             pass
+        except TypeError:
+            pass
         return None
 
     @cached_property
