@@ -86,12 +86,10 @@ footer a {
 
 .spacekit__object-label {
   position: relative;
-  margin-bottom: 3px;
 }
 
-.spacekit__object-label:after, .spacekit__object-label:before {
+.spacekit__object-label:before {
   top: 100%;
-  left: 11px;
   border: solid transparent;
   content: " ";
   height: 0;
@@ -100,17 +98,11 @@ footer a {
   pointer-events: none;
 }
 
-.spacekit__object-label:after {
+.spacekit__object-label:before {
   border-color: rgba(136, 183, 213, 0);
   border-top-color: #88b7d5;
   border-width: 4px;
-  margin-left: -4px;
-}
-.spacekit__object-label:before {
-  border-color: rgba(194, 225, 245, 0);
-  border-top-color: #c2e1f5;
-  border-width: 4px;
-  margin-left: -4px;
+  margin-left: calc(50% - 4px);
 }
 
 .spacekit__object-label a {
