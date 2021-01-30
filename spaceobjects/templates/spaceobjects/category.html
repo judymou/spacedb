@@ -21,7 +21,7 @@ window.OBJECT_DEFINITIONS = [
 {
   name: unescape("{{object.name}}"),
   slug: "{{object.slug}}",
-  ephem : {
+  ephem: {
     a: {{object.a}},
     e: {{object.e}},
     i: {{object.i}},
@@ -29,6 +29,7 @@ window.OBJECT_DEFINITIONS = [
     w: {{object.w}},
     ma: {{object.ma}},
     q: {{object.sbdb_entry.q}},
+    n: {{object.sbdb_entry.n}} + 0,
     tp: {{object.sbdb_entry.tp}},
     epoch: {{object.epoch}}
   }

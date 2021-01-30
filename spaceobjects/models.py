@@ -315,6 +315,9 @@ class SpaceObject(models.Model):
         tp = self.sbdb_entry.get('tp', None)
         if tp:
             tp = float(tp)
+        n = self.sbdb_entry.get('n', None)
+        if n:
+            n = float(n)
         return {
             'fullname': self.fullname,
             'name': self.name,
@@ -327,6 +330,7 @@ class SpaceObject(models.Model):
                 'w': self.w,
                 'ma': self.ma,
                 'q': q,
+                'n': n,
                 'tp': tp,
                 'epoch': self.epoch,
             }
