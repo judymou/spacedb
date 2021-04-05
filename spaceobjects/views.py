@@ -204,7 +204,7 @@ def api_category_orbits(request, category):
     info = get_category_info(category)
     objects = info['objects']
 
-    limit = request.GET.get('limit', 10)
+    limit = int(request.GET.get('limit', 10))
 
     return JsonResponse({
         'success': True,
@@ -215,7 +215,7 @@ def api_category_objects(request, category):
     info = get_category_info(category)
     objects = info['objects']
 
-    limit = request.GET.get('limit', 10)
+    limit = int(request.GET.get('limit', 10))
 
     return JsonResponse({
         'success': True,
