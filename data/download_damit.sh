@@ -8,7 +8,7 @@ cd rawdata/shapes
 
 # Download complete flush from
 # http://astro.troja.mff.cuni.cz/projects/asteroids3D/web.php?page=db_export
-curl -o damit.tar.gz http://www.ianww.com/damit.tar.gz
+curl -o damit.tar.gz https://www.ianww.com/damit.tar.gz
 
 # Decompress
 tar xzvf damit.tar.gz
