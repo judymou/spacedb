@@ -24,7 +24,7 @@ def convert_shape_to_obj(inpath, outpath):
     outlines = []
     with open(inpath, 'r') as f:
         count = int(f.readline().split()[0])
-        for x in xrange(count):
+        for x in range(count):
             outlines.append('v %s' % (f.readline()))
         line = f.readline()
         while line:
@@ -46,7 +46,7 @@ def process_references(f_in):
     return ret
 
 def process_shapes(f_in, refs):
-    reader = csv.DictReader(codecs.EncodedFile(f_in, 'utf8', 'utf-8-sig'), delimiter=',')
+    reader = csv.DictReader(f_in, delimiter=',')
 
     # Map from fullname to SpaceObject
     spaceobject_lookup = {}
@@ -121,7 +121,7 @@ def process_shapes(f_in, refs):
     logger.info('Done.')
 
 if __name__ == '__main__':
-    with open('rawdata/shapes/damit_flush_extended.csv', 'r') as f_main, \
+    with open('rawdata/shapes/damit_flush_extended.csv', 'r', encoding='utf-8-sig') as f_main, \
          open('rawdata/shapes/damit_flush_refs.csv', 'r') as f_refs:
         #refs = process_references(f_refs)
         refs = {}
