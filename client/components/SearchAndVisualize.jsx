@@ -71,12 +71,12 @@ class SearchAndVisualize extends React.Component {
             vizLabel: result.name,
             value: result.slug,
             ephem: result.ephem,
-            displayEclipticLines: true,
           };
         }), {
           showLabel: false,
           showOrbit: false,
           updateHash: false,
+          displayEclipticLines: true,
         });
       });
 
@@ -101,7 +101,7 @@ class SearchAndVisualize extends React.Component {
         hideOrbit: !opts.showOrbit,
         particleSize: opts.particleSize,
         ecliptic: {
-          displayLines: !!obj.displayEclipticLines,
+          displayLines: opts.displayEclipticLines,
         },
       }));
     });
