@@ -76,7 +76,7 @@ class SearchAndVisualize extends React.Component {
           showLabel: false,
           showOrbit: false,
           updateHash: false,
-          displayEclipticLines: true,
+          displayEclipticLines: false,
         });
       });
 
