@@ -99,6 +99,9 @@ class SearchAndVisualize extends React.Component {
         labelText: opts.showLabel ? obj.vizLabel : undefined,
         hideOrbit: !opts.showOrbit,
         particleSize: opts.particleSize,
+        ecliptic: {
+          displayLines: false,
+        },
       }));
     });
 
