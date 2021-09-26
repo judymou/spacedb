@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 import math
-from datetime import datetime
+from datetime import datetime, date
 from enum import Enum
 
 from django.contrib import admin
