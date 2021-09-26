@@ -134,7 +134,7 @@ Object.keys(window.spaceobjects).forEach(function(key) {
                       {% if object.is_nea %}
                         <span class="label label-info">Near-Earth</span>
                       {% endif %}
-                      {% if object.ordered_close_approaches|length %}
+                      {% if object.future_close_approaches|length %}
                         <span class="label label-warning">Close Approach</span>
                       {% endif %}
                       {% if object.is_pha %}
@@ -147,8 +147,8 @@ Object.keys(window.spaceobjects).forEach(function(key) {
                           {% with object.ordered_sentry_events.0 as event %}
                             <em>It will pass within {{event.dist_km|floatformat:0|intcomma}} km of Earth with an impact probability of {{event.prob_percentage}}% in {{event.date | date:"Y"}}.</em>
                           {% endwith %}
-                        {% elif object.ordered_close_approaches|length %}
-                          {% with object.ordered_close_approaches.0 as event %}
+                        {% elif object.future_close_approaches|length %}
+                          {% with object.future_close_approaches.0 as event %}
                             <em>It will pass by Earth on {{event.date | date}}.</em>
                           {% endwith %}
                         {% endif %}

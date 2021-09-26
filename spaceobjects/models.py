@@ -233,6 +233,10 @@ class SpaceObject(models.Model):
         return self.closeapproach_set.all().order_by('date')
 
     @cached_property
+    def future_close_approaches(self):
+        return self.closeapproach_set.filter(date__gte=date.today()).order_by('date')
+
+    @cached_property
     def ordered_sentry_events(self):
         return self.sentryevent_set.all().order_by('-prob')
 
