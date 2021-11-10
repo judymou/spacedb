@@ -377,6 +377,10 @@ ul.keyfacts li {
   width:30%;
 }
 
+.carousel-item .label {
+  line-height: 2;
+}
+
 .sticky {
   position: -webkit-sticky;
   position: sticky;
