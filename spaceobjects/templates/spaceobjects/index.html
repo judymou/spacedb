@@ -145,7 +145,7 @@ Object.keys(window.spaceobjects).forEach(function(key) {
                         {{object.shorthand}} orbits the sun every {{object.period_in_years|floatformat:2|intcomma}} years and is about {{object.get_diameter_estimate|floatformat:3}} km in diameter, comparable in size to {{object.get_diameter_comparison}}.
                         {% if object.ordered_sentry_events|length and not object_set.hide_impact_probability %}
                           {% with object.ordered_sentry_events.0 as event %}
-                            <em>It will pass within {{event.dist_km|floatformat:0|intcomma}} km of Earth with an impact probability of {{event.prob_percentage}}% in {{event.date | date:"Y"}}.</em>
+                            <em>It will pass near Earth with an impact probability of {{event.prob_percentage}}% in {{event.date | date:"Y"}}.</em>
                           {% endwith %}
                         {% elif object.future_close_approaches|length %}
                           {% with object.future_close_approaches.0 as event %}

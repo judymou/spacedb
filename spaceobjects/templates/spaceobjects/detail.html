@@ -277,8 +277,6 @@ const t = setInterval(function() {
               <thead>
                 <tr>
                   <th>Date</th>
-                  <th>Distance from Earth (km)</th>
-                  <th>Distance Error (km)</th>
                   <th>Probability of Impact (%)</th>
                   <th>Impact Energy (Mt)</th>
                 </tr>
@@ -287,8 +285,6 @@ const t = setInterval(function() {
                 {% for event in object.ordered_sentry_events %}
                   <tr>
                     <td>{{event.date|date}}</td>
-                    <td>{{event.dist_km|floatformat:2|intcomma}}</td>
-                    <td>±{{event.dist_err|floatformat:2|intcomma}}</td>
                     <td>{{event.prob_percentage|floatformat:5}}</td>
                     <td>{{event.energy_mt}}</td>
                   </tr>

@@ -32,9 +32,6 @@ def process(events):
         if count % 2000 == 0:
             logger.info(count)
 
-        if 'dist' not in event:
-            continue
-
         fullname = get_normalized_full_name(event['fullname'])
 
         date_str = event['date']
@@ -56,8 +53,6 @@ def process(events):
                 space_object=space_object,
                 date=date,
                 energy_mt=float(event['energy']),
-                dist_km=float(event['dist']) * 6420,
-                dist_err=float(event['width']) * 6420,
                 prob=float(event['ip']),
                 torino_scale=float(event['ts']) if event['ts'] else -1,
                 palermo_scale=float(event['ps']),

@@ -407,8 +407,6 @@ class SentryEvent(models.Model):
 
     date = models.DateField()
     energy_mt = models.FloatField()
-    dist_km = models.FloatField()
-    dist_err  = models.FloatField()  # 1-sigma semi-width of the uncertainty region
     palermo_scale = models.FloatField()
     torino_scale = models.FloatField()
     prob = models.FloatField()
