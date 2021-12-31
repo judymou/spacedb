@@ -48,7 +48,7 @@ def process(events):
             space_object = SpaceObject.objects.get(fullname=fullname)
         except SpaceObject.DoesNotExist:
             try:
-                space_object = SpaceObject.objects.get(fullname=fullname.replace('(', '').replace(')', '')
+                space_object = SpaceObject.objects.get(fullname=fullname.replace('(', '').replace(')', ''))
             except SpaceObject.DoesNotExist:
                 logger.error('Cannot find space object %s' % fullname)
 
