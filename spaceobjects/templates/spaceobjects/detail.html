@@ -305,7 +305,7 @@ const t = setInterval(function() {
     </p>
     {% if object.ordered_shape_models|length %}
       <p>
-        Scientists have been able to determine this object's shape.
+        Scientists have been able to determine this object's shape:
       </p>
       <p>
         <a href="/asteroid/{{object.slug}}/shape"><img loading="lazy" class="img-responsive" src="{% static object.ordered_shape_models.0.render_path %}" /></a>
