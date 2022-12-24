@@ -39,10 +39,10 @@ def process(reader):
     inserted_once = False
     failures_ma = 0
     for count, row in enumerate(reader, 1):
-        if count % 5000 == 0:
+        if count % 1000 == 0:
             logger.info(count)
 
-        if count % 5000 == 0:
+        if count % 1000 == 0:
             # Subdivide insertions - slower, but needed for low memory
             # environments like production machine
             logger.info('Inserting...')
@@ -114,12 +114,13 @@ def generate_rows(fields, data):
         yield dict(zip(fields, row))
 
 if __name__ == '__main__':
-    logger.info('Processing sbdb data')
+    logger.info('Loading sbdb data...')
 
     dir_path = os.path.dirname(os.path.realpath(__file__))
     data_path = os.path.realpath(os.path.join(dir_path, 'rawdata/sbdb.json.gz'))
     with gzip.open(data_path) as f:
         obj = json.load(f)
+        logger.info('Loaded sbdb data, processing...')
         fields = obj['fields']
         data = obj['data']
         rows = generate_rows(fields, data)
