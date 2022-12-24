@@ -39,10 +39,10 @@ def process(reader):
     inserted_once = False
     failures_ma = 0
     for count, row in enumerate(reader, 1):
-        if count % 10000 == 0:
+        if count % 5000 == 0:
             logger.info(count)
 
-        if count % 10000 == 0:
+        if count % 5000 == 0:
             # Subdivide insertions - slower, but needed for low memory
             # environments like production machine
             logger.info('Inserting...')
