@@ -1,4 +1,4 @@
-Django==1.11.29
+Django==3.2.24
 jsonfield==1.0.3
 gunicorn==19.9.0
 psycopg2==2.7.6.1
